@@ -6,347 +6,298 @@
     <title>Лукоморье: Наследие</title>
     <style>
         :root { 
-            --bg: #1e272e; --panel: #2f3640; --btn: #d35400; --btn-hover: #e67e22; --text: #d2dae2; --accent: #fbc531; --danger: #e84118; --success: #4cd137;
-            /* Переменные для картинок, которые загрузятся из галереи */
-            --tile-land: none;
-            --tile-chars1: none;
-            --tile-chars2: none;
+            --bg: #1e272e; --panel: #2f3640; --btn: #d35400; --text: #ecf0f1; --accent: #fbc531; --danger: #e84118;
+            --img-land: none; --img-char: none; --img-enemy: none;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; touch-action: none; }
+        * { box-sizing: border-box; user-select: none; }
+        body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; touch-action: none; }
         
-        /* Верхняя панель */
-        .top-panel { background: #151b20; padding: 5px; display: flex; flex-direction: column; border-bottom: 2px solid #000; z-index: 100; flex-shrink: 0; }
-        .res-bar { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; padding: 2px 10px; }
-        .pawn-bar { display: flex; justify-content: center; gap: 10px; padding: 5px 0; border-top: 1px solid #2f3640; }
-        .pawn-icon { font-size: 24px; cursor: pointer; padding: 2px; border-radius: 5px; }
-        .pawn-icon.active { background: var(--accent); color: #000; }
-        
-        /* Игровая зона со свайпом */
-        .game-area { flex-grow: 1; overflow: auto; position: relative; display: flex; justify-content: center; align-items: flex-start; background: #000; touch-action: pan-x pan-y; }
-        .viewport { width: 1500px; height: 1500px; transform-origin: 0 0; }
-        .grid { display: grid; grid-template-columns: repeat(15, 1fr); width: 100%; height: 100%; }
-        
-        .cell { background-color: #27ae60; border: 1px solid rgba(0,0,0,0.4); box-sizing: border-box; cursor: pointer; position: relative; background-size: 500% 500%; background-position: 0% 0%; }
-        
-        /* Нарезка ландшафта (5х5) */
-        .tile-forest { background-image: var(--tile-land); background-position: 0% 0%; }
-        .tile-mountain { background-image: var(--tile-land); background-position: 25% 20%; }
-        .tile-water { background-image: var(--tile-land); background-position: 25% 40%; }
-        .tile-base { background-image: var(--tile-land); background-position: 0% 20%; }
-        
-        /* Нарезка построек (из той же картинки 5х5) */
-        .tile-wall-wood { background-image: var(--tile-land); background-position: 75% 80%; }
-        .tile-wall-stone { background-image: var(--tile-land); background-position: 100% 40%; }
-        .tile-trap { background-image: var(--tile-land); background-position: 0% 80%; } /* Хворост */
+        /* ВЕРХНЯЯ ПАНЕЛЬ */
+        .top-panel { background: #111; height: 45px; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; font-size: 12px; font-weight: bold; z-index: 100; border-bottom: 2px solid #000; flex-shrink: 0; }
+        .pawn-btn { background: #555; padding: 5px 10px; border-radius: 5px; cursor: pointer; border: 2px solid var(--accent); }
 
-        /* Пешки (из второй картинки 3х3) */
-        .pawn { background-image: var(--tile-chars1); background-size: 300% 300%; background-position: 0% 0%; outline: 3px solid var(--accent); z-index: 10; }
+        /* ИГРОВОЕ ПОЛЕ */
+        .game-area { flex-grow: 1; overflow: auto; position: relative; background: #000; display: flex; justify-content: flex-start; align-items: flex-start; }
+        .grid { display: grid; grid-template-columns: repeat(15, 80px); grid-template-rows: repeat(15, 80px); transform-origin: 0 0; }
         
-        /* Враги (из второй/третьей картинки 3х3) */
-        .enemy { background-image: var(--tile-chars1); background-size: 300% 300%; background-position: 100% 0%; outline: 2px solid var(--danger); z-index: 5; }
+        .cell { width: 80px; height: 80px; border: 1px solid rgba(0,0,0,0.4); cursor: pointer; position: relative; display: flex; justify-content: center; align-items: center; }
         
-        /* Кнопки зума */
-        .zoom-controls { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 50; }
-        .zoom-btn { background: rgba(0,0,0,0.6); color: white; border: 1px solid #555; border-radius: 5px; width: 35px; height: 35px; font-size: 20px; cursor: pointer; }
+        /* МАТЕМАТИКА НАРЕЗКИ КАРТИНОК */
+        /* Сетка 5х5 (Ландшафт) */
+        .tile-forest { background-image: var(--img-land); background-size: 500% 500%; background-position: 0% 0%; }
+        .tile-mountain { background-image: var(--img-land); background-size: 500% 500%; background-position: 25% 25%; }
+        .tile-water { background-image: var(--img-land); background-size: 500% 500%; background-position: 50% 50%; }
+        .tile-base { background-image: var(--img-land); background-size: 500% 500%; background-position: 75% 0%; }
+        
+        /* Постройки (из той же сетки 5х5) */
+        .tile-wall_wood { background-image: var(--img-land); background-size: 500% 500%; background-position: 0% 50%; }
+        .tile-wall_stone { background-image: var(--img-land); background-size: 500% 500%; background-position: 100% 25%; }
+        .tile-trap { background-image: var(--img-land); background-size: 500% 500%; background-position: 25% 100%; }
+        .tile-hearth { background-image: var(--img-land); background-size: 500% 500%; background-position: 0% 25%; }
 
-        /* Нижняя панель (2 колонки) */
-        .bottom-panel { background: var(--panel); padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 2px solid #000; z-index: 100; flex-shrink: 0; }
-        .btn { background: var(--btn); color: white; border: none; padding: 12px 5px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; }
-        .btn:disabled { background: #555; color: #888; }
-        .btn-danger { background: var(--danger); }
-        .btn-full { grid-column: span 2; }
-        
-        /* Модалки */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: var(--panel); padding: 20px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center; border: 2px solid var(--btn); max-height: 90vh; overflow-y: auto; }
-        
-        /* Колесо */
-        .wheel { width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(#e84118 0deg 45deg, #00a8ff 45deg 90deg, #4cd137 90deg 135deg, #fbc531 135deg 180deg, #9b59b6 180deg 225deg, #e67e22 225deg 270deg, #1abc9c 270deg 315deg, #34495e 315deg 360deg); margin: 20px auto; border: 4px solid #fff; position: relative; transition: transform 4s cubic-bezier(0.25, 1, 0.5, 1); }
-        .wheel-arrow { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 30px; color: #fff; text-shadow: 0 2px 5px #000; z-index: 2;}
+        /* Пешки (Сетка 3х3) */
+        .pawn { background-image: var(--img-char); background-size: 300% 300%; background-position: 0% 0%; outline: 3px solid var(--accent); z-index: 10; }
+        /* Враги (Сетка 3х3) */
+        .enemy { background-image: var(--img-enemy); background-size: 300% 300%; background-position: 50% 0%; outline: 3px solid var(--danger); z-index: 5; }
 
-        .log-box { height: 80px; overflow-y: scroll; background: #000; padding: 5px; font-size: 10px; font-family: monospace; border-radius: 5px; text-align: left; margin-top: 10px; }
+        /* НИЖНЯЯ ПАНЕЛЬ */
+        .bottom-panel { background: var(--panel); height: 130px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 8px; z-index: 100; flex-shrink: 0; border-top: 2px solid #000; }
+        .btn { background: var(--btn); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; text-align: center; }
+        .btn:active { background: #e67e22; }
+        .btn-red { background: var(--danger); }
+
+        /* МОДАЛКИ */
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: var(--panel); padding: 20px; border-radius: 10px; width: 100%; max-width: 350px; text-align: center; border: 2px solid var(--btn); max-height: 90vh; overflow-y: auto; }
+        .log-box { height: 100px; overflow-y: scroll; background: #000; padding: 5px; font-size: 12px; text-align: left; margin-top: 10px; font-family: monospace; border: 1px solid #333; }
+        
+        /* КОЛЕСО */
+        .wheel-container { position: relative; width: 200px; height: 200px; margin: 0 auto; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(#e84118 0 45deg, #00a8ff 45deg 90deg, #4cd137 90deg 135deg, #fbc531 135deg 180deg, #9b59b6 180deg 225deg, #e67e22 225deg 270deg, #1abc9c 270deg 315deg, #34495e 315deg 360deg); border: 4px solid #fff; transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
+        .wheel-arrow { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 30px; color: yellow; z-index: 10; text-shadow: 0 2px 2px #000; }
+        
         input[type="file"] { display: none; }
-        .upload-btn { background: #00a8ff; margin-bottom: 10px; display: block; width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; box-sizing: border-box;}
+        .upload-label { display: block; background: #8e44ad; color: white; padding: 10px; margin-bottom: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="top-panel" id="top-panel" style="display:none;">
-    <div class="res-bar">
-        <div>Раунд: <span id="ui-round">1</span></div>
-        <div>❤️ <span id="ui-hp">10</span>/<span id="ui-maxhp">10</span></div>
-        <div>⚡ <span id="ui-ap">3</span></div>
-        <div>🌲<span id="ui-wood">0</span> 🪨<span id="ui-stone">0</span> 🥩<span id="ui-meat">2</span> ⛏️<span id="ui-copper">0</span></div>
-    </div>
-    <div class="pawn-bar" id="pawn-bar"></div>
+<!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+<div class="top-panel" id="top-panel" style="display: none;">
+    <div>Ход: <span id="ui-round">1</span> (<span id="ui-season">Весна</span>)</div>
+    <div>ОД: <span id="ui-ap">3</span></div>
+    <div>🌲<span id="ui-wood">0</span> 🪨<span id="ui-stone">0</span> 🥩<span id="ui-meat">5</span> 🐻<span id="ui-hide">0</span> ⛏️<span id="ui-copper">0</span></div>
+    <div class="pawn-btn" onclick="openPawnCard()">🧑‍🌾 Пешка</div>
 </div>
 
-<div class="game-area" id="game-area" style="display:none;">
-    <div class="zoom-controls">
-        <button class="zoom-btn" onclick="zoomMap(1.2)">+</button>
-        <button class="zoom-btn" onclick="zoomMap(0.8)">-</button>
-    </div>
-    <div class="viewport" id="viewport">
-        <div class="grid" id="game-grid"></div>
-    </div>
+<!-- ИГРОВОЕ ПОЛЕ -->
+<div class="game-area" id="game-area" style="display: none;">
+    <div class="grid" id="grid"></div>
 </div>
 
-<div class="bottom-panel" id="bottom-panel" style="display:none;">
-    <button class="btn" onclick="setMode('move')">Движение</button>
-    <button class="btn" onclick="openModal('build-modal')">Стройка</button>
-    <button class="btn" onclick="openModal('craft-modal')">Крафт</button>
-    <button class="btn" onclick="doAction('gather')">Добыть</button>
-    <button class="btn" onclick="sendCaravan()">Караван</button>
-    <button class="btn btn-danger" onclick="nextRound()">Следующий ход</button>
-    <button class="btn btn-full" onclick="endGame('Вы сдались')" style="background: #7f8c8d;">Сдаться / В меню</button>
+<!-- НИЖНЯЯ ПАНЕЛЬ -->
+<div class="bottom-panel" id="bottom-panel" style="display: none;">
+    <button class="btn" onclick="actionGather()">Добыть</button>
+    <button class="btn" onclick="openBuildMenu()">Стройка</button>
+    <button class="btn" onclick="openCraftMenu()">Крафт</button>
+    <button class="btn" onclick="actionCaravan()">Караван (1🥩)</button>
+    <button class="btn btn-red" onclick="nextTurn()">След. Ход (Колесо)</button>
+    <button class="btn" style="background: #555;" onclick="location.reload()">Сдаться</button>
 </div>
 
 <!-- ГЛАВНОЕ МЕНЮ -->
-<div class="modal" id="main-menu-modal" style="display:flex;">
+<div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
-        <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">Лукоморье</h2>
-        
-        <button class="btn btn-full" onclick="openModal('diff-modal')" style="padding: 15px; font-size: 16px; margin-bottom: 10px;">Начать новую игру</button>
-        <button class="btn btn-full" onclick="openModal('settings-modal')" style="padding: 15px; font-size: 16px; background: #8e44ad; margin-bottom: 10px;">Загрузить графику</button>
-        <button class="btn btn-full" onclick="downloadLogs()" style="padding: 15px; font-size: 16px; background: #7f8c8d;">Скачать логи</button>
+        <h2 style="color: var(--accent); margin-top: 0;">Лукоморье v11.0</h2>
+        <button class="btn" onclick="document.getElementById('upload-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #8e44ad;">Загрузить графику</button>
+        <button class="btn" onclick="startGame()" style="width: 100%; padding: 15px; font-size: 18px;">Играть</button>
     </div>
 </div>
 
-<!-- ЭКРАН ЗАГРУЗКИ ГРАФИКИ -->
-<div class="modal" id="settings-modal">
+<!-- ЗАГРУЗКА -->
+<div class="modal" id="upload-modal">
     <div class="modal-content">
-        <h3 style="color: var(--accent); margin-top: 0;">Графика игры</h3>
-        <p style="font-size: 12px; color: #aaa;">Загрузите 3 картинки из галереи. Они сохранятся в памяти браузера.</p>
-        
-        <label class="upload-btn">
-            1. Ландшафт (5x5)
-            <input type="file" id="upload-land" onchange="handleImageUpload(event, 'tile-land')">
-        </label>
-        <label class="upload-btn" style="background: #27ae60;">
-            2. Персонажи (3x3)
-            <input type="file" id="upload-chars1" onchange="handleImageUpload(event, 'tile-chars1')">
-        </label>
-        <label class="upload-btn" style="background: #d35400;">
-            3. Враги (3x3)
-            <input type="file" id="upload-chars2" onchange="handleImageUpload(event, 'tile-chars2')">
-        </label>
-
-        <button class="btn btn-full" onclick="closeModal('settings-modal')" style="margin-top: 15px; background: #555;">Готово</button>
+        <h3 style="color: var(--accent); margin-top: 0;">Загрузка графики (Сетки)</h3>
+        <label class="upload-label">1. Ландшафт (5x5)<input type="file" accept="image/*" onchange="loadImg(event, 'img-land')"></label>
+        <label class="upload-label">2. Пешки (3x3)<input type="file" accept="image/*" onchange="loadImg(event, 'img-char')"></label>
+        <label class="upload-label">3. Враги (3x3)<input type="file" accept="image/*" onchange="loadImg(event, 'img-enemy')"></label>
+        <button class="btn" onclick="document.getElementById('upload-modal').style.display='none'" style="width: 100%; padding: 10px; margin-top: 10px;">Закрыть</button>
     </div>
 </div>
 
-<!-- ВЫБОР СЛОЖНОСТИ -->
-<div class="modal" id="diff-modal">
+<!-- КАРТОЧКА ПЕШКИ -->
+<div class="modal" id="pawn-modal">
     <div class="modal-content">
-        <h3 style="color: var(--accent); margin-top: 0;">Сложность</h3>
-        <button class="btn btn-full" onclick="initGame('easy')" style="background: #27ae60; margin-bottom: 10px;">Сказка</button>
-        <button class="btn btn-full" onclick="initGame('normal')" style="background: var(--btn); margin-bottom: 10px;">Былина</button>
-        <button class="btn btn-full" onclick="initGame('hard')" style="background: #c0392b; margin-bottom: 10px;">Темное Время</button>
-        <button class="btn btn-full" onclick="closeModal('diff-modal')" style="background: #555;">Назад</button>
+        <h3 style="color: var(--accent); margin-top: 0;">Карточка пешки</h3>
+        <p><b>Имя:</b> Ратмир</p>
+        <p>⚔️ Сила: <span id="p-str">3</span> | 🏹 Ловкость: <span id="p-agi">3</span> | ❤️ HP: <span id="p-hp">10</span>/10</p>
+        <p>🎒 Оружие: <span id="p-weap">Кулаки</span></p>
+        <button class="btn" onclick="document.getElementById('pawn-modal').style.display='none'" style="width: 100%; padding: 10px; margin-top: 10px;">Закрыть</button>
+    </div>
+</div>
+
+<!-- МЕНЮ СТРОЙКИ -->
+<div class="modal" id="build-modal">
+    <div class="modal-content">
+        <h3 style="color: var(--accent); margin-top: 0;">Строительство</h3>
+        <button class="btn" onclick="doBuild('wall_wood', 2, 0)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Деревянная стена (2🌲)</button>
+        <button class="btn" onclick="doBuild('wall_stone', 2, 2)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Каменная стена (2🌲, 2🪨)</button>
+        <button class="btn" onclick="doBuild('trap', 1, 1)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Ловушка (1🌲, 1🪨)</button>
+        <button class="btn" onclick="doBuild('hearth', 0, 3)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Очаг (3🪨)</button>
+        <button class="btn btn-red" onclick="document.getElementById('build-modal').style.display='none'" style="width: 100%; padding: 10px; margin-top: 10px;">Отмена</button>
+    </div>
+</div>
+
+<!-- МЕНЮ КРАФТА -->
+<div class="modal" id="craft-modal">
+    <div class="modal-content">
+        <h3 style="color: var(--accent); margin-top: 0;">Крафт</h3>
+        <button class="btn" onclick="doCraft('Копье', 1, 1, 0)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Копье (1🌲, 1⛏️)</button>
+        <button class="btn" onclick="doCraft('Топор', 1, 2, 0)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Топор (1🌲, 2⛏️)</button>
+        <button class="btn" onclick="doCraft('Броня', 0, 1, 2)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Броня (2🐻, 1⛏️)</button>
+        <button class="btn btn-red" onclick="document.getElementById('craft-modal').style.display='none'" style="width: 100%; padding: 10px; margin-top: 10px;">Отмена</button>
     </div>
 </div>
 
 <!-- КОЛЕСО -->
 <div class="modal" id="wheel-modal">
     <div class="modal-content">
-        <h3 style="margin-top: 0; color: var(--accent);">Колесо Событий</h3>
-        <div style="position: relative; width: 200px; margin: 0 auto;">
+        <h3 style="margin-top: 0; color: var(--accent);">Событие (Колесо)</h3>
+        <div class="wheel-container">
             <div class="wheel-arrow">▼</div>
-            <div class="wheel" id="wheel-visual"></div>
+            <div class="wheel" id="wheel"></div>
         </div>
-        <button class="btn btn-full" id="btn-spin" onclick="spinWheel()" style="margin-top: 20px;">Крутить!</button>
-        <p id="wheel-result" style="margin-top: 15px; font-weight: bold;"></p>
+        <button class="btn" id="spin-btn" onclick="spinWheel()" style="width: 100%; padding: 15px; margin-top: 20px;">Крутить!</button>
+        <p id="wheel-text" style="font-weight: bold; color: yellow;"></p>
+    </div>
+</div>
+
+<!-- КАРТА СОБЫТИЙ -->
+<div class="modal" id="card-modal">
+    <div class="modal-content">
+        <h3 id="card-title" style="color: var(--accent); margin-top: 0;">Событие</h3>
+        <div style="width: 150px; height: 200px; background: #27ae60; margin: 10px auto; display: flex; justify-content: center; align-items: center; border: 3px solid #fff; border-radius: 8px; font-weight: bold;" id="card-visual">Карта</div>
+        <p id="card-text"></p>
+        <button class="btn" id="card-btn" onclick="closeCard()" style="width: 100%; padding: 10px; margin-top: 10px;">Ок</button>
     </div>
 </div>
 
 <!-- БОЙ -->
 <div class="modal" id="combat-modal">
     <div class="modal-content" style="border-color: var(--danger);">
-        <h3 style="color: var(--danger); margin-top: 0;">БОЙ!</h3>
-        <p>Враг: <span id="c-enemy-name">Медведь</span></p>
-        <p>HP Врага: <span id="c-enemy-hp">4</span></p>
-        <p>Твое HP: <span id="c-player-hp">10</span></p>
-        <div class="log-box" id="combat-log" style="height: 80px; margin-bottom: 10px;"></div>
-        <button class="btn btn-full" onclick="combatAction('attack')" style="margin-bottom: 5px;">Атаковать</button>
-        <button class="btn btn-full" onclick="combatAction('flee')" style="background: #c0392b;">Отступить</button>
+        <h3 style="color: var(--danger); margin-top: 0;">Бой!</h3>
+        <p>Враг HP: <span id="c-hp">6</span></p>
+        <p>Ваше HP: <span id="c-php">10</span></p>
+        <div class="log-box" id="c-log"></div>
+        <button class="btn" onclick="combatAttack()" style="width: 100%; padding: 15px; margin-top: 10px;">Атаковать (Д6 + Сила)</button>
+        <button class="btn btn-red" onclick="combatFlee()" style="width: 100%; padding: 10px; margin-top: 5px;">Отступить</button>
     </div>
 </div>
 
 <script>
-// ================== ЗАГРУЗКА ГРАФИКИ ==================
-function handleImageUpload(event, cssVarName) {
+// ================== ЗАГРУЗКА КАРТИНОК ==================
+function loadImg(event, varName) {
     const file = event.target.files[0];
-    if (!file) return;
+    if(!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-        const base64 = e.target.result;
-        localStorage.setItem(cssVarName, base64);
-        document.documentElement.style.setProperty(`--${cssVarName}`, `url(${base64})`);
-        alert("Картинка загружена и сохранена!");
+        localStorage.setItem(varName, e.target.result);
+        document.documentElement.style.setProperty(`--${varName}`, `url(${e.target.result})`);
+        alert("Успешно загружено!");
     };
     reader.readAsDataURL(file);
 }
-
-// Загрузка сохраненных картинок при старте
 window.onload = () => {
-    ['tile-land', 'tile-chars1', 'tile-chars2'].forEach(key => {
+    ['img-land', 'img-char', 'img-enemy'].forEach(key => {
         const saved = localStorage.getItem(key);
-        if (saved) document.documentElement.style.setProperty(`--${key}`, `url(${saved})`);
+        if(saved) document.documentElement.style.setProperty(`--${key}`, `url(${saved})`);
     });
 };
 
-// ================== УТИЛИТЫ ==================
-let currentLog = { actions: [], result: "in_progress" };
-let allLogs = JSON.parse(localStorage.getItem('logs') || '[]');
-function downloadLogs() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allLogs, null, 2));
-    const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "logs.json"); dl.click();
-}
-function log(msg) { currentLog.actions.push(`[R${state.round}] ${msg}`); }
-function rollD6() { return Math.floor(Math.random() * 6) + 1; }
-function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+// ================== СОСТОЯНИЕ ==================
+let G = { 
+    round: 1, ap: 3, season: 'Весна',
+    res: { wood: 10, stone: 10, meat: 5, hide: 0, copper: 5 }, // стартовые для теста
+    pawn: { x: 7, y: 7, hp: 10, str: 3, agi: 3, weapon: 'Кулаки' },
+    map: [], enemies: [], buildMode: null, inCombat: false, activeEnemy: null
+};
 
-// ================== ЗУМ И СВАЙП ==================
-let currentScale = 1;
-const viewport = document.getElementById('viewport');
-const gameArea = document.getElementById('game-area');
+const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
-function zoomMap(factor) {
-    currentScale *= factor;
-    if (currentScale < 0.5) currentScale = 0.5;
-    if (currentScale > 2) currentScale = 2;
-    viewport.style.transform = `scale(${currentScale})`;
-}
-
-let touchStartDist = 0; let touchStartScale = 1;
-gameArea.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 2) {
-        touchStartDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-        touchStartScale = currentScale;
-    }
-});
-gameArea.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 2) {
-        e.preventDefault();
-        const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-        const factor = dist / touchStartDist;
-        currentScale = touchStartScale * factor;
-        if (currentScale < 0.5) currentScale = 0.5;
-        if (currentScale > 2) currentScale = 2;
-        viewport.style.transform = `scale(${currentScale})`;
-    }
-}, { passive: false });
-
-// ================== ИГРА ==================
-let state = {};
-function initGame(difficulty) {
-    closeModal('diff-modal'); closeModal('main-menu-modal');
-    state = {
-        round: 1, ap: 3, maxHp: 10, hp: 10,
-        res: { wood: 0, stone: 0, meat: 2, hide: 0, copper: 0 },
-        grid: [], enemies: [], mode: 'move',
-        inCombat: false, activeEnemy: null, isAnimating: false,
-        pawns: [{ name: "Ратмир", x: 7, y: 7, hp: 10 }],
-        activePawn: 0
-    };
-    currentLog = { actions: [], result: "in_progress" };
-    for (let y = 0; y < 15; y++) {
-        let row = [];
-        for (let x = 0; x < 15; x++) {
-            let type = Math.random() < 0.2 ? "mountain" : Math.random() < 0.15 ? "water" : "forest";
-            if (x === 7 && y === 7) type = "base";
-            row.push({ type, building: null });
-        }
-        state.grid.push(row);
-    }
+function startGame() {
+    document.getElementById('menu-modal').style.display = 'none';
     document.getElementById('top-panel').style.display = 'flex';
-    document.getElementById('game-area').style.display = 'flex';
+    document.getElementById('game-area').style.display = 'block';
     document.getElementById('bottom-panel').style.display = 'grid';
-    renderGrid(); updateUI();
     
-    // Центрируем на игроке
-    setTimeout(() => {
-        gameArea.scrollLeft = (7 * 100) - (gameArea.clientWidth / 2);
-        gameArea.scrollTop = (7 * 100) - (gameArea.clientHeight / 2);
-    }, 100);
+    for(let y=0; y<15; y++) {
+        let row = [];
+        for(let x=0; x<15; x++) {
+            let r = Math.random();
+            let type = r < 0.15 ? 'mountain' : r < 0.25 ? 'water' : 'forest';
+            if(x===7 && y===7) type = 'base';
+            row.push({ type: type, build: null });
+        }
+        G.map.push(row);
+    }
+    updateUI(); renderMap();
+    centerCamera();
 }
 
-function renderGrid() {
-    const gridDiv = document.getElementById('game-grid');
-    gridDiv.innerHTML = '';
-    for (let y = 0; y < 15; y++) {
-        for (let x = 0; x < 15; x++) {
-            const cell = state.grid[y][x];
-            const d = document.createElement('div');
+function centerCamera() {
+    const area = document.getElementById('game-area');
+    area.scrollLeft = (7 * 80) - (area.clientWidth / 2);
+    area.scrollTop = (7 * 80) - (area.clientHeight / 2);
+}
+
+// ================== РЕНДЕР ==================
+function renderMap() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    for(let y=0; y<15; y++) {
+        for(let x=0; x<15; x++) {
+            let d = document.createElement('div');
+            let cell = G.map[y][x];
             d.className = `cell tile-${cell.type}`;
             
-            if (cell.building === 'wall_wood') d.className = 'cell tile-wall-wood';
-            else if (cell.building === 'wall_stone') d.className = 'cell tile-wall-stone';
-            else if (cell.building === 'trap') d.className = 'cell tile-trap';
-
-            let enemyHere = state.enemies.find(e => e.x === x && e.y === y);
-            if (enemyHere) d.className = 'cell enemy';
-
-            let pawnHere = state.pawns.find(p => p.x === x && p.y === y);
-            if (pawnHere) d.className = 'cell pawn';
-
-            d.onclick = () => handleCellClick(x, y); 
-            gridDiv.appendChild(d);
+            if(cell.build) d.className = `cell tile-${cell.build}`;
+            
+            let e = G.enemies.find(en => en.x === x && en.y === y);
+            if(e) d.className = 'cell enemy';
+            
+            if(G.pawn.x === x && G.pawn.y === y) d.className = 'cell pawn';
+            
+            d.onclick = () => handleCellClick(x, y);
+            grid.appendChild(d);
         }
     }
-    renderPawnBar();
-}
-
-function renderPawnBar() {
-    const bar = document.getElementById('pawn-bar');
-    bar.innerHTML = '';
-    state.pawns.forEach((p, i) => {
-        const d = document.createElement('div');
-        d.className = `pawn-icon ${i === state.activePawn ? 'active' : ''}`;
-        d.innerText = '🧑‍🌾';
-        bar.appendChild(d);
-    });
 }
 
 function updateUI() {
-    document.getElementById('ui-round').innerText = state.round;
-    document.getElementById('ui-hp').innerText = state.pawns[state.activePawn].hp;
-    document.getElementById('ui-ap').innerText = state.ap;
-    document.getElementById('ui-wood').innerText = state.res.wood;
-    document.getElementById('ui-stone').innerText = state.res.stone;
-    document.getElementById('ui-meat').innerText = state.res.meat;
+    document.getElementById('ui-round').innerText = G.round;
+    document.getElementById('ui-season').innerText = G.season;
+    document.getElementById('ui-ap').innerText = G.ap;
+    document.getElementById('ui-wood').innerText = G.res.wood;
+    document.getElementById('ui-stone').innerText = G.res.stone;
+    document.getElementById('ui-meat').innerText = G.res.meat;
+    document.getElementById('ui-hide').innerText = G.res.hide;
+    document.getElementById('ui-copper').innerText = G.res.copper;
 }
 
-// ================== ХОДЬБА ==================
-async function handleCellClick(x, y) {
-    if (state.inCombat || state.isAnimating) return;
-    let p = state.pawns[state.activePawn];
-    if (p.x === x && p.y === y) return;
-    if (state.grid[y][x].building) return alert("Клетка занята!");
+// ================== ПЕРЕМЕЩЕНИЕ (BFS) ==================
+async function handleCellClick(tx, ty) {
+    if(G.inCombat) return;
+    if(G.buildMode) { placeBuild(tx, ty); return; }
     
-    state.isAnimating = true;
-    let path = findPath(p.x, p.y, x, y);
-    if (path.length > 0) {
-        for (let step of path) {
-            p.x = step.x; p.y = step.y; renderGrid(); await sleep(200);
-        }
-    } else { alert("Путь заблокирован!"); }
-    state.isAnimating = false;
+    if(G.ap <= 0) return alert("Нет ОД! Жмите 'След. Ход'.");
+    if(G.map[ty][tx].build) return alert("Там постройка!");
+    if(G.enemies.some(e => e.x === tx && e.y === ty)) return alert("Там враг!");
+    
+    let path = findPath(G.pawn.x, G.pawn.y, tx, ty);
+    if(path.length === 0) return alert("Путь заблокирован!");
+    
+    G.ap--;
+    updateUI();
+    
+    for(let step of path) {
+        G.pawn.x = step.x; G.pawn.y = step.y;
+        renderMap();
+        await new Promise(r => setTimeout(r, 150));
+    }
 }
 
 function findPath(sx, sy, tx, ty) {
-    let queue = [{ x: sx, y: sy, path: [] }]; let visited = new Set(); visited.add(`${sx},${sy}`);
-    while (queue.length > 0) {
-        let curr = queue.shift();
-        if (curr.x === tx && curr.y === ty) return curr.path;
-        let dirs = [{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0}];
-        for (let d of dirs) {
-            let nx = curr.x + d.x, ny = curr.y + d.y;
-            if (nx>=0 && nx<15 && ny>=0 && ny<15 && !visited.has(`${nx},${ny}`)) {
-                if (!state.grid[ny][nx].building && !state.enemies.some(e => e.x===nx && e.y===ny)) {
-                    visited.add(`${nx},${ny}`); queue.push({ x: nx, y: ny, path: [...curr.path, {x:nx, y:ny}] });
+    let queue = [{x:sx, y:sy, path:[]}];
+    let visited = new Set([`${sx},${sy}`]);
+    while(queue.length > 0) {
+        let cur = queue.shift();
+        if(cur.x === tx && cur.y === ty) return cur.path;
+        for(let d of [{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0}]) {
+            let nx = cur.x + d.x, ny = cur.y + d.y;
+            if(nx>=0 && nx<15 && ny>=0 && ny<15 && !visited.has(`${nx},${ny}`)) {
+                if(!G.map[ny][nx].build && !G.enemies.some(e => e.x===nx && e.y===ny)) {
+                    visited.add(`${nx},${ny}`);
+                    queue.push({x:nx, y:ny, path:[...cur.path, {x:nx, y:ny}]});
                 }
             }
         }
@@ -355,36 +306,228 @@ function findPath(sx, sy, tx, ty) {
 }
 
 // ================== ДЕЙСТВИЯ ==================
-function doAction(type) { 
-    if (state.ap <= 0) return alert("Нет очков действий! Нажмите 'Следующий ход'.");
-    state.ap--; alert("Действие выполнено (упрощено для теста)."); updateUI(); 
+function actionGather() {
+    if(G.ap <= 0) return alert("Нет ОД!");
+    let t = G.map[G.pawn.y][G.pawn.x].type;
+    if(t === 'forest') G.res.wood += 2;
+    else if(t === 'mountain') { G.res.stone += 2; G.res.copper += 1; }
+    else if(t === 'water') G.res.meat += 2;
+    else return alert("Тут нечего добывать (нужен лес/гора/вода)!");
+    
+    G.ap--; updateUI();
 }
-function sendCaravan() { 
-    if (state.ap < 1 || state.res.meat < 1) return alert("Нужно 1 очко действия и 1 еда!");
-    state.ap--; state.res.meat--; alert("Караван отправлен!"); updateUI(); 
-}
-function setMode(m) { state.mode = m; alert(`Режим: ${m}`); }
 
-function nextRound() {
-    if (state.inCombat) return;
-    state.round++; state.ap = 3;
-    openModal('wheel-modal'); document.getElementById('btn-spin').style.display = 'block'; document.getElementById('wheel-visual').style.transform = 'rotate(0deg)';
+function actionCaravan() {
+    if(G.ap < 1) return alert("Нет ОД!");
+    if(G.res.meat < 1) return alert("Нужна 1 еда!");
+    G.ap--; G.res.meat--;
+    let r = Math.floor(Math.random()*6)+1;
+    if(r >= 4) { G.res.copper += 2; alert("Караван вернулся с медью! +2 ⛏️"); }
+    else { alert("Караван попал в засаду, потерял еду."); }
     updateUI();
 }
 
+// ================== СТРОЙКА И КРАФТ ==================
+function openBuildMenu() { document.getElementById('build-modal').style.display = 'flex'; }
+function openCraftMenu() { document.getElementById('craft-modal').style.display = 'flex'; }
+
+function doBuild(type, costW, costS) {
+    if(G.ap <= 0) return alert("Нет ОД!");
+    if(G.res.wood < costW || G.res.stone < costS) return alert("Не хватает ресурсов!");
+    
+    G.buildMode = type;
+    G.costW = costW; G.costS = costS;
+    document.getElementById('build-modal').style.display = 'none';
+    alert("Выбери клетку на карте для постройки.");
+}
+
+function placeBuild(x, y) {
+    if(G.map[y][x].build) return alert("Уже занято!");
+    if(G.res.wood < G.costW || G.res.stone < G.costS) return alert("Не хватает ресурсов!");
+    
+    G.res.wood -= G.costW; G.res.stone -= G.costS;
+    G.map[y][x].build = G.buildMode;
+    G.ap--;
+    G.buildMode = null;
+    updateUI(); renderMap();
+}
+
+function doCraft(item, costW, costC, costH) {
+    if(G.res.wood < costW || G.res.copper < costC || G.res.hide < costH) return alert("Не хватает ресурсов!");
+    G.res.wood -= costW; G.res.copper -= costC; G.res.hide -= costH;
+    G.pawn.weapon = item;
+    updateUI();
+    document.getElementById('craft-modal').style.display = 'none';
+    alert(`Скрафчено: ${item}!`);
+}
+
+// ================== КАРТОЧКА ПЕШКИ ==================
+function openPawnCard() {
+    document.getElementById('p-hp').innerText = G.pawn.hp;
+    document.getElementById('p-weap').innerText = G.pawn.weapon;
+    document.getElementById('pawn-modal').style.display = 'flex';
+}
+
+// ================== КОНЕЦ ХОДА И СОБЫТИЯ ==================
+function nextTurn() {
+    if(G.inCombat) return;
+    
+    // Голод
+    if(G.res.meat > 0) G.res.meat--;
+    else { G.pawn.hp -= 2; alert("Голод! -2 HP"); }
+    
+    // Зима
+    if(G.season === 'Зима' && !G.map[7][7].build === 'hearth') { G.pawn.hp -= 2; alert("Мороз! Нет Очага на базе. -2 HP"); }
+    
+    if(G.pawn.hp <= 0) return gameOver("Вы умерли от голода/холода.");
+
+    G.round++;
+    if(G.round % 4 === 1 && G.round > 1) {
+        let idx = SEASONS.indexOf(G.season);
+        G.season = SEASONS[(idx + 1) % 4];
+    }
+    
+    G.ap = 3;
+    updateUI();
+    
+    document.getElementById('wheel-modal').style.display = 'flex';
+    document.getElementById('wheel').style.transform = 'rotate(0deg)';
+    document.getElementById('wheel-text').innerText = '';
+    document.getElementById('spin-btn').style.display = 'block';
+}
+
 function spinWheel() {
-    document.getElementById('btn-spin').style.display = 'none';
-    let wheel = document.getElementById('wheel-visual'); wheel.style.transform = `rotate(${1440 + Math.floor(Math.random() * 360)}deg)`;
+    document.getElementById('spin-btn').style.display = 'none';
+    let spin = 1440 + Math.floor(Math.random() * 360);
+    document.getElementById('wheel').style.transform = `rotate(${spin}deg)`;
+    
     setTimeout(() => {
-        document.getElementById('wheel-result').innerText = "Выпало событие!";
-        setTimeout(() => closeModal('wheel-modal'), 1500);
+        let s = Math.floor(Math.random()*8);
+        let text = "";
+        if(s === 0) { text = "Рейд!"; spawnEnemy(); }
+        else if(s === 1) { drawCard('pos', "Удачная охота", "+3 мяса, +1 шкура", () => { G.res.meat+=3; G.res.hide+=1; }); }
+        else if(s === 2) { text = "Ресурсы"; G.res.wood+=2; G.res.stone+=2; }
+        else if(s === 3) { drawCard('neg', "Болезнь", "-2 HP", () => { G.pawn.hp-=2; }); }
+        else if(s === 4) { text = "Тишина"; }
+        else if(s === 5) { text = "Обмен"; G.res.wood+=5; G.res.meat=Math.max(0, G.res.meat-2); }
+        else if(s === 6) { drawCard('pos', "Клад", "+3 меди", () => { G.res.copper+=3; }); }
+        else { drawCard('neg', "Воры", "-3 дерева", () => { G.res.wood=Math.max(0, G.res.wood-3); }); }
+        
+        document.getElementById('wheel-text').innerText = text;
+        updateUI();
+        
+        if(s === 0 || s === 2 || s === 4 || s === 5) {
+            setTimeout(() => { 
+                document.getElementById('wheel-modal').style.display = 'none';
+                moveEnemies();
+            }, 1500);
+        }
     }, 3000);
 }
 
-function endGame(reason) {
-    alert(`Игра окончена: ${reason}`);
-    allLogs.push(currentLog);
-    localStorage.setItem('logs', JSON.stringify(allLogs));
+function drawCard(type, title, text, effect) {
+    document.getElementById('wheel-modal').style.display = 'none';
+    document.getElementById('card-title').innerText = type === 'pos' ? "Дары Природы" : "Суровая Земля";
+    let vis = document.getElementById('card-visual');
+    vis.style.background = type === 'pos' ? '#27ae60' : '#c0392b';
+    vis.innerText = title;
+    document.getElementById('card-text').innerText = text;
+    effect();
+    document.getElementById('card-modal').style.display = 'flex';
+}
+
+function closeCard() {
+    document.getElementById('card-modal').style.display = 'none';
+    moveEnemies();
+}
+
+// ================== ВРАГИ И БОЙ ==================
+function spawnEnemy() {
+    let side = Math.floor(Math.random()*4);
+    let x = side===0||side===2 ? Math.floor(Math.random()*15) : (side===1?14:0);
+    let y = side===0 ? 0 : (side===2 ? 14 : Math.floor(Math.random()*15));
+    G.enemies.push({ x: x, y: y, hp: 6 });
+}
+
+function moveEnemies() {
+    for(let e of G.enemies) {
+        // Простой шаг к игроку
+        let dx = Math.sign(G.pawn.x - e.x);
+        let dy = Math.sign(G.pawn.y - e.y);
+        
+        let nx = e.x + (dx !== 0 ? dx : 0);
+        let ny = e.y + (dy === 0 ? dy : 0);
+        
+        if(G.map[ny][nx].build === 'wall_wood') {
+            G.map[ny][nx].build = null; // Сломал стену
+            alert("Враг сломал деревянную стену!");
+        } else if (G.map[ny][nx].build === 'wall_stone') {
+            // Ищет обход (пропускает шаг)
+        } else if (G.map[ny][nx].build === 'trap') {
+            G.map[ny][nx].build = null;
+            e.hp -= 3; // Ловушка
+            alert("Враг наступил на ловушку! -3 HP");
+        } else {
+            e.x = nx; e.y = ny;
+        }
+        
+        if(e.x === G.pawn.x && e.y === G.pawn.y) {
+            startCombat(e); return;
+        }
+    }
+    renderMap();
+}
+
+function startCombat(enemy) {
+    G.inCombat = true;
+    G.activeEnemy = enemy;
+    document.getElementById('c-hp').innerText = enemy.hp;
+    document.getElementById('c-php').innerText = G.pawn.hp;
+    document.getElementById('c-log').innerHTML = "Враг атакует!<br>";
+    document.getElementById('combat-modal').style.display = 'flex';
+}
+
+function combatAttack() {
+    let pRoll = Math.floor(Math.random()*6) + G.pawn.str;
+    let eRoll = Math.floor(Math.random()*6) + 2;
+    
+    // Учет оружия
+    let dmg = 2;
+    if(G.pawn.weapon === 'Копье') pRoll += 1;
+    if(G.pawn.weapon === 'Топор') dmg += 1;
+    
+    let log = document.getElementById('c-log');
+    if(pRoll >= eRoll) {
+        G.activeEnemy.hp -= dmg;
+        log.innerHTML += `Вы бьете (${pRoll} vs ${eRoll}). -${dmg} HP врагу.<br>`;
+    } else {
+        G.pawn.hp -= 2;
+        log.innerHTML += `Враг бьет (${eRoll} vs ${pRoll}). -2 HP вам.<br>`;
+    }
+    
+    document.getElementById('c-hp').innerText = Math.max(0, G.activeEnemy.hp);
+    document.getElementById('c-php').innerText = Math.max(0, G.pawn.hp);
+    updateUI();
+    
+    if(G.activeEnemy.hp <= 0) {
+        log.innerHTML += "Враг мертв!<br>";
+        G.enemies = G.enemies.filter(e => e !== G.activeEnemy);
+        setTimeout(() => { document.getElementById('combat-modal').style.display = 'none'; G.inCombat = false; renderMap(); }, 1000);
+    } else if(G.pawn.hp <= 0) {
+        gameOver("Вы погибли в бою.");
+    }
+}
+
+function combatFlee() {
+    G.pawn.hp -= 3;
+    document.getElementById('combat-modal').style.display = 'none';
+    G.inCombat = false;
+    alert("Вы сбежали, но получили удар в спину (-3 HP).");
+    if(G.pawn.hp <= 0) gameOver("Вы умерли при отступлении.");
+}
+
+function gameOver(reason) {
+    alert("ИГРА ОКОНЧЕНА: " + reason);
     location.reload();
 }
 </script>
