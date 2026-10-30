@@ -2,95 +2,101 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Лукоморье: Наследие (Тест)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Лукоморье: Наследие</title>
     <style>
-        body { font-family: monospace; background: #2c3e50; color: #ecf0f1; padding: 10px; margin: 0; }
+        body { font-family: monospace; background: #2c3e50; color: #ecf0f1; padding: 5px; margin: 0; touch-action: manipulation; }
         .panel { background: #34495e; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
-        button { background: #e67e22; color: white; border: none; padding: 10px; margin: 2px; border-radius: 5px; font-family: monospace; cursor: pointer; }
+        button { background: #e67e22; color: white; border: none; padding: 12px; margin: 2px; border-radius: 5px; font-family: monospace; cursor: pointer; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 5px;}
         button:disabled { background: #7f8c8d; cursor: not-allowed; }
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 10px; }
-        .cell { background: #27ae60; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 1px solid #000; cursor: pointer; }
-        .cell.mountain { background: #7f8c8d; }
-        .cell.water { background: #2980b9; }
-        .cell.base { background: #8e44ad; }
-        .cell.player { outline: 3px solid yellow; font-weight: bold; }
-        .log-box { height: 150px; overflow-y: scroll; background: #000; padding: 5px; font-size: 12px; border: 1px solid #555; margin-top: 10px; }
-        .stats { display: flex; flex-wrap: wrap; gap: 10px; font-size: 14px; }
-        .combat-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; z-index: 100; }
-        .combat-modal button { width: 100%; padding: 15px; font-size: 16px; margin: 5px 0; }
-        .log-list { font-size: 10px; color: #aaa; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 10px; box-sizing: border-box; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: monospace; }
+        
+        .grid-mock { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; margin-bottom: 10px; }
+        .cell-mock { background: #27ae60; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px solid #000; border-radius: 4px; }
+        .cell-mock.mountain { background: #7f8c8d; }
+        .cell-mock.water { background: #2980b9; }
+        .cell-mock.base { background: #8e44ad; }
+
+        .build-panel { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 10px; }
+        .build-btn { width: 60px; height: 60px; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #d35400; border-radius: 8px; border: 2px solid #a04000; }
+
+        .spinner-mock { width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#e74c3c 0deg 90deg, #3498db 90deg 180deg, #2ecc71 180deg 270deg, #f1c40f 270deg 360deg); margin: 0 auto; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; position: relative; }
+        .spinner-arrow { position: absolute; top: -10px; font-size: 24px; color: #fff; text-shadow: 0 0 5px #000;}
+
+        .combat-mock { display: flex; justify-content: space-around; align-items: center; background: #1a252f; padding: 15px; border-radius: 8px; border: 2px solid #c0392b; }
+        .fighter { text-align: center; }
+        .fighter-icon { font-size: 50px; }
+        .hp-bar { background: #e74c3c; height: 10px; width: 80px; border-radius: 5px; margin-top: 5px; }
+        .hp-bar-inner { background: #2ecc71; height: 100%; border-radius: 5px; width: 100%; }
+
+        .upload-status { font-size: 12px; margin-top: 10px; color: #f1c40f; word-break: break-all;}
     </style>
 </head>
 <body>
 
 <div class="panel" id="start-screen">
     <h2>Лукоморье: Наследие</h2>
-    <p>Прототип (v3.0). Управление на телефоне.</p>
-    <button onclick="initGame()">Начать новую партию</button>
+    <p>Прототип (v3.2).</p>
+    <button onclick="initGame()">Начать новую партию (Игра)</button>
+    <button onclick="showMockup()" style="background:#8e44ad;">Тест визуала (Макет)</button>
+    <button onclick="requestUpload()" style="background:#2980b9;">Загрузить картинки в репозиторий</button>
     <button onclick="downloadLogs()">Скачать все логи (JSON)</button>
     <p id="log-count"></p>
 </div>
 
-<div id="game-screen" style="display:none;">
+<div id="upload-screen" style="display:none;">
     <div class="panel">
-        <div class="stats">
-            <span>Раунд: <b id="ui-round">1</b></span>
-            <span>Сезон: <b id="ui-season">Весна</b></span>
-            <span>Действия: <b id="ui-ap">3</b></span>
-            <span>HP: <b id="ui-hp">10</b>/<span id="ui-maxhp">10</span></span>
-            <span>Угроза: <b id="ui-threat">0</b></span>
+        <h3>Загрузка файлов</h3>
+        <div id="token-section">
+            <p style="font-size:12px;">Введите ваш GitHub Token (Personal Access Token):</p>
+            <input type="password" id="token-input" placeholder="ghp_...">
+            <button onclick="saveToken()" style="background:#27ae60;">Сохранить токен</button>
         </div>
-        <div class="stats" style="margin-top:5px; font-size:12px;">
-            <span>🌲 <b id="ui-wood">0</b></span>
-            <span>🪨 <b id="ui-stone">0</b></span>
-            <span>🥩 <b id="ui-meat">0</b></span>
-            <span>🐻 <b id="ui-hide">0</b></span>
-            <span>⛏️ <b id="ui-copper">0</b></span>
+
+        <div id="upload-section" style="display:none;">
+            <p style="font-size:12px;">Выберите картинки (можно несколько):</p>
+            <input type="file" id="file-input" multiple accept="image/*" style="margin-bottom:10px;">
+            <button onclick="uploadFiles()" style="background:#d35400;">Загрузить в GitHub</button>
+            <div class="upload-status" id="upload-status"></div>
         </div>
+        <button onclick="backToMenu()" style="background:#c0392b; margin-top:20px;">Назад в меню</button>
     </div>
-
-    <div class="grid" id="game-grid"></div>
-
-    <div class="panel" id="actions-panel">
-        <button onclick="doAction('gather')" id="btn-gather">Добыть (1 AP)</button>
-        <button onclick="doAction('craft_spear')" id="btn-craft_spear">Копье (1⛏️1🌲)</button>
-        <button onclick="doAction('craft_bow')" id="btn-craft_bow">Лук (2🌲1🐻)</button>
-        <button onclick="doAction('rest')" id="btn-rest">Отдых (1 AP)</button>
-        <button onclick="nextRound()" style="background:#c0392b; width:100%;">Следующий раунд</button>
-    </div>
-    
-    <div class="log-box" id="log-box"></div>
 </div>
 
-<div class="combat-modal" id="combat-modal">
-    <h2 style="color:#e74c3c;">БОЙ!</h2>
-    <div id="combat-log" style="height:100px; overflow-y:scroll; width:100%; border:1px solid #555; margin-bottom:10px; padding:5px; font-size:12px;"></div>
-    <div style="margin-bottom:10px;">
-        <span>Враг: <b id="enemy-name"></b></span> | 
-        <span>HP: <b id="enemy-hp"></b></span>
+<div id="mockup-screen" style="display:none;">
+    <div class="panel">
+        <h3 style="margin:0 0 10px 0; text-align:center; color:#f1c40f;">Макет интерфейса</h3>
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px;">
+            <span>❤️ HP: 10/10</span>
+            <span>⚡ Действия: 3</span>
+            <span>🌲 0 🪨 0 🥩 2 ⛏️ 0</span>
+        </div>
+        <div class="grid-mock" id="mock-grid"></div>
+        <div style="margin-bottom: 15px;">
+            <div class="spinner-mock"><div class="spinner-arrow">▼</div></div>
+            <p style="text-align:center; font-size:12px; margin-top:5px;">Колесо событий (визуал)</p>
+        </div>
+        <p style="text-align:center; font-size:12px; margin:0;">Постройки:</p>
+        <div class="build-panel">
+            <div class="build-btn" onclick="alert('Стена')"><span>🪵</span>Стена</div>
+            <div class="build-btn" onclick="alert('Ловушка')"><span>🕳️</span>Ловушка</div>
+            <div class="build-btn" onclick="alert('Поле')"><span>🌾</span>Поле</div>
+        </div>
+        <div class="combat-mock">
+            <div class="fighter"><div class="fighter-icon">🧑‍🌾🛡️</div><div>Вы</div><div class="hp-bar"><div class="hp-bar-inner" style="width: 70%;"></div></div></div>
+            <div style="font-size:24px; font-weight:bold;">VS</div>
+            <div class="fighter"><div class="fighter-icon">🐺</div><div>Волк</div><div class="hp-bar"><div class="hp-bar-inner" style="width: 50%; background:#e74c3c;"></div></div></div>
+        </div>
+        <button onclick="backToMenu()" style="width:100%; margin-top:15px; background:#c0392b;">Назад в меню</button>
     </div>
-    <button onclick="combatTurn('attack')">Атаковать (Д6 + Сила)</button>
-    <button onclick="combatTurn('flee')" style="background:#c0392b;">Отступить (Удар в спину!)</button>
 </div>
 
 <script>
-// ================== БАЗА ДАННЫХ И ЛОГИ ==================
 let allMatchLogs = JSON.parse(localStorage.getItem('lukomorye_logs') || '[]');
-let currentMatchLog = { actions: [], combat: [], result: "unknown" };
-let state = {};
-
 function updateLogCount() {
-    document.getElementById('log-count').innerText = `Сохранено партий: ${allMatchLogs.length}`;
+    document.getElementById('log-count').innerText = 'Сохранено партий: ' + allMatchLogs.length;
 }
 updateLogCount();
-
-function saveMatchLog() {
-    allMatchLogs.push(currentMatchLog);
-    localStorage.setItem('lukomorye_logs', JSON.stringify(allMatchLogs));
-    updateLogCount();
-}
-
 function downloadLogs() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allMatchLogs, null, 2));
     const dlAnchorElem = document.createElement('a');
@@ -99,270 +105,118 @@ function downloadLogs() {
     dlAnchorElem.click();
 }
 
-function log(msg, isCombat = false) {
-    const box = document.getElementById(isCombat ? 'combat-log' : 'log-box');
-    if (box) {
-        box.innerHTML += msg + '<br>';
-        box.scrollTop = box.scrollHeight;
-    }
-    if (isCombat) currentMatchLog.combat.push(msg);
-    else currentMatchLog.actions.push(`[R${state.round}] ${msg}`);
-}
-
-// ================== ИНИЦИАЛИЗАЦИЯ ==================
-function initGame() {
-    state = {
-        round: 1, season: "Весна", ap: 3, maxHp: 10, hp: 10,
-        res: { wood: 0, stone: 0, meat: 2, hide: 0, copper: 0 },
-        weapon: null, shield: false, armor: false,
-        playerPos: { x: 2, y: 2 },
-        grid: generateGrid()
-    };
-    currentMatchLog = { actions: [], combat: [], result: "in_progress" };
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    document.getElementById('log-box').innerHTML = "Партия начата!<br>";
-    renderGrid();
-    updateUI();
-    log("Игра началась. У вас 3 действия.");
-}
-
-function generateGrid() {
-    let g = [];
-    for (let y = 0; y < 5; y++) {
-        let row = [];
-        for (let x = 0; x < 5; x++) {
-            let type = "forest";
-            if (x === 2 && y === 2) type = "base";
-            else if (Math.random() < 0.3) type = "mountain";
-            else if (Math.random() < 0.2) type = "water";
-            row.push({ type: type, x, y });
+function requestUpload() {
+    let pin = prompt("Введите PIN-код для доступа:");
+    if (pin === "1337") {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('upload-screen').style.display = 'block';
+        const savedToken = localStorage.getItem('gh_token');
+        if (savedToken) {
+            document.getElementById('token-section').style.display = 'none';
+            document.getElementById('upload-section').style.display = 'block';
+        } else {
+            document.getElementById('token-section').style.display = 'block';
+            document.getElementById('upload-section').style.display = 'none';
         }
-        g.push(row);
+    } else if (pin !== null) {
+        alert("Неверный PIN-код!");
     }
-    return g;
 }
 
-function renderGrid() {
-    const gridDiv = document.getElementById('game-grid');
-    gridDiv.innerHTML = '';
-    for (let y = 0; y < 5; y++) {
-        for (let x = 0; x < 5; x++) {
-            const cell = state.grid[y][x];
-            const d = document.createElement('div');
-            d.className = `cell ${cell.type}`;
-            if (state.playerPos.x === x && state.playerPos.y === y) {
-                d.classList.add('player');
-                d.innerText = "🧑‍🌾";
-            } else {
-                d.innerText = cell.type === 'forest' ? '🌲' : cell.type === 'mountain' ? '⛰️' : cell.type === 'water' ? '🌊' : '🏕️';
+function saveToken() {
+    const token = document.getElementById('token-input').value.trim();
+    if (token.startsWith('ghp_')) {
+        localStorage.setItem('gh_token', token);
+        document.getElementById('token-section').style.display = 'none';
+        document.getElementById('upload-section').style.display = 'block';
+    } else {
+        alert("Токен должен начинаться с 'ghp_'");
+    }
+}
+
+async function uploadFiles() {
+    const fileInput = document.getElementById('file-input');
+    const statusDiv = document.getElementById('upload-status');
+    const token = localStorage.getItem('gh_token');
+    
+    if (!fileInput.files.length) {
+        alert("Выберите хотя бы один файл!");
+        return;
+    }
+
+    const owner = "dirtdiggercreator-lab";
+    const repo = "lukomorye-game";
+    const branch = "master";
+    statusDiv.innerHTML = "Начинаю загрузку...";
+
+    for (let i = 0; i < fileInput.files.length; i++) {
+        const file = fileInput.files[i];
+        statusDiv.innerHTML += '<br>Загрузка: ' + file.name + '...';
+        const reader = new FileReader();
+        
+        reader.onload = async function(e) {
+            const base64Data = e.target.result.split(',')[1];
+            const url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + file.name;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'token ' + token,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Upload ' + file.name + ' via web interface',
+                        content: base64Data,
+                        branch: branch
+                    })
+                });
+
+                if (response.ok) {
+                    statusDiv.innerHTML += ' ✅ Успешно!';
+                } else {
+                    const err = await response.json();
+                    statusDiv.innerHTML += ' ❌ Ошибка: ' + err.message;
+                }
+            } catch (error) {
+                statusDiv.innerHTML += ' ❌ Сеть: ' + error.message;
             }
-            d.onclick = () => movePlayer(x, y);
-            gridDiv.appendChild(d);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function showMockup() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('mockup-screen').style.display = 'block';
+    generateMockGrid();
+}
+function generateMockGrid() {
+    const grid = document.getElementById('mock-grid');
+    grid.innerHTML = '';
+    for (let y = 0; y < 6; y++) {
+        for (let x = 0; x < 6; x++) {
+            let type = 'forest'; let icon = '🌲';
+            if (x === 2 && y === 2) { type = 'base'; icon = '🏕️'; }
+            else if ((x+y)%3 === 0) { type = 'mountain'; icon = '⛰️'; }
+            else if ((x*y)%4 === 0) { type = 'water'; icon = '🌊'; }
+            const d = document.createElement('div');
+            d.className = 'cell-mock ' + type;
+            d.innerText = icon;
+            grid.appendChild(d);
         }
     }
 }
 
-function movePlayer(x, y) {
-    if (state.ap <= 0) return log("Нет действий для движения!");
-    state.playerPos = { x, y };
-    state.ap--;
-    log(`Пешка переместилась на [${x},${y}].`);
-    renderGrid();
-    updateUI();
-}
-
-// ================== ДЕЙСТВИЯ ==================
-function doAction(type) {
-    if (state.ap <= 0) return log("Нет действий! Нажмите 'Следующий раунд'.");
-    const p = state.playerPos;
-    const cellType = state.grid[p.y][p.x].type;
-
-    if (type === 'gather') {
-        state.ap--;
-        let res = rollD6() + 2; // Упрощенно +2 к ремеслу
-        if (cellType === 'forest') { state.res.wood += Math.floor(res/2); log(`Собрано дерева: ${Math.floor(res/2)}`); }
-        else if (cellType === 'mountain') { state.res.stone += Math.floor(res/2); log(`Собрано камня: ${Math.floor(res/2)}`); }
-        else if (cellType === 'water') { state.res.meat += Math.floor(res/2); log(`Поймана рыба: ${Math.floor(res/2)}`); }
-        else { log("Здесь нечего собирать."); }
-    } 
-    else if (type === 'craft_spear') {
-        if (state.res.copper >= 1 && state.res.wood >= 1) {
-            state.res.copper--; state.res.wood--; state.ap--;
-            state.weapon = "spear";
-            log("Скрафчено Копье (+1 к атаке, бьет первым).");
-        } else log("Не хватает ресурсов!");
-    }
-    else if (type === 'craft_bow') {
-        if (state.res.wood >= 2 && state.res.hide >= 1) {
-            state.res.wood -= 2; state.res.hide--; state.ap--;
-            state.weapon = "bow";
-            log("Скрафчен Лук (Атака в 1-м раунде без ответа).");
-        } else log("Не хватает ресурсов!");
-    }
-    else if (type === 'rest') {
-        state.ap--;
-        state.hp = Math.min(state.maxHp, state.hp + 2);
-        log("Вы отдохнули (+2 HP).");
-    }
-    updateUI();
-}
-
-// ================== СЛЕДУЮЩИЙ РАУНД ==================
-function nextRound() {
-    // Еда
-    if (state.res.meat >= 1) {
-        state.res.meat--;
-        log("Съедена 1 еда.");
-    } else {
-        state.hp -= 2;
-        log("ГОЛОД! Вы потеряли 2 HP.");
-    }
-
-    // Проверка смерти
-    if (state.hp <= 0) return endGame("Смерть от голода");
-
-    // Смена сезона
-    if (state.round % 4 === 0) {
-        const seasons = ["Весна", "Лето", "Осень", "Зима"];
-        let nextIdx = (seasons.indexOf(state.season) + 1) % 4;
-        state.season = seasons[nextIdx];
-        log(`Сезон сменился на: ${state.season}`);
-        if (state.season === "Зима" && !state.armor) { // Условно, шкуры = одежда
-            state.hp -= 2;
-            log("ЛЕДЯНОЙ ВЕТЕР! Нет теплой одежды (-2 HP).");
-        }
-    }
-
-    // Рейд (каждый четный)
-    state.round++;
-    if (state.round % 2 === 0) {
-        let threat = 1 + Math.floor(state.round / 2) + 1; // 1 пешка
-        log(`УГРОЗА ${threat}. Начинается рейд!`);
-        startCombat(threat);
-    } else {
-        state.ap = 3;
-        updateUI();
-    }
-}
-
-// ================== БОЙ ==================
-let currentEnemy = null;
-
-function startCombat(threatLevel) {
-    let enemy = { name: "Волк", hp: 6, atk: 2, def: 4, agi: 4 };
-    if (threatLevel >= 4) enemy = { name: "Медведь", hp: 12, atk: 3, def: 4, agi: 2 };
-    if (threatLevel >= 6) enemy = { name: "Костяной страж", hp: 10, atk: 2, def: 6, agi: 1 };
-
-    currentEnemy = enemy;
-    document.getElementById('enemy-name').innerText = enemy.name;
-    document.getElementById('enemy-hp').innerText = enemy.hp;
-    document.getElementById('combat-log').innerHTML = `<b>Появился ${enemy.name}!</b><br>`;
-    document.getElementById('combat-modal').style.display = 'flex';
-    
-    // Инициатива
-    let pInit = rollD6() + 3; // Ловкость 3
-    let eInit = rollD6() + enemy.agi;
-    if (pInit >= eInit) {
-        log("Вы ходите первым!", true);
-    } else {
-        log("Враг ходит первым!", true);
-        enemyAttack();
-    }
-}
-
-function enemyAttack() {
-    if (currentEnemy.hp <= 0 || state.hp <= 0) return;
-    let roll = rollD6() + currentEnemy.atk;
-    if (roll >= 4) {
-        let dmg = 2;
-        if (roll === 6 + currentEnemy.atk) dmg *= 2; // Крит
-        state.hp -= dmg;
-        log(`Враг попал! Урон: ${dmg}.`, true);
-        updateUI();
-    } else {
-        log("Враг промахнулся.", true);
-    }
-}
-
-function combatTurn(action) {
-    if (action === 'flee') {
-        log("Вы отступаете. Удар в спину!", true);
-        let dmg = 4;
-        state.hp -= dmg;
-        log(`Вы получили ${dmg} урона и сбежали.`, true);
-        endCombat("fled");
-        return;
-    }
-
-    // Атака игрока
-    let roll = rollD6() + 3; // Сила 3
-    let dmg = 1;
-    if (state.weapon === 'spear') roll += 1;
-    if (state.weapon === 'bow') { log("Вы стреляете из лука!", true); dmg = 2; }
-    
-    if (roll >= currentEnemy.def) {
-        if (roll === 6 + 3 + (state.weapon === 'spear' ? 1 : 0)) dmg *= 2;
-        currentEnemy.hp -= dmg;
-        log(`Вы попали! Урон: ${dmg}.`, true);
-    } else {
-        log("Вы промахнулись.", true);
-    }
-    document.getElementById('enemy-hp').innerText = Math.max(0, currentEnemy.hp);
-
-    if (currentEnemy.hp <= 0) {
-        log("ВРАГ ПОВЕРЖЕН!", true);
-        state.res.meat += 2; state.res.hide += 2;
-        endCombat("win");
-        return;
-    }
-
-    // Ответ врага
-    if (state.weapon !== 'bow') {
-        enemyAttack();
-    } else {
-        log("Враг не может достать вас в 1-м раунде!", true);
-        state.weapon = "spear"; // После выстрела лук становится бесполезен
-    }
-
-    if (state.hp <= 0) {
-        endCombat("death");
-    }
-}
-
-function endCombat(result) {
-    document.getElementById('combat-modal').style.display = 'none';
-    if (result === "death") {
-        endGame("Смерть в бою");
-    } else {
-        state.ap = 3;
-        updateUI();
-    }
-}
-
-function endGame(reason) {
-    log(`<b>ИГРА ОКОНЧЕНА. Причина: ${reason}</b>`);
-    currentMatchLog.result = reason;
-    saveMatchLog();
-    document.getElementById('game-screen').style.display = 'none';
+function backToMenu() {
+    document.getElementById('mockup-screen').style.display = 'none';
+    document.getElementById('upload-screen').style.display = 'none';
     document.getElementById('start-screen').style.display = 'block';
-    updateLogCount();
 }
 
-// ================== УТИЛИТЫ ==================
-function rollD6() { return Math.floor(Math.random() * 6) + 1; }
-
-function updateUI() {
-    document.getElementById('ui-round').innerText = state.round;
-    document.getElementById('ui-season').innerText = state.season;
-    document.getElementById('ui-ap').innerText = state.ap;
-    document.getElementById('ui-hp').innerText = state.hp;
-    document.getElementById('ui-maxhp').innerText = state.maxHp;
-    document.getElementById('ui-wood').innerText = state.res.wood;
-    document.getElementById('ui-stone').innerText = state.res.stone;
-    document.getElementById('ui-meat').innerText = state.res.meat;
-    document.getElementById('ui-hide').innerText = state.res.hide;
-    document.getElementById('ui-copper').innerText = state.res.copper;
+function initGame() {
+    alert("Игровая логика в разработке. Сейчас доступен Тест Визуала и Загрузка картинок.");
 }
 </script>
 </body>
