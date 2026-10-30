@@ -9,26 +9,10 @@
         .panel { background: #34495e; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
         button { background: #e67e22; color: white; border: none; padding: 12px; margin: 2px; border-radius: 5px; font-family: monospace; cursor: pointer; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 5px;}
         button:disabled { background: #7f8c8d; cursor: not-allowed; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 10px; box-sizing: border-box; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: monospace; }
+        input[type="text"], input[type="password"], select { width: 100%; padding: 10px; box-sizing: border-box; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: monospace; background: #fff; color: #000; }
         
-        .grid-mock { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; margin-bottom: 10px; }
-        .cell-mock { background: #27ae60; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px solid #000; border-radius: 4px; }
-        .cell-mock.mountain { background: #7f8c8d; }
-        .cell-mock.water { background: #2980b9; }
-        .cell-mock.base { background: #8e44ad; }
-
-        .build-panel { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 10px; }
-        .build-btn { width: 60px; height: 60px; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #d35400; border-radius: 8px; border: 2px solid #a04000; }
-
-        .spinner-mock { width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#e74c3c 0deg 90deg, #3498db 90deg 180deg, #2ecc71 180deg 270deg, #f1c40f 270deg 360deg); margin: 0 auto; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; position: relative; }
-        .spinner-arrow { position: absolute; top: -10px; font-size: 24px; color: #fff; text-shadow: 0 0 5px #000;}
-
-        .combat-mock { display: flex; justify-content: space-around; align-items: center; background: #1a252f; padding: 15px; border-radius: 8px; border: 2px solid #c0392b; }
-        .fighter { text-align: center; }
-        .fighter-icon { font-size: 50px; }
-        .hp-bar { background: #e74c3c; height: 10px; width: 80px; border-radius: 5px; margin-top: 5px; }
-        .hp-bar-inner { background: #2ecc71; height: 100%; border-radius: 5px; width: 100%; }
-
+        .file-row { background: #2c3e50; padding: 10px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #555; }
+        .file-name { font-size: 10px; color: #aaa; margin-bottom: 5px; word-break: break-all; }
         .upload-status { font-size: 12px; margin-top: 10px; color: #f1c40f; word-break: break-all;}
     </style>
 </head>
@@ -36,9 +20,8 @@
 
 <div class="panel" id="start-screen">
     <h2>Лукоморье: Наследие</h2>
-    <p>Прототип (v3.3).</p>
-    <button onclick="initGame()">Начать новую партию (Игра)</button>
-    <button onclick="showMockup()" style="background:#8e44ad;">Тест визуала (Макет)</button>
+    <p>Прототип (v3.4).</p>
+    <button onclick="alert('Игра в разработке')">Начать новую партию (Игра)</button>
     <button onclick="requestUpload()" style="background:#2980b9;">Загрузить картинки в репозиторий</button>
     <button onclick="downloadLogs()">Скачать все логи (JSON)</button>
     <p id="log-count"></p>
@@ -48,55 +31,27 @@
     <div class="panel">
         <h3>Загрузка файлов</h3>
         <div id="token-section">
-            <p style="font-size:12px;">Введите ваш GitHub Token (Personal Access Token):</p>
+            <p style="font-size:12px;">Введите ваш GitHub Token:</p>
             <input type="password" id="token-input" placeholder="ghp_...">
             <button onclick="saveToken()" style="background:#27ae60;">Сохранить токен</button>
         </div>
 
         <div id="upload-section" style="display:none;">
-            <p style="font-size:12px;">Выберите картинки (можно несколько). Они будут автоматически сжаты:</p>
-            <input type="file" id="file-input" multiple accept="image/*" style="margin-bottom:10px;">
-            <button onclick="uploadFiles()" style="background:#d35400;">Загрузить в GitHub</button>
+            <p style="font-size:12px;">Выберите картинки (можно несколько):</p>
+            <input type="file" id="file-input" multiple accept="image/*" onchange="handleFileSelect(event)">
+            
+            <div id="file-list" style="margin-top: 10px;"></div>
+            
+            <button onclick="uploadFiles()" style="background:#d35400;" id="btn-upload" disabled>Загрузить в GitHub</button>
             <div class="upload-status" id="upload-status"></div>
         </div>
         <button onclick="backToMenu()" style="background:#c0392b; margin-top:20px;">Назад в меню</button>
     </div>
 </div>
 
-<div id="mockup-screen" style="display:none;">
-    <div class="panel">
-        <h3 style="margin:0 0 10px 0; text-align:center; color:#f1c40f;">Макет интерфейса</h3>
-        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px;">
-            <span>❤️ HP: 10/10</span>
-            <span>⚡ Действия: 3</span>
-            <span>🌲 0 🪨 0 🥩 2 ⛏️ 0</span>
-        </div>
-        <div class="grid-mock" id="mock-grid"></div>
-        <div style="margin-bottom: 15px;">
-            <div class="spinner-mock"><div class="spinner-arrow">▼</div></div>
-            <p style="text-align:center; font-size:12px; margin-top:5px;">Колесо событий (визуал)</p>
-        </div>
-        <p style="text-align:center; font-size:12px; margin:0;">Постройки:</p>
-        <div class="build-panel">
-            <div class="build-btn" onclick="alert('Стена')"><span>🪵</span>Стена</div>
-            <div class="build-btn" onclick="alert('Ловушка')"><span>🕳️</span>Ловушка</div>
-            <div class="build-btn" onclick="alert('Поле')"><span>🌾</span>Поле</div>
-        </div>
-        <div class="combat-mock">
-            <div class="fighter"><div class="fighter-icon">🧑‍🌾🛡️</div><div>Вы</div><div class="hp-bar"><div class="hp-bar-inner" style="width: 70%;"></div></div></div>
-            <div style="font-size:24px; font-weight:bold;">VS</div>
-            <div class="fighter"><div class="fighter-icon">🐺</div><div>Волк</div><div class="hp-bar"><div class="hp-bar-inner" style="width: 50%; background:#e74c3c;"></div></div></div>
-        </div>
-        <button onclick="backToMenu()" style="width:100%; margin-top:15px; background:#c0392b;">Назад в меню</button>
-    </div>
-</div>
-
 <script>
 let allMatchLogs = JSON.parse(localStorage.getItem('lukomorye_logs') || '[]');
-function updateLogCount() {
-    document.getElementById('log-count').innerText = 'Сохранено партий: ' + allMatchLogs.length;
-}
-updateLogCount();
+document.getElementById('log-count').innerText = 'Сохранено партий: ' + allMatchLogs.length;
 function downloadLogs() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allMatchLogs, null, 2));
     const dlAnchorElem = document.createElement('a');
@@ -106,7 +61,7 @@ function downloadLogs() {
 }
 
 function requestUpload() {
-    let pin = prompt("Введите PIN-код для доступа:");
+    let pin = prompt("Введите PIN-код:");
     if (pin === "1337") {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('upload-screen').style.display = 'block';
@@ -116,11 +71,8 @@ function requestUpload() {
             document.getElementById('upload-section').style.display = 'block';
         } else {
             document.getElementById('token-section').style.display = 'block';
-            document.getElementById('upload-section').style.display = 'none';
         }
-    } else if (pin !== null) {
-        alert("Неверный PIN-код!");
-    }
+    } else if (pin !== null) alert("Неверный PIN!");
 }
 
 function saveToken() {
@@ -129,12 +81,48 @@ function saveToken() {
         localStorage.setItem('gh_token', token);
         document.getElementById('token-section').style.display = 'none';
         document.getElementById('upload-section').style.display = 'block';
-    } else {
-        alert("Токен должен начинаться с 'ghp_'");
-    }
+    } else alert("Токен должен начинаться с 'ghp_'");
 }
 
-// ====== НОВАЯ ФУНКЦИЯ СЖАТИЯ КАРТИНОК ======
+let selectedFiles = [];
+function handleFileSelect(event) {
+    selectedFiles = Array.from(event.target.files);
+    const listDiv = document.getElementById('file-list');
+    listDiv.innerHTML = '';
+    document.getElementById('btn-upload').disabled = false;
+
+    const predefinedNames = [
+        { value: 'forest.jpg', label: 'Лес (forest.jpg)' },
+        { value: 'mountain.jpg', label: 'Горы (mountain.jpg)' },
+        { value: 'water.jpg', label: 'Вода (water.jpg)' },
+        { value: 'base.jpg', label: 'База (base.jpg)' },
+        { value: 'wolf.jpg', label: 'Волк (wolf.jpg)' },
+        { value: 'bear.jpg', label: 'Медведь (bear.jpg)' },
+        { value: 'robber.jpg', label: 'Разбойник (robber.jpg)' }
+    ];
+
+    selectedFiles.forEach((file, index) => {
+        const row = document.createElement('div');
+        row.className = 'file-row';
+        row.innerHTML = `
+            <div class="file-name">${file.name}</div>
+            <select id="name-select-${index}" style="margin-bottom:5px;">
+                <option value="">-- Выберите имя --</option>
+                ${predefinedNames.map(n => `<option value="${n.value}">${n.label}</option>`).join('')}
+                <option value="custom">-- Свое имя --</option>
+            </select>
+            <input type="text" id="name-input-${index}" placeholder="Свое имя (например, hero.jpg)" style="display:none; margin-bottom:0;">
+        `;
+        listDiv.appendChild(row);
+        
+        const select = document.getElementById(`name-select-${index}`);
+        const input = document.getElementById(`name-input-${index}`);
+        select.onchange = () => {
+            input.style.display = select.value === 'custom' ? 'block' : 'none';
+        };
+    });
+}
+
 function compressImage(file) {
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -142,18 +130,15 @@ function compressImage(file) {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const maxWidth = 1024; // Максимальная ширина 1024px (хватит для телефона)
-                let width = img.width;
-                let height = img.height;
+                const maxWidth = 1024;
+                let width = img.width, height = img.height;
                 if (width > maxWidth) {
                     height = Math.round((maxWidth / width) * height);
                     width = maxWidth;
                 }
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = width; canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                // Сжимаем в JPEG с качеством 0.75
                 canvas.toBlob((blob) => {
                     const fileReader = new FileReader();
                     fileReader.onloadend = () => resolve(fileReader.result.split(',')[1]);
@@ -167,88 +152,55 @@ function compressImage(file) {
 }
 
 async function uploadFiles() {
-    const fileInput = document.getElementById('file-input');
     const statusDiv = document.getElementById('upload-status');
     const token = localStorage.getItem('gh_token');
+    const btn = document.getElementById('btn-upload');
     
-    if (!fileInput.files.length) {
-        alert("Выберите хотя бы один файл!");
-        return;
-    }
+    if (!selectedFiles.length) return;
+    btn.disabled = true;
+    statusDiv.innerHTML = "Начинаю загрузку...";
 
     const owner = "dirtdiggercreator-lab";
     const repo = "lukomorye-game";
     const branch = "master";
-    statusDiv.innerHTML = "Начинаю сжатие и загрузку...";
 
-    for (let i = 0; i < fileInput.files.length; i++) {
-        const file = fileInput.files[i];
-        statusDiv.innerHTML += '<br>Обработка: ' + file.name + '...';
-        
-        // Сжимаем картинку перед загрузкой
-        const base64Data = await compressImage(file);
-        
-        // Меняем расширение на .jpg, так как мы сжимаем в JPEG
-        const fileName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
-        const url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + fileName;
+    for (let i = 0; i < selectedFiles.length; i++) {
+        let fileName = document.getElementById(`name-select-${i}`).value;
+        if (fileName === 'custom') {
+            fileName = document.getElementById(`name-input-${i}`).value.trim();
+        }
+        if (!fileName) {
+            statusDiv.innerHTML += `<br>❌ ${selectedFiles[i].name}: имя не выбрано, пропуск.`;
+            continue;
+        }
+        if (!fileName.endsWith('.jpg')) fileName += '.jpg';
+
+        statusDiv.innerHTML += `<br>Обработка: ${fileName}...`;
+        const base64Data = await compressImage(selectedFiles[i]);
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${fileName}`;
         
         try {
             const response = await fetch(url, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': 'token ' + token,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: 'Upload ' + fileName,
-                    content: base64Data,
-                    branch: branch
-                })
+                headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: `Upload ${fileName}`, content: base64Data, branch: branch })
             });
-
-            if (response.ok) {
-                statusDiv.innerHTML += ' ✅ Загружено!';
-            } else {
+            if (response.ok) statusDiv.innerHTML += ' ✅';
+            else {
                 const err = await response.json();
-                statusDiv.innerHTML += ' ❌ Ошибка: ' + err.message;
+                statusDiv.innerHTML += ` ❌ ${err.message}`;
             }
         } catch (error) {
-            statusDiv.innerHTML += ' ❌ Сеть: ' + error.message;
+            statusDiv.innerHTML += ` ❌ Сеть`;
         }
     }
-}
-
-function showMockup() {
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('mockup-screen').style.display = 'block';
-    generateMockGrid();
-}
-function generateMockGrid() {
-    const grid = document.getElementById('mock-grid');
-    grid.innerHTML = '';
-    for (let y = 0; y < 6; y++) {
-        for (let x = 0; x < 6; x++) {
-            let type = 'forest'; let icon = '🌲';
-            if (x === 2 && y === 2) { type = 'base'; icon = '🏕️'; }
-            else if ((x+y)%3 === 0) { type = 'mountain'; icon = '⛰️'; }
-            else if ((x*y)%4 === 0) { type = 'water'; icon = '🌊'; }
-            const d = document.createElement('div');
-            d.className = 'cell-mock ' + type;
-            d.innerText = icon;
-            grid.appendChild(d);
-        }
-    }
+    statusDiv.innerHTML += '<br><b>Готово!</b>';
+    btn.disabled = false;
 }
 
 function backToMenu() {
-    document.getElementById('mockup-screen').style.display = 'none';
     document.getElementById('upload-screen').style.display = 'none';
     document.getElementById('start-screen').style.display = 'block';
-}
-
-function initGame() {
-    alert("Игровая логика в разработке. Сейчас доступен Тест Визуала и Загрузка картинок.");
 }
 </script>
 </body>
