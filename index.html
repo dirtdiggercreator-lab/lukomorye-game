@@ -19,9 +19,9 @@
         .pawn-lvl-up { position: absolute; top: -5px; right: -5px; color: yellow; font-weight: bold; font-size: 14px; animation: pulse 1s infinite; }
 
         .game-area { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; overflow: auto; background: #000; display: block; }
-        .grid { display: grid; grid-template-columns: repeat(30, var(--size, 40px)); grid-template-rows: repeat(30, var(--size, 40px)); transform-origin: 0 0; margin: 0; transition: transform 0.2s; }
+        .grid { display: grid; grid-template-columns: repeat(30, 40px); grid-template-rows: repeat(30, 40px); transform-origin: 0 0; margin: 0; transition: transform 0.1s ease-out; }
         
-        .cell { width: var(--size, 40px); height: var(--size, 40px); border: 1px solid rgba(0,0,0,0.2); cursor: pointer; position: relative; display: flex; justify-content: center; align-items: center; font-size: var(--font, 24px); box-sizing: border-box; }
+        .cell { width: 40px; height: 40px; border: 1px solid rgba(0,0,0,0.2); cursor: pointer; position: relative; display: flex; justify-content: center; align-items: center; font-size: 24px; box-sizing: border-box; }
         .tile-forest { background-color: #27ae60; }
         .tile-mountain { background-color: #7f8c8d; }
         .tile-water { background-color: #2980b9; }
@@ -134,7 +134,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.6</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.7</p>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
@@ -397,7 +397,8 @@ function startGame() {
     document.getElementById('bottom-panel').style.display = 'flex';
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
-    addLog("Версия v38.6. Игра началась!");
+    initPinchZoom();
+    addLog("Версия v38.7. Игра началась!");
     
     setTimeout(() => {
         const area = document.getElementById('game-area');
@@ -457,7 +458,6 @@ function renderMap() {
         }
     }
     renderPawnBar();
-    if (typeof applyZoom === "function") applyZoom();
 }
 
 function renderPawnBar() {
@@ -800,16 +800,7 @@ function nextTurn() {
         addLog(`Наступил сезон: ${G.season}`);
     }
 
-    if(G.round % 2 === 0) {
-        let side = rnd(0,3);
-        let ex, ey;
-        if (side === 0) { ex = rnd(0,29); ey = 0; }
-        else if (side === 1) { ex = rnd(0,29); ey = 29; }
-        else if (side === 2) { ex = 0; ey = rnd(0,29); }
-        else { ex = 29; ey = rnd(0,29); }
-        spawnEnemy(ex, ey, 'Волк');
-        addLog("⚠️ На карте появился враг!", true);
-    }
+    G.pendingStandardSpawn = (G.round % 2 === 0);
     
     G.ap = G.diff === 'easy' ? 4 : 3;
     if (G.pawns[G.activePawnIndex]) G.combatSteps = G.pawns[G.activePawnIndex].agi;
@@ -829,9 +820,7 @@ function spinWheel() {
         let msg = "Тишина.";
         if(s === 0) { 
             msg = "Рейд!"; 
-            let side = rnd(0,3), ex, ey; 
-            if(side===0){ex=rnd(0,29);ey=0;}else if(side===1){ex=rnd(0,29);ey=29;}else if(side===2){ex=0;ey=rnd(0,29);}else{ex=29;ey=rnd(0,29);} 
-            spawnEnemy(ex, ey, 'Волк'); 
+            G.pendingWheelSpawn = true;
         }
         else if(s === 1) { msg = "Ресурсы (+2🌲, +2🪨)"; G.res.wood += 2; G.res.stone += 2; }
         else if(s === 2) { msg = "Болезнь (-2HP)"; if(G.pawns[0]) G.pawns[0].hp -= 2; }
@@ -846,9 +835,39 @@ function spinWheel() {
         
         setTimeout(() => {
             closeModal('wheel-modal');
+            
+            // СПАВН ПОСЛЕ КОЛЕСА
+            let spawned = false;
+            if (G.pendingStandardSpawn) {
+                let side = rnd(0,3), ex, ey;
+                if (side === 0) { ex = rnd(0,29); ey = 0; }
+                else if (side === 1) { ex = rnd(0,29); ey = 29; }
+                else if (side === 2) { ex = 0; ey = rnd(0,29); }
+                else { ex = 29; ey = rnd(0,29); }
+                spawnEnemy(ex, ey, 'Волк');
+                addLog("⚠️ На карте появился враг!", true);
+                G.pendingStandardSpawn = false;
+                spawned = true;
+            }
+            if (G.pendingWheelSpawn) {
+                let side = rnd(0,3), ex, ey;
+                if (side === 0) { ex = rnd(0,29); ey = 0; }
+                else if (side === 1) { ex = rnd(0,29); ey = 29; }
+                else if (side === 2) { ex = 0; ey = rnd(0,29); }
+                else { ex = 29; ey = rnd(0,29); }
+                spawnEnemy(ex, ey, 'Волк');
+                addLog("⚠️ РЕЙД! На карте появился враг!", true);
+                G.pendingWheelSpawn = false;
+                spawned = true;
+            }
+
+            if (spawned) {
+                renderMap(); updateVision();
+            }
+
             if (G.enemies.length > 0 && !G.inCombat) {
                 addLog("Ход врагов...", true);
-                setTimeout(() => { moveEnemies(); addLog("Твой ход!", false, true); updateUI(); }, 500);
+                setTimeout(() => { moveEnemies(); addLog("Твой ход!", false, true); updateUI(); }, 1000);
             }
         }, 1500);
     }, 3000);
@@ -1168,7 +1187,7 @@ function gameOver(reason) {
     }, 500);
 }
 
-console.log("v38.6 loaded");
+console.log("v38.7 loaded");
 </script>
 </body>
 </html>
