@@ -22,7 +22,7 @@
 
         /* ИГРОВОЕ ПОЛЕ */
         .game-area { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; overflow: auto; background: #000; display: flex; }
-        .grid { display: grid; grid-template-columns: repeat(30, 40px); grid-template-rows: repeat(30, 40px); transform-origin: 0 0; margin: auto; transition: transform 0.1s; }
+        .grid { display: grid; grid-template-columns: repeat(30, 40px); grid-template-rows: repeat(30, 40px); transform-origin: 0 0; margin: auto; transition: transform 0.2s; }
         
         .cell { width: 40px; height: 40px; border: 1px solid rgba(0,0,0,0.2); cursor: pointer; position: relative; display: flex; justify-content: center; align-items: center; font-size: 24px; box-sizing: border-box; }
         .tile-forest { background-color: #27ae60; }
@@ -97,8 +97,8 @@
 </div>
 
 <div class="zoom-controls" id="zoom-controls" style="display: none;">
-    <button class="zoom-btn" onclick="zoomMap(0.1)">+</button>
-    <button class="zoom-btn" onclick="zoomMap(-0.1)">-</button>
+    <button class="zoom-btn" onclick="zoomMap(0.2)">+</button>
+    <button class="zoom-btn" onclick="zoomMap(-0.2)">-</button>
 </div>
 
 <div class="bottom-panel" id="bottom-panel" style="display: none;">
@@ -114,7 +114,7 @@
 <!-- ГЛАВНОЕ МЕНЮ -->
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
-        <h2 style="color: var(--accent); margin-top: 0;">Лукоморье v33.0</h2>
+        <h2 style="color: var(--accent); margin-top: 0;">Лукоморье v33.1</h2>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
@@ -126,7 +126,7 @@
         <h3 style="color: var(--accent); margin-top: 0;">Сложность</h3>
         <button class="btn" onclick="setupGen('easy')" style="width: 100%; padding: 12px; margin-bottom: 5px;">Сказка (Макс 3 ур., +1 ОД)</button>
         <button class="btn" onclick="setupGen('normal')" style="width: 100%; padding: 12px; margin-bottom: 5px;">Былина (Макс 5 ур.)</button>
-        <button class="btn btn-red" onclick="setupGen('hard')" style="width: 100%; padding: 12px; margin-bottom: 5px;">Тёмное Время (Макс 7 ур., Очаг х2.5)</button>
+        <button class="btn btn-red" onclick="setupGen('hard')" style="width: 100%; padding: 12px; margin-bottom: 5px;">Тёмное Время (Макс 7 ур.)</button>
         <button class="btn" onclick="document.getElementById('diff-modal').style.display='none'; document.getElementById('menu-modal').style.display='flex'" style="width: 100%; padding: 8px; background: #555;">Назад</button>
     </div>
 </div>
@@ -177,10 +177,10 @@
         <button class="btn" onclick="doCraft('bow', 2, 1, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Лук (2🌲, 1🐻)</button>
         <button class="btn" onclick="doCraft('arrows_stone', 1, 0, 1, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменные стрелы х5 (1🌲, 1🪨)</button>
         <button class="btn" onclick="doCraft('armor', 0, 2, 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Кожаный доспех (2🐻, 1🔶)</button>
-        <button class="btn" onclick="doCraft('quiver', 1, 2, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Колчан (1🌲, 2🐻) (Мастерская)</button>
-        <button class="btn" onclick="doCraft('potion', 1, 1, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Зелье (1🌲, 1🐻) (Мастерская)</button>
-        <button class="btn" onclick="doCraft('spear_copper', 1, 0, 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медное копье (1🌲, 1🔶) (Мастерская)</button>
-        <button class="btn" onclick="doCraft('axe_copper', 1, 0, 0, 2, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медный топор (1🌲, 2🔶) (Мастерская)</button>
+        <button class="btn" onclick="doCraft('quiver', 1, 2, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Колчан (1🌲, 2🐻)</button>
+        <button class="btn" onclick="doCraft('potion', 1, 1, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Зелье (1🌲, 1🐻)</button>
+        <button class="btn" onclick="doCraft('spear_copper', 1, 0, 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медное копье (1🌲, 1🔶)</button>
+        <button class="btn" onclick="doCraft('axe_copper', 1, 0, 0, 2, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медный топор (1🌲, 2🔶)</button>
         <button class="btn btn-red" onclick="document.getElementById('craft-modal').style.display='none'" style="width: 100%; padding: 8px;">Отмена</button>
     </div>
 </div>
@@ -189,8 +189,6 @@
 <div class="modal" id="caravan-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;">Караван</h3>
-        <p>Выбрать пешку и дистанцию:</p>
-        <div id="caravan-pawn-select"></div>
         <button class="btn" onclick="sendCaravan(2)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Ближний (2 хода)</button>
         <button class="btn" onclick="sendCaravan(3)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Средний (3 хода)</button>
         <button class="btn btn-red" onclick="sendCaravan(4)" style="width: 100%; padding: 10px; margin-bottom: 5px;">Дальний (4 хода)</button>
@@ -248,8 +246,7 @@ let G = {
     res: { wood: 15, stone: 15, meat: 5, hide: 0, copper: 5, arrows: 0 },
     pawns: [], enemies: [], map: [],
     buildMode: null, buildCost: {w:0, s:0, turns:0}, buildProgress: 0,
-    inCombat: false, activeEnemy: null, activePawnIndex: 0, combatSteps: 0, currentRoundPawns: [],
-    caravanReturn: null
+    inCombat: false, activeEnemy: null, activePawnIndex: 0, combatSteps: 0, currentRoundPawns: []
 };
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 let logs = [];
@@ -274,6 +271,15 @@ function downloadLogs() {
 }
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// ================== ЗУМ ==================
+let currentScale = 1;
+function zoomMap(amount) {
+    currentScale += amount;
+    if (currentScale < 0.6) currentScale = 0.6;
+    if (currentScale > 2.0) currentScale = 2.0;
+    document.getElementById('grid').style.transform = `scale(${currentScale})`;
+}
 
 // ================== ГЕНЕРАЦИЯ ПЕШКИ ==================
 let tempPawn = {};
@@ -303,10 +309,8 @@ function rollStats() {
     if(tempPawn.trait === 'Силач') tempPawn.str += 1;
     if(tempPawn.trait === 'Ловкач') tempPawn.agi += 1;
     if(tempPawn.trait === 'Умелец') tempPawn.craft += 1;
-    if(tempPawn.trait === 'Стойкий') { tempPawn.san += 2; tempPawn.maxHp += 0; } // maxHp не меняется, только san
-    if(tempPawn.trait === 'Тугодум') { /* Штраф к XP, реализуется в addLog */ }
-    if(tempPawn.trait === 'Везунчик') { /* 1 переброс, реализуется в бою */ }
-
+    if(tempPawn.trait === 'Стойкий') { tempPawn.san += 2; }
+    
     document.getElementById('gen-name').innerText = tempPawn.name;
     document.getElementById('gen-str').innerText = tempPawn.str;
     document.getElementById('gen-agi').innerText = tempPawn.agi;
@@ -482,6 +486,75 @@ function updateVision() {
     renderMap();
 }
 
+// ================== КЛИК ПО КЛЕТКЕ (ДВИЖЕНИЕ / СТРОЙКА) ==================
+function handleCellClick(x, y) {
+    if (G.inCombat) return alert("Нельзя двигаться во время боя!");
+    
+    let p = G.pawns[G.activePawnIndex];
+    if (!p || p.x === -1) return alert("Нет активной пешки!");
+
+    // Если выбран режим стройки
+    if (G.buildMode) {
+        placeBuild(x, y);
+        return;
+    }
+
+    // Логика движения
+    if (x === p.x && y === p.y) return;
+    
+    let cell = G.map[y][x];
+    if (cell.build) return alert("Клетка занята постройкой!");
+    if (G.enemies.some(e => e.x === x && e.y === y)) return alert("Там враг!");
+    
+    let path = findPath(p.x, p.y, x, y);
+    if (path.length === 0) return alert("Путь заблокирован!");
+    
+    // Лимит шагов (5 в мирное время, до Ловкости в бою)
+    let maxSteps = G.enemies.length > 0 ? p.agi : 5;
+    if (path.length > maxSteps) {
+        path = path.slice(0, maxSteps);
+    }
+
+    // Анимация движения
+    let stepIndex = 0;
+    function step() {
+        if (stepIndex >= path.length) {
+            if (G.enemies.length > 0) {
+                G.ap--;
+            }
+            updateVision();
+            updateUI();
+            return;
+        }
+        p.x = path[stepIndex].x;
+        p.y = path[stepIndex].y;
+        renderMap();
+        stepIndex++;
+        setTimeout(step, 100);
+    }
+    step();
+}
+
+function findPath(sx, sy, tx, ty) {
+    let queue = [{x:sx, y:sy, path:[]}];
+    let visited = new Set([`${sx},${sy}`]);
+    while(queue.length > 0) {
+        let cur = queue.shift();
+        if(cur.x === tx && cur.y === ty) return cur.path;
+        for(let d of [{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0}]) {
+            let nx = cur.x + d.x, ny = cur.y + d.y;
+            if(nx>=0 && nx<30 && ny>=0 && ny<30 && !visited.has(`${nx},${ny}`)) {
+                let cell = G.map[ny][nx];
+                if(!cell.build && !G.enemies.some(e => e.x===nx && e.y===ny) && cell.type !== 'water' && cell.type !== 'mountain') {
+                    visited.add(`${nx},${ny}`);
+                    queue.push({x:nx, y:ny, path:[...cur.path, {x:nx, y:ny}]});
+                }
+            }
+        }
+    }
+    return [];
+}
+
 // ================== УМНАЯ КНОПКА ==================
 function updateSmartButton() {
     let p = G.pawns[G.activePawnIndex];
@@ -593,7 +666,7 @@ function placeBuild(x, y) {
     
     if(G.buildMode === 'great_hearth') {
         alert("ВЫ ПОБЕДИЛИ! Великий Очаг построен.");
-        logEvent("ПОБЕДА. Построен Великий Очаг.");
+        addLog("ПОБЕДА. Построен Великий Очаг.");
         downloadLogs();
         location.reload();
     }
