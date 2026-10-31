@@ -29,7 +29,7 @@
         .tile-mountain { background-color: #7f8c8d; }
         .tile-water { background-color: #2980b9; }
         .tile-grass { background-color: #a4b0be; } 
-        .tile-ford { background-color: #a4b0be; border: 1px dashed #2980b9; }
+        .tile-ford { background-color: #5dade2; border: none; }
         
         .tile-wall_wood { background-color: #a0522d; }
         .tile-wall_stone { background-color: #95a5a6; }
@@ -71,10 +71,11 @@
         .btn-green { background: #27ae60; }
 
         /* МОДАЛКИ */
-        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
         .modal-content { background: var(--panel); padding: 15px; border-radius: 10px; width: 100%; max-width: 350px; text-align: center; border: 2px solid var(--btn); max-height: 80vh; overflow-y: auto; }
         
-        .wheel-container { position: relative; width: 150px; height: 150px; margin: 10px auto; }
+        .wheel-container { position: relative; width: 150px; height: 150px; margin: 10px auto; flex-shrink: 0; }
+#wheel-modal .modal-content { height: 420px; display: flex; flex-direction: column; justify-content: space-between; }
         .wheel { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(#e84118 0 45deg, #00a8ff 45deg 90deg, #4cd137 90deg 135deg, #fbc531 135deg 180deg, #9b59b6 180deg 225deg, #e67e22 225deg 270deg, #1abc9c 270deg 315deg, #34495e 315deg 360deg); border: 4px solid #fff; transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
         .wheel-arrow { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 24px; color: yellow; z-index: 10; }
 
@@ -390,8 +391,11 @@ function renderMap() {
             let d = document.createElement('div');
             d.className = `cell tile-${cell.type}`;
             
-            if(!cell.explored) d.className += ' fog';
-            else if(!cell.currentVision) d.className += ' explored-fog';
+            let isVisible = cell.currentVision;
+            let isExplored = cell.explored;
+            
+            if(!isExplored) d.className += ' fog';
+            else if(!isVisible) d.className += ' explored-fog';
 
             let content = '';
             if(cell.build === 'camp') content = '🏕️';
@@ -415,7 +419,7 @@ function renderMap() {
             }
 
             let e = G.enemies.find(en => en.x === x && en.y === y);
-            if(e && cell.currentVision) { content = e.icon; d.className += ' enemy-unit'; }
+            if(e && isVisible) { content = e.icon; d.className += ' enemy-unit'; }
 
             let p = G.pawns.find(pw => pw.x === x && pw.y === y);
             if(p) { content = '🧑‍🌾'; d.className += ' pawn-unit'; }
@@ -506,19 +510,12 @@ function updateVision() {
 }
 
 // ================== КЛИК ПО КЛЕТКЕ (ДВИЖЕНИЕ / СТРОЙКА) ==================
-function handleCellClick(x, y) {
+async function handleCellClick(x, y) {
     if (G.inCombat) return alert("Нельзя двигаться во время боя!");
-    
     let p = G.pawns[G.activePawnIndex];
     if (!p || p.x === -1) return alert("Нет активной пешки!");
 
-    // Если выбран режим стройки
-    if (G.buildMode) {
-        placeBuild(x, y);
-        return;
-    }
-
-    // Логика движения
+    if (G.buildMode) { placeBuild(x, y); return; }
     if (x === p.x && y === p.y) return;
     
     let cell = G.map[y][x];
@@ -528,30 +525,30 @@ function handleCellClick(x, y) {
     let path = findPath(p.x, p.y, x, y);
     if (path.length === 0) return alert("Путь заблокирован!");
     
-    // Лимит шагов (5 в мирное время, до Ловкости в бою)
-    let maxSteps = G.enemies.length > 0 ? p.agi : 5;
-    if (path.length > maxSteps) {
-        path = path.slice(0, maxSteps);
-    }
-
-    // Анимация движения
-    let stepIndex = 0;
-    function step() {
-        if (stepIndex >= path.length) {
-            if (G.enemies.length > 0) {
-                G.ap--;
-            }
-            updateVision();
+    let maxSteps = 5;
+    if (G.enemies.length > 0) {
+        maxSteps = p.agi; // В боевом режиме - по Ловкости
+        if (G.combatSteps <= 0) {
+            addLog("Ход противника...", true);
+            await new Promise(r => setTimeout(r, 1000));
+            moveEnemies();
+            G.combatSteps = p.agi;
+            addLog("Твой ход!", false, true);
             updateUI();
             return;
         }
-        p.x = path[stepIndex].x;
-        p.y = path[stepIndex].y;
-        renderMap();
-        stepIndex++;
-        setTimeout(step, 100);
+        if (path.length > G.combatSteps) path = path.slice(0, G.combatSteps);
+    } else {
+        if (path.length > maxSteps) path = path.slice(0, maxSteps);
     }
-    step();
+
+    for(let i=0; i<path.length; i++) {
+        p.x = path[i].x; p.y = path[i].y;
+        if (G.enemies.length > 0) G.combatSteps--;
+        renderMap(); updateVision();
+        await new Promise(r => setTimeout(r, 100));
+    }
+    updateUI();
 }
 
 function findPath(sx, sy, tx, ty) {
@@ -564,7 +561,7 @@ function findPath(sx, sy, tx, ty) {
             let nx = cur.x + d.x, ny = cur.y + d.y;
             if(nx>=0 && nx<30 && ny>=0 && ny<30 && !visited.has(`${nx},${ny}`)) {
                 let cell = G.map[ny][nx];
-                if(!cell.build && !G.enemies.some(e => e.x===nx && e.y===ny) && cell.type !== 'water' && cell.type !== 'mountain') {
+                if(!cell.build && !G.enemies.some(e => e.x===nx && e.y===ny) && cell.type !== 'water') {
                     visited.add(`${nx},${ny}`);
                     queue.push({x:nx, y:ny, path:[...cur.path, {x:nx, y:ny}]});
                 }
@@ -830,10 +827,16 @@ function spinWheel() {
     document.getElementById('wheel').style.transform = `rotate(${1440 + rnd(0,360)}deg)`;
     setTimeout(() => {
         let s = rnd(0,7);
-        if(s === 0) { document.getElementById('wheel-text').innerText = "Рейд!"; spawnEnemy(rnd(0,29), rnd(0,29), 'Волк'); }
-        else if(s === 1) { document.getElementById('wheel-text').innerText = "Ресурсы!"; G.res.wood += 2; G.res.stone += 2; }
-        else if(s === 2) { document.getElementById('wheel-text').innerText = "Болезнь!"; G.pawns[0].hp -= 2; }
-        else { document.getElementById('wheel-text').innerText = "Тишина."; }
+        let msg = "Тишина.";
+        if(s === 0) { msg = "Рейд!"; spawnEnemy(rnd(0,29), 0, 'Волк'); }
+        else if(s === 1) { msg = "Ресурсы!"; G.res.wood += 2; G.res.stone += 2; }
+        else if(s === 2) { msg = "Болезнь!"; G.pawns[0].hp -= 2; }
+        else if(s === 3) { msg = "Охота!"; G.res.meat += 3; }
+        else if(s === 4) { msg = "Клад!"; G.res.copper += 2; }
+        else if(s === 5) { msg = "Обмен!"; G.res.wood += 5; G.res.meat = Math.max(0, G.res.meat-2); }
+        else if(s === 6) { msg = "Воры!"; G.res.wood = Math.max(0, G.res.wood-3); }
+        
+        document.getElementById('wheel-text').innerText = msg;
         updateUI();
         setTimeout(() => closeModal('wheel-modal'), 2000);
     }, 3000);
@@ -848,6 +851,21 @@ function spawnEnemy(x, y, type) {
     if(type === 'Водяной') stats = { hp: 6, agi: 1, dmg: 2, armor: 1, icon: '🧜' };
     
     G.enemies.push({ x, y, hp: stats.hp, maxHp: stats.hp, agi: stats.agi, dmg: stats.dmg, armor: stats.armor, icon: stats.icon, name: type });
+    
+    // Стрелка направления
+    let arrow = '';
+    if (x === 0) arrow = '⬅️';
+    else if (x === 29) arrow = '➡️';
+    else if (y === 0) arrow = '⬆️';
+    else if (y === 29) arrow = '⬇️';
+    
+    if (arrow) {
+        let div = document.createElement('div');
+        div.style.cssText = `position:fixed; top:80px; left:0; width:100%; text-align:center; font-size:60px; z-index:5000; pointer-events:none; text-shadow: 0 0 20px red;`;
+        div.innerText = arrow;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2000);
+    }
 }
 
 function moveEnemies() {
