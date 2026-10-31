@@ -18,15 +18,16 @@
         .pawn-hp { color: var(--danger); font-size: 12px; font-weight: bold; }
         .pawn-lvl-up { position: absolute; top: -5px; right: -5px; color: yellow; font-weight: bold; font-size: 14px; animation: pulse 1s infinite; }
 
-        .game-area { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; overflow: auto; background: #000; display: flex; }
-        .grid { display: grid; grid-template-columns: repeat(30, 40px); grid-template-rows: repeat(30, 40px); transform-origin: 0 0; margin: auto; transition: transform 0.2s; }
+        .game-area { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; overflow: auto; background: #000; display: block; }
+        .grid { display: grid; grid-template-columns: repeat(30, var(--size, 40px)); grid-template-rows: repeat(30, var(--size, 40px)); transform-origin: 0 0; margin: 0; transition: transform 0.2s; }
         
-        .cell { width: 40px; height: 40px; border: 1px solid rgba(0,0,0,0.2); cursor: pointer; position: relative; display: flex; justify-content: center; align-items: center; font-size: 24px; box-sizing: border-box; }
+        .cell { width: var(--size, 40px); height: var(--size, 40px); border: 1px solid rgba(0,0,0,0.2); cursor: pointer; position: relative; display: flex; justify-content: center; align-items: center; font-size: var(--font, 24px); box-sizing: border-box; }
         .tile-forest { background-color: #27ae60; }
         .tile-mountain { background-color: #7f8c8d; }
         .tile-water { background-color: #2980b9; }
         .tile-grass { background-color: #a4b0be; } 
         .tile-ford { background-color: #5dade2; border: none; }
+        .tile-water_empty { background-color: #1b4f72; }
         
         .tile-wall_wood { background-color: #a0522d; }
         .tile-wall_stone { background-color: #95a5a6; }
@@ -133,7 +134,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.1</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.5</p>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
@@ -396,7 +397,7 @@ function startGame() {
     document.getElementById('bottom-panel').style.display = 'flex';
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
-    addLog("Версия v38.1. Игра началась!");
+    addLog("Версия v38.5. Игра началась!");
     
     setTimeout(() => {
         const area = document.getElementById('game-area');
@@ -426,6 +427,7 @@ function renderMap() {
             else if (cell.type === 'mountain') content = '⛰️';
             else if (cell.type === 'water') content = '🌊';
             else if (cell.type === 'ford') content = '💧';
+            else if (cell.type === 'water_empty') content = '';
             
             if(cell.build === 'camp') content = '🏕️';
             if(cell.build === 'wall_wood') content = '🪵';
@@ -588,9 +590,22 @@ function executeAction(type) {
         let roll = d6() + p.craft;
         let res = roll >= 7 ? 3 : roll >= 4 ? 2 : 1;
         
-        if (cell.type === 'forest') { G.res.wood += res; addLog(`${p.name} рубит лес: +${res} 🌲 (Кубик: ${roll})`, false, true); }
-        else if (cell.type === 'water') { G.res.meat += res; addLog(`${p.name} ловит рыбу: +${res} 🍖 (Кубик: ${roll})`, false, true); }
-        else if (cell.type === 'mountain') { G.res.stone += res; if(res>=2) G.res.copper += 1; addLog(`${p.name} добывает камень: +${res} 🪨 (Кубик: ${roll})`, false, true); }
+        if (cell.type === 'forest') { 
+            G.res.wood += res; 
+            addLog(`${p.name} рубит лес: +${res} 🌲 (Кубик: ${roll})`, false, true); 
+            cell.type = 'grass';
+        }
+        else if (cell.type === 'water') { 
+            G.res.meat += res; 
+            addLog(`${p.name} ловит рыбу: +${res} 🍖 (Кубик: ${roll})`, false, true); 
+            cell.type = 'water_empty';
+        }
+        else if (cell.type === 'mountain') { 
+            G.res.stone += res; 
+            if(res>=2) G.res.copper += 1; 
+            addLog(`${p.name} добывает камень: +${res} 🪨 (Кубик: ${roll})`, false, true); 
+            cell.type = 'grass';
+        }
         
         updateUI(); renderMap();
     } else if (type === 'hunt') {
@@ -968,7 +983,7 @@ function findPath(sx, sy, tx, ty) {
                 
                 if(nx>=0 && nx<30 && ny>=0 && ny<30 && !visited.has(`${nx},${ny}`)) {
                     let cell = G.map[ny][nx];
-                    let isWalkable = (cell.type !== 'water' && cell.type !== 'mountain');
+                    let isWalkable = (cell.type !== 'water' && cell.type !== 'mountain' && cell.type !== 'water_empty');
                     if (['wall_wood', 'wall_stone', 'trap'].includes(cell.build)) isWalkable = false;
                     
                     if (isWalkable) {
@@ -1153,7 +1168,7 @@ function gameOver(reason) {
     }, 500);
 }
 
-console.log("v38.1 loaded");
+console.log("v38.5 loaded");
 </script>
 </body>
 </html>
