@@ -74,6 +74,19 @@
         #wheel-modal .modal-content { height: 450px; display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 25px; }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        
+        .action-sheet {
+            position: fixed; bottom: 60px; left: 0; right: 0;
+            background: rgba(47, 54, 64, 0.98);
+            padding: 10px 15px 15px 15px;
+            z-index: 2500;
+            border-top: 2px solid var(--accent);
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
+        }
+        .action-sheet .btn {
+            padding: 15px 10px; font-size: 14px; border-radius: 8px; margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -108,18 +121,19 @@
 </div>
 
 <!-- МЕНЮ ДЕЙСТВИЙ -->
-<div class="modal" id="action-modal">
-    <div class="modal-content">
-        <h3 style="color: var(--accent); margin-top: 0;">Действия</h3>
-        <div id="action-list" style="display: flex; flex-direction: column; gap: 5px;"></div>
+<div id="action-modal" class="action-sheet" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="color: var(--accent); margin: 0;">Действия</h3>
+        <button class="btn" onclick="closeModal('action-modal')" style="width: auto; padding: 8px 15px; background: #555;">✖ Закрыть</button>
     </div>
+    <div id="action-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
 </div>
 
 <!-- ГЛАВНОЕ МЕНЮ -->
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.0</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.1</p>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
@@ -337,7 +351,6 @@ function rollStats() {
 
 function startGame() {
     closeModal('gen-modal');
-    G.pawns.push(tempPawn);
     G.map = [];
     G.combatSteps = tempPawn.agi;
     
@@ -356,6 +369,25 @@ function startGame() {
         G.map.push(row);
     }
     
+    // Поиск травы для спавна, чтобы не родиться в воде
+    let spawnX = 15, spawnY = 15;
+    if (G.map[spawnY][spawnX].type !== 'grass') {
+        let found = false;
+        for(let r=1; r<30 && !found; r++) {
+            for(let dy=-r; dy<=r && !found; dy++) {
+                for(let dx=-r; dx<=r && !found; dx++) {
+                    let nx = 15+dx, ny = 15+dy;
+                    if(nx>=0 && nx<30 && ny>=0 && ny<30 && G.map[ny][nx].type === 'grass') {
+                        spawnX = nx; spawnY = ny; found = true;
+                    }
+                }
+            }
+        }
+    }
+    tempPawn.x = spawnX;
+    tempPawn.y = spawnY;
+    G.pawns.push(tempPawn);
+    
     document.getElementById('top-panel').style.display = 'flex';
     document.getElementById('pawn-bar').style.display = 'flex';
     document.getElementById('game-area').style.display = 'flex';
@@ -363,12 +395,12 @@ function startGame() {
     document.getElementById('bottom-panel').style.display = 'flex';
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
-    addLog("Версия v38.0. Игра началась!");
+    addLog("Версия v38.1. Игра началась!");
     
     setTimeout(() => {
         const area = document.getElementById('game-area');
-        area.scrollLeft = (15 * 40) - (area.clientWidth / 2);
-        area.scrollTop = (15 * 40) - (area.clientHeight / 2);
+        area.scrollLeft = (spawnX * 40) - (area.clientWidth / 2);
+        area.scrollTop = (spawnY * 40) - (area.clientHeight / 2);
     }, 100);
 }
 
@@ -538,7 +570,6 @@ function doSmartAction() {
     } else {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     }
-    actionsHTML += `<button class="btn btn-red action-btn" onclick="closeModal('action-modal')">❌ Отмена</button>`;
     document.getElementById('action-list').innerHTML = actionsHTML;
     openModal('action-modal');
 }
@@ -1104,7 +1135,7 @@ function gameOver(reason) {
     }, 500);
 }
 
-console.log("v38.0 loaded");
+console.log("v38.1 loaded");
 </script>
 </body>
 </html>
