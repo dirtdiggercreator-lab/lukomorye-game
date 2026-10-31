@@ -47,7 +47,7 @@
         .explored-fog { opacity: 0.55; }
         .build-progress { font-size: 10px; color: white; position: absolute; bottom: 0; right: 2px; font-weight: bold;}
 
-        .zoom-controls { position: fixed; bottom: 170px; right: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 1000; }
+        .zoom-controls { position: fixed; bottom: 170px; right: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 3000; }
         .zoom-btn { width: 40px; height: 40px; background: rgba(0,0,0,0.8); color: white; border: 2px solid var(--accent); border-radius: 5px; font-size: 20px; font-weight: bold; cursor: pointer; }
 
         .bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; height: 160px; background: var(--panel); display: flex; flex-direction: column; z-index: 1000; border-top: 2px solid #000; }
@@ -107,8 +107,8 @@
 </div>
 
 <div class="zoom-controls" id="zoom-controls" style="display: none;">
-    <button class="zoom-btn" onclick="zoomMap(0.2)">+</button>
-    <button class="zoom-btn" onclick="zoomMap(-0.2)">-</button>
+    <button class="zoom-btn" onclick="event.stopPropagation(); zoomMap(0.2)">+</button>
+    <button class="zoom-btn" onclick="event.stopPropagation(); zoomMap(-0.2)">-</button>
 </div>
 
 <div class="bottom-panel" id="bottom-panel" style="display: none;">
@@ -134,7 +134,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.5</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.6</p>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
@@ -154,7 +154,7 @@
 <!-- ГЕНЕРАЦИЯ ПЕШКИ -->
 <div class="modal" id="gen-modal">
     <div class="modal-content">
-        <h3 style="color: var(--accent); margin-top: 0;">Создание пешки</h3>
+        <h3 style="color: var(--accent); margin-top: 0;">Создание персонажа</h3>
         <div style="text-align: left; background: #000; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 14px;">
             <div>Имя: <span id="gen-name" style="color:yellow;">-</span></div>
             <div>⚔️ Сила: <span id="gen-str">-</span></div>
@@ -164,7 +164,7 @@
             <div>🎭 Черта: <span id="gen-trait">-</span></div>
         </div>
         <button class="btn" id="btn-roll" onclick="rollStats()" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #8e44ad;">Бросить кубики</button>
-        <button class="btn btn-red" id="btn-reroll" onclick="setupGen(G.diff)" style="width: 100%; padding: 10px; display: none; margin-bottom: 5px;">Пересоздать (Заново)</button>
+        <button class="btn btn-red" id="btn-reroll" onclick="rollStats()" style="width: 100%; padding: 10px; display: none; margin-bottom: 5px;">Пересоздать (Заново)</button>
         <button class="btn" id="btn-accept" onclick="startGame()" style="width: 100%; padding: 12px; display: none; background: #27ae60;">Принять и начать</button>
     </div>
 </div>
@@ -397,7 +397,7 @@ function startGame() {
     document.getElementById('bottom-panel').style.display = 'flex';
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
-    addLog("Версия v38.5. Игра началась!");
+    addLog("Версия v38.6. Игра началась!");
     
     setTimeout(() => {
         const area = document.getElementById('game-area');
@@ -692,7 +692,7 @@ function placeBuild(x, y) {
     
     let p = G.pawns[G.activePawnIndex];
     let dist = Math.max(Math.abs(p.x - x), Math.abs(p.y - y));
-    if(dist > 5) return alert("Слишком далеко (макс 5 клеток)!");
+    if(dist > 1) return alert("Строить можно только рядом с собой (макс 1 клетка)!");
     
     if(G.res.wood < G.buildCost.w || G.res.stone < G.buildCost.s) return alert("Не хватает ресурсов!");
     
@@ -1168,7 +1168,7 @@ function gameOver(reason) {
     }, 500);
 }
 
-console.log("v38.5 loaded");
+console.log("v38.6 loaded");
 </script>
 </body>
 </html>
