@@ -43,7 +43,7 @@
         .enemy-unit { outline: 2px solid red; z-index: 5; }
         .pawn-unit { outline: 2px solid yellow; z-index: 10; }
         .fog { background-color: #111 !important; color: transparent !important; font-size: 0 !important; border: 1px solid #222; }
-        .explored-fog { background-color: rgba(47, 54, 64, 0.6) !important; opacity: 0.8; }
+        .explored-fog { opacity: 0.55; }
         .build-progress { font-size: 10px; color: white; position: absolute; bottom: 0; right: 2px; font-weight: bold;}
 
         .zoom-controls { position: fixed; bottom: 170px; right: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 1000; }
@@ -71,13 +71,15 @@
         .wheel { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(#e84118 0 45deg, #00a8ff 45deg 90deg, #4cd137 90deg 135deg, #fbc531 135deg 180deg, #9b59b6 180deg 225deg, #e67e22 225deg 270deg, #1abc9c 270deg 315deg, #34495e 315deg 360deg); border: 4px solid #fff; transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
         .wheel-arrow { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 24px; color: yellow; z-index: 10; }
 
+        #wheel-modal .modal-content { height: 450px; display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 25px; }
+
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
 <div class="top-panel" id="top-panel" style="display: none;">
-    <div>Ход: <span id="ui-round">1</span> (<span id="ui-season">Весна</span>)</div>
+    <div>Ход: <span id="ui-round">1</span> <span style="color:#666; font-size:10px;">(v37.0)</span></div>
     <div>ОД: <span id="ui-ap">3</span> | Шаги: <span id="ui-steps">0</span></div>
     <div>🌲<span id="ui-wood">0</span> 🪨<span id="ui-stone">0</span> 🍖<span id="ui-meat">5</span> 🐻<span id="ui-hide">0</span> 🔶<span id="ui-copper">0</span> 🏹<span id="ui-arrows">0</span></div>
     <button class="exit-btn" onclick="if(confirm('Сдаться и выйти?')) location.reload()">🚪</button>
@@ -115,7 +117,8 @@
 <!-- ГЛАВНОЕ МЕНЮ -->
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
-        <h2 style="color: var(--accent); margin-top: 0;">Лукоморье v36.0</h2>
+        <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v37.0</p>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
@@ -199,14 +202,16 @@
 
 <!-- КОЛЕСО -->
 <div class="modal" id="wheel-modal">
-    <div class="modal-content" style="height: 450px; display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 25px;">
+    <div class="modal-content">
         <h3 style="margin-top: 0; color: var(--accent);">Событие</h3>
         <div class="wheel-container">
             <div class="wheel-arrow">▼</div>
             <div class="wheel" id="wheel"></div>
         </div>
-        <button class="btn" id="spin-btn" onclick="spinWheel()" style="width: 100%; padding: 12px; margin-top: 10px;">Крутить!</button>
-        <p id="wheel-text" style="font-weight: bold; color: yellow; height: 20px;"></p>
+        <div style="height: 70px;">
+            <button class="btn" id="spin-btn" onclick="spinWheel()" style="width: 100%; padding: 12px;">Крутить!</button>
+            <p id="wheel-text" style="font-weight: bold; color: yellow; height: 20px; margin-top: 10px;"></p>
+        </div>
     </div>
 </div>
 
@@ -246,13 +251,15 @@ let G = {
     res: { wood: 15, stone: 15, meat: 5, hide: 0, copper: 5, arrows: 0 },
     pawns: [], enemies: [], map: [],
     buildMode: null, buildCost: {w:0, s:0, turns:0}, buildProgress: 0,
-    inCombat: false, activeEnemy: null, activePawnIndex: 0, combatSteps: 0, currentRoundPawns: []
+    inCombat: false, activeEnemy: null, activePawnIndex: 0, combatSteps: 0
 };
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 let logs = [];
+let isMoving = false;
 
 function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function d6() { return rnd(1, 6); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function addLog(text, isDanger = false, isSuccess = false) {
     let colorClass = isDanger ? 'log-danger' : (isSuccess ? 'log-success' : '');
     logs.push({ turn: G.round, text });
@@ -334,6 +341,7 @@ function startGame() {
     closeModal('gen-modal');
     G.pawns.push(tempPawn);
     G.map = [];
+    G.combatSteps = tempPawn.agi;
     
     for(let y=0; y<30; y++) {
         let row = [];
@@ -356,7 +364,7 @@ function startGame() {
     document.getElementById('bottom-panel').style.display = 'flex';
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
-    addLog("Игра началась. Постройте Лагерь!");
+    addLog("Версия v37.0 загружена. Игра началась!");
     
     setTimeout(() => {
         const area = document.getElementById('game-area');
@@ -377,10 +385,18 @@ function renderMap() {
             let isVisible = cell.currentVision;
             let isExplored = cell.explored;
             
-            if(!isExplored) d.className += ' fog';
-            else if(!isVisible) d.className += ' explored-fog';
+            if(!isExplored) d.classList.add('fog');
+            else if(!isVisible) d.classList.add('explored-fog');
 
             let content = '';
+            
+            // Terrain emoji - показываем всегда (туман затемнит через opacity)
+            if (cell.type === 'forest') content = '🌲';
+            else if (cell.type === 'mountain') content = '⛰️';
+            else if (cell.type === 'water') content = '🌊';
+            else if (cell.type === 'ford') content = '💧';
+            
+            // Buildings
             if(cell.build === 'camp') content = '🏕️';
             if(cell.build === 'wall_wood') content = '🪵';
             if(cell.build === 'wall_stone') content = '🪨';
@@ -393,19 +409,17 @@ function renderMap() {
             if(cell.build === 'master') content = '🛠️';
             if(cell.build === 'great_hearth') content = '🏆';
             
-            if(!content && isVisible) {
-                content = cell.type==='forest'?'🌲':cell.type==='mountain'?'⛰️':cell.type==='water'?'🌊':'';
-            }
-
             if(cell.build && cell.progress < getBuildCost(cell.build).turns) {
                 content = `<span class="build-progress">${cell.progress}/${getBuildCost(cell.build).turns}</span>`;
             }
 
+            // Враги - только в зоне видимости
             let e = G.enemies.find(en => en.x === x && en.y === y);
-            if(e && isVisible) { content = e.icon; d.className += ' enemy-unit'; }
+            if(e && isVisible) { content = e.icon; d.classList.add('enemy-unit'); }
 
+            // Пешка - всегда видна
             let p = G.pawns.find(pw => pw.x === x && pw.y === y);
-            if(p) { content = '🧑‍🌾'; d.className += ' pawn-unit'; }
+            if(p) { content = '🧑‍🌾'; d.classList.add('pawn-unit'); }
 
             d.innerHTML = content;
             d.onclick = () => handleCellClick(x, y);
@@ -515,25 +529,24 @@ function doSmartAction() {
     
     let actionsHTML = "";
     if (cell.type === 'forest') {
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('gather')">🌲 Собрать дерево (1 ОД)</button>`;
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('hunt')">🏹 Охота (1 ОД)</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="executeAction('gather')">🌲 Собрать дерево</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="executeAction('hunt')">🏹 Охота</button>`;
     } else if (cell.type === 'water') {
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('gather')">🐟 Собрать рыбу (1 ОД)</button>`;
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('hunt')">🏹 Охота (1 ОД)</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="executeAction('gather')">🐟 Поймать рыбу</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="executeAction('hunt')">🏹 Охота</button>`;
     } else if (cell.type === 'mountain') {
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('gather')">⛏️ Добыть камень/медь (1 ОД)</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="executeAction('gather')">⛏️ Добыть камень/медь</button>`;
     } else if (cell.build === 'camp') {
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('trade')">🛒 Торговля</button>`;
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('hire')">🧑‍🌾 Нанять поселенца (1 ОД)</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="executeAction('hire')">🧑‍🌾 Нанять поселенца</button>`;
     } else if (cell.build === 'lazaret') {
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('heal')">⛑️ Лечиться (1🥩, 1 ОД)</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="executeAction('heal')">⛑️ Лечиться (1🥩)</button>`;
     } else if (cell.type === 'grass' && !cell.build) {
-        actionsHTML += `<button class="btn action-btn" onclick="openModal('build-modal')">🏗️ Строить</button>`;
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых (1 ОД)</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="closeModal('action-modal'); openModal('build-modal')">🏗️ Строить</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     } else {
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых (1 ОД)</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     }
-    actionsHTML += `<button class="btn btn-red action-btn" onclick="closeModal('action-modal')" style="margin-top:10px;">Отмена</button>`;
+    actionsHTML += `<button class="btn btn-red action-btn" onclick="closeModal('action-modal')">❌ Отмена</button>`;
     document.getElementById('action-list').innerHTML = actionsHTML;
     openModal('action-modal');
 }
@@ -543,33 +556,59 @@ function executeAction(type) {
     let p = G.pawns[G.activePawnIndex];
     let cell = G.map[p.y][p.x];
     
+    if (G.ap <= 0 && type !== 'rest') return alert("Нет ОД!");
+    
     if (type === 'gather') {
         G.ap--;
+        if (G.ap < 0) G.ap = 0;
         let roll = d6() + p.craft;
         let res = 1;
         if (roll >= 4 && roll < 7) res = 2;
         if (roll >= 7) res = 3;
         
-        if (cell.type === 'forest') { G.res.wood += res; addLog(`${p.name} рубит лес: +${res} 🌲 (Бросок: ${roll})`); }
-        else if (cell.type === 'water') { G.res.meat += res; addLog(`${p.name} ловит рыбу: +${res} 🍖 (Бросок: ${roll})`); }
-        else if (cell.type === 'mountain') { G.res.stone += res; G.res.copper += (res >= 2 ? 1 : 0); addLog(`${p.name} добывает камень: +${res} 🪨 (Бросок: ${roll})`); }
+        if (cell.type === 'forest') { G.res.wood += res; addLog(`${p.name} рубит лес: +${res} 🌲 (Кубик: ${roll})`, false, true); }
+        else if (cell.type === 'water') { G.res.meat += res; addLog(`${p.name} ловит рыбу: +${res} 🍖 (Кубик: ${roll})`, false, true); }
+        else if (cell.type === 'mountain') { G.res.stone += res; if(res>=2) G.res.copper += 1; addLog(`${p.name} добывает камень: +${res} 🪨 (Кубик: ${roll})`, false, true); }
         
         updateUI(); renderMap();
     } else if (type === 'hunt') {
-        hunt(p, cell.type);
+        G.ap--;
+        if (G.ap < 0) G.ap = 0;
+        let roll1 = d6(), roll2 = d6();
+        let sum = roll1 + roll2;
+        let terrain = cell.type;
+        
+        if(sum <= 5) {
+            addLog(`${p.name} охотится: кубики ${roll1} и ${roll2} = ${sum}. Неудача.`, true);
+        } else if (sum <= 9) {
+            if(terrain === 'forest') { G.res.meat += 3; G.res.hide += 1; addLog(`${p.name} охотится: ${sum}. Успех! +3 🍖, +1 🐻`, false, true); }
+            else { G.res.meat += 3; addLog(`${p.name} рыбачит: ${sum}. Улов! +3 🍖`, false, true); }
+        } else {
+            if(terrain === 'forest') { G.res.meat += 5; G.res.hide += 2; addLog(`${p.name} охотится: ${sum}. Крупная добыча! +5 🍖, +2 🐻`, false, true); }
+            else { G.res.meat += 5; addLog(`${p.name} рыбачит: ${sum}. Крупный улов! +5 🍖`, false, true); }
+        }
+
+        if(roll1 === roll2) {
+            addLog("ДУБЛЬ! Из засады выходит зверь!", true);
+            let enemiesList = terrain === 'forest' ? ['Волк', 'Кабан', 'Медведь'] : ['Змея', 'Водяной'];
+            let enemyName = enemiesList[rnd(0, enemiesList.length-1)];
+            spawnEnemy(p.x + 1, p.y, enemyName);
+            startCombat(G.enemies[G.enemies.length-1], p);
+        }
+        updateUI(); renderMap();
     } else if (type === 'rest') {
         p.hp = Math.min(p.maxHp, p.hp + 2);
         p.san = Math.min(10, p.san + 1);
-        G.ap--; addLog(`${p.name} отдыхает (+2 HP, +1 Рассудок).`);
+        G.ap--; if (G.ap < 0) G.ap = 0;
+        addLog(`${p.name} отдыхает (+2 HP, +1 Рассудок).`);
         updateUI();
     } else if (type === 'heal') {
         if(G.res.meat >= 1) {
             G.res.meat--; p.hp = Math.min(p.maxHp, p.hp + 4);
-            G.ap--; addLog(`${p.name} лечится в Лазарете.`, false, true);
+            G.ap--; if (G.ap < 0) G.ap = 0;
+            addLog(`${p.name} лечится в Лазарете (+4 HP).`, false, true);
             updateUI();
         } else alert("Нужна еда!");
-    } else if (type === 'trade') {
-        alert("Торговля пока в разработке.");
     } else if (type === 'hire') {
         if(G.ap < 1) return alert("Нет ОД!");
         if(G.pawns.length >= 4) return alert("Максимум 4 пешки!");
@@ -578,31 +617,6 @@ function executeAction(type) {
         G.pawns.push(newP);
         addLog(`Нанят новый поселенец!`);
         updateUI(); renderPawnBar();
-    }
-}
-
-function hunt(p, terrain) {
-    G.ap--;
-    let roll1 = d6(), roll2 = d6();
-    let sum = roll1 + roll2;
-    let logText = `${p.name} кидает кубики: ${roll1} и ${roll2} (Сумма ${sum}). `;
-    
-    if(sum <= 5) {
-        addLog(logText + "Неудача. Дичь ушла.");
-    } else if (sum <= 9) {
-        if(terrain === 'forest') { G.res.meat += 3; G.res.hide += 1; addLog(logText + "Успех! +3 🍖, +1 🐻", false, true); }
-        else { G.res.meat += 3; addLog(logText + "Улов! +3 🍖", false, true); }
-    } else {
-        if(terrain === 'forest') { G.res.meat += 5; G.res.hide += 2; addLog(logText + "Крупная добыча! +5 🍖, +2 🐻", false, true); }
-        else { G.res.meat += 5; addLog(logText + "Крупный улов! +5 🍖", false, true); }
-    }
-
-    if(roll1 === roll2) {
-        addLog("ДУБЛЬ! Из засады выходит зверь!", true);
-        let enemiesList = terrain === 'forest' ? ['Волк', 'Кабан', 'Медведь'] : ['Змея', 'Водяной'];
-        let enemyName = enemiesList[rnd(0, enemiesList.length-1)];
-        spawnEnemy(p.x + 1, p.y, enemyName);
-        startCombat();
     }
 }
 
@@ -646,7 +660,7 @@ function placeBuild(x, y) {
     G.res.wood -= G.buildCost.w; G.res.stone -= G.buildCost.s;
     G.map[y][x].build = G.buildMode;
     G.map[y][x].progress = G.buildCost.turns;
-    G.ap--;
+    G.ap--; if (G.ap < 0) G.ap = 0;
     
     if(G.buildMode === 'great_hearth') {
         alert("ВЫ ПОБЕДИЛИ! Великий Очаг построен.");
@@ -667,7 +681,7 @@ function doCraft(item, costW, costH, costS, costC, costArrows) {
     G.res.wood -= costW; G.res.hide -= costH; G.res.stone -= costS; G.res.copper -= costC;
     
     if(item === 'armor') { p.armor += 2; p.maxHp += 2; p.hp += 2; }
-    else if(item === 'arrows_stone') { p.arrows = Math.min(2, p.arrows + 5); G.res.arrows = Math.max(0, G.res.arrows - 5); }
+    else if(item === 'arrows_stone') { p.arrows = Math.min(2, p.arrows + 5); }
     else if(item === 'bow') { p.weapon = 'Лук'; }
     else if(item === 'quiver') { p.maxArrows = 5; }
     else if(item === 'potion') { p.hp = Math.min(p.maxHp, p.hp + 5); }
@@ -679,10 +693,12 @@ function doCraft(item, costW, costH, costS, costC, costArrows) {
 
 function sendCaravan(distance) {
     if(G.ap < 1 || G.res.meat < distance) return alert("Нужно " + distance + " ОД и " + distance + " еды!");
-    G.ap -= distance; G.res.meat -= distance;
-    let p = G.pawns[G.activePawnIndex];
     if(G.pawns.filter(pw => pw.x !== -1).length === 1) return alert("Нельзя отправить последнюю пешку!");
     
+    G.ap -= distance; 
+    if (G.ap < 0) G.ap = 0;
+    G.res.meat -= distance;
+    let p = G.pawns[G.activePawnIndex];
     p.x = -1; p.caravanTimer = distance;
     addLog(`${p.name} отправляется в караван на ${distance} ходов.`);
     closeModal('caravan-modal');
@@ -707,7 +723,7 @@ function nextTurn() {
         
         if(p.san <= 0) {
             p.san = 5;
-            addLog(`БЕЗУМИЕ! ${p.name} впадает в невменяемость!`, true);
+            addLog(`БЕЗУМИЕ! ${p.name} теряет контроль!`, true);
             p.x = Math.max(0, Math.min(29, p.x + rnd(-2,2)));
             p.y = Math.max(0, Math.min(29, p.y + rnd(-2,2)));
         }
@@ -722,12 +738,18 @@ function nextTurn() {
         addLog(`Наступил сезон: ${G.season}`);
     }
 
+    // Спавн врага на краю
     if(G.round % 2 === 0) {
-        spawnEnemy(rnd(0,29), 0, 'Волк');
+        let side = rnd(0,3);
+        let ex, ey;
+        if (side === 0) { ex = rnd(0,29); ey = 0; }
+        else if (side === 1) { ex = rnd(0,29); ey = 29; }
+        else if (side === 2) { ex = 0; ey = rnd(0,29); }
+        else { ex = 29; ey = rnd(0,29); }
+        spawnEnemy(ex, ey, 'Волк');
         addLog("⚠️ На карте появился враг!", true);
     }
-    moveEnemies();
-
+    
     G.ap = G.diff === 'easy' ? 4 : 3;
     G.combatSteps = G.pawns[G.activePawnIndex].agi;
     updateUI(); updateVision();
@@ -743,17 +765,30 @@ function spinWheel() {
     setTimeout(() => {
         let s = rnd(0,7);
         let msg = "Тишина.";
-        if(s === 0) { msg = "Рейд!"; spawnEnemy(rnd(0,29), 0, 'Волк'); }
+        if(s === 0) { msg = "Рейд! Появился враг"; let side = rnd(0,3); let ex,ey; if(side===0){ex=rnd(0,29);ey=0;}else if(side===1){ex=rnd(0,29);ey=29;}else if(side===2){ex=0;ey=rnd(0,29);}else{ex=29;ey=rnd(0,29);} spawnEnemy(ex, ey, 'Волк'); }
         else if(s === 1) { msg = "Ресурсы (+2🌲, +2🪨)"; G.res.wood += 2; G.res.stone += 2; }
         else if(s === 2) { msg = "Болезнь (-2HP)"; G.pawns[0].hp -= 2; }
-        else if(s === 3) { msg = "Охота (+3🍖)"; G.res.meat += 3; }
+        else if(s === 3) { msg = "Удачная охота (+3🍖)"; G.res.meat += 3; }
         else if(s === 4) { msg = "Клад (+2🔶)"; G.res.copper += 2; }
         else if(s === 5) { msg = "Обмен (+5🌲, -2🍖)"; G.res.wood += 5; G.res.meat = Math.max(0, G.res.meat-2); }
         else if(s === 6) { msg = "Воры (-3🌲)"; G.res.wood = Math.max(0, G.res.wood-3); }
         
         document.getElementById('wheel-text').innerText = msg;
+        addLog(`Колесо: ${msg}`);
         updateUI();
-        setTimeout(() => closeModal('wheel-modal'), 2000);
+        setTimeout(() => {
+            closeModal('wheel-modal');
+            // Ход врагов после колеса
+            if (G.enemies.length > 0 && !G.inCombat) {
+                addLog("Ход врага...", true);
+                setTimeout(() => {
+                    moveEnemies();
+                    addLog("Твой ход!", false, true);
+                    G.combatSteps = G.pawns[G.activePawnIndex].agi;
+                    updateUI();
+                }, 500);
+            }
+        }, 1500);
     }, 3000);
 }
 
@@ -766,11 +801,12 @@ function spawnEnemy(x, y, type) {
     
     G.enemies.push({ x, y, hp: stats.hp, maxHp: stats.hp, agi: stats.agi, dmg: stats.dmg, armor: stats.armor, icon: stats.icon, name: type });
     
+    // Стрелка направления
     let arrow = '';
-    if (x <= 1) arrow = '⬅️';
-    else if (x >= 28) arrow = '➡️';
-    else if (y <= 1) arrow = '⬆️';
-    else if (y >= 28) arrow = '⬇️';
+    if (y === 0) arrow = '⬆️';
+    else if (y === 29) arrow = '⬇️';
+    else if (x === 0) arrow = '⬅️';
+    else if (x === 29) arrow = '➡️';
     
     if (arrow) {
         let div = document.createElement('div');
@@ -795,24 +831,36 @@ function moveEnemies() {
         if (cell && cell.build === 'trap') {
             cell.build = null;
             e.hp -= 3;
-            addLog(`Враг наступил на ловушку! -3 HP`, false, true);
-            renderMap();
-        } else {
+            addLog(`${e.name} наступил на ловушку! -3 HP (осталось ${Math.max(0,e.hp)})`, true);
+            if (e.hp <= 0) {
+                addLog(`${e.name} погиб в ловушке!`, false, true);
+                G.enemies = G.enemies.filter(en => en !== e);
+            }
+        } else if (cell) {
             e.x = nx; e.y = ny;
         }
-        
-        if(Math.abs(e.x - target.x) <= 1 && Math.abs(e.y - target.y) <= 1) {
-            startCombat(e, target);
-        }
     });
+    
+    // Проверка на бой после движения всех врагов
+    if (G.inCombat) return;
+    for (let e of G.enemies) {
+        for (let p of G.pawns) {
+            if (p.x === -1) continue;
+            if (Math.abs(e.x - p.x) <= 1 && Math.abs(e.y - p.y) <= 1) {
+                startCombat(e, p);
+                return;
+            }
+        }
+    }
     updateVision();
 }
 
 let currentEnemy = null, currentPawn = null;
 function startCombat(enemy, pawn) {
+    if (!enemy || !pawn) return;
     G.inCombat = true;
     currentEnemy = enemy;
-    currentPawn = pawn || G.pawns[G.activePawnIndex];
+    currentPawn = pawn;
     let info = document.getElementById('combat-info');
     info.innerHTML = `<p>Враг: ${enemy.name} | HP: <span id="c-ehp">${enemy.hp}</span></p><p>Ваше HP: <span id="c-php">${currentPawn.hp}</span></p>`;
     document.getElementById('c-log').innerHTML = "Бой начался!<br>";
@@ -820,6 +868,7 @@ function startCombat(enemy, pawn) {
 }
 
 function combatAttack() {
+    if (!currentEnemy || !currentPawn) { closeModal('combat-modal'); G.inCombat = false; return; }
     let logBox = document.getElementById('c-log');
     let pInit = d6() + currentPawn.agi;
     let eInit = d6() + currentEnemy.agi;
@@ -852,7 +901,8 @@ function doPlayerHit(logBox) {
     } else {
         logBox.innerHTML += `Вы промахнулись.<br>`;
     }
-    document.getElementById('c-ehp').innerText = Math.max(0, currentEnemy.hp);
+    let ehp = document.getElementById('c-ehp');
+    if(ehp) ehp.innerText = Math.max(0, currentEnemy.hp);
 }
 
 function doEnemyHit(logBox) {
@@ -865,7 +915,8 @@ function doEnemyHit(logBox) {
     } else {
         logBox.innerHTML += `Враг промахнулся.<br>`;
     }
-    document.getElementById('c-php').innerText = Math.max(0, currentPawn.hp);
+    let php = document.getElementById('c-php');
+    if(php) php.innerText = Math.max(0, currentPawn.hp);
 }
 
 function checkCombatEnd() {
@@ -873,19 +924,90 @@ function checkCombatEnd() {
         document.getElementById('c-log').innerHTML += "Враг мертв!<br>";
         G.enemies = G.enemies.filter(e => e !== currentEnemy);
         currentPawn.xp += 5;
-        setTimeout(() => { closeModal('combat-modal'); G.inCombat = false; updateVision(); }, 1000);
+        setTimeout(() => { closeModal('combat-modal'); G.inCombat = false; updateVision(); updateUI(); }, 1000);
     } else if(currentPawn.hp <= 0) {
         document.getElementById('c-log').innerHTML += "Вы погибли...<br>";
-        setTimeout(() => { closeModal('combat-modal'); G.inCombat = false; location.reload(); }, 2000);
+        setTimeout(() => { 
+            closeModal('combat-modal'); 
+            G.inCombat = false; 
+            gameOver("Смерть в бою от " + currentEnemy.name);
+        }, 1500);
     }
 }
 
 function combatFlee() {
+    if (!currentPawn) return;
     currentPawn.hp -= 2;
     closeModal('combat-modal');
     G.inCombat = false;
-    addLog(`${currentPawn.name} сбежал с уроном.`, true);
+    addLog(`${currentPawn.name} сбежал с уроном (-2 HP).`, true);
     updateUI();
+}
+
+async function handleCellClick(x, y) {
+    if (isMoving) return;
+    if (G.inCombat) return alert("Нельзя двигаться во время боя!");
+    let p = G.pawns[G.activePawnIndex];
+    if (!p || p.x === -1) return;
+
+    if (G.buildMode) { placeBuild(x, y); return; }
+    if (x === p.x && y === p.y) return;
+    
+    let cell = G.map[y][x];
+    if (cell.build) return alert("Клетка занята постройкой!");
+    if (G.enemies.some(e => e.x === x && e.y === y)) return alert("Там враг!");
+    
+    let path = findPath(p.x, p.y, x, y);
+    if (path.length === 0) return alert("Путь заблокирован!");
+    
+    isMoving = true;
+    let maxSteps = 5;
+    
+    if (G.enemies.length > 0) {
+        // Боевой режим - шаги по Ловкости
+        if (G.combatSteps <= 0) {
+            addLog("Ход врага...", true);
+            await sleep(800);
+            moveEnemies();
+            G.combatSteps = p.agi;
+            addLog("Твой ход!", false, true);
+            updateUI();
+            isMoving = false;
+            return;
+        }
+        maxSteps = G.combatSteps;
+    }
+    
+    if (path.length > maxSteps) path = path.slice(0, maxSteps);
+
+    for(let i=0; i<path.length; i++) {
+        p.x = path[i].x; p.y = path[i].y;
+        if (G.enemies.length > 0) G.combatSteps--;
+        renderMap(); updateVision();
+        await sleep(100);
+    }
+    isMoving = false;
+    updateUI();
+}
+
+function findPath(sx, sy, tx, ty) {
+    let queue = [{x:sx, y:sy, path:[]}];
+    let visited = new Set([`${sx},${sy}`]);
+    while(queue.length > 0) {
+        let cur = queue.shift();
+        if(cur.x === tx && cur.y === ty) return cur.path;
+        for(let d of [{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0}]) {
+            let nx = cur.x + d.x, ny = cur.y + d.y;
+            if(nx>=0 && nx<30 && ny>=0 && ny<30 && !visited.has(`${nx},${ny}`)) {
+                let cell = G.map[ny][nx];
+                if(!cell.build && !G.enemies.some(e => e.x===nx && e.y===ny) && cell.type !== 'water') {
+                    visited.add(`${nx},${ny}`);
+                    queue.push({x:nx, y:ny, path:[...cur.path, {x:nx, y:ny}]});
+                }
+            }
+        }
+    }
+    return [];
 }
 
 function openPawnCard() {
@@ -918,6 +1040,7 @@ function levelUp() {
 
 function gameOver(reason) {
     alert("ИГРА ОКОНЧЕНА: " + reason);
+    downloadLogs();
     location.reload();
 }
 </script>
