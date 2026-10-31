@@ -228,6 +228,14 @@
     </div>
 </div>
 
+<!-- МЕНЮ ДЕЙСТВИЙ -->
+<div class="modal" id="action-modal">
+    <div class="modal-content">
+        <h3 style="color: var(--accent); margin-top: 0;">Действия</h3>
+        <div id="action-list" style="display: flex; flex-direction: column; gap: 5px;"></div>
+    </div>
+</div>
+
 <!-- БОЙ -->
 <div class="modal" id="combat-modal">
     <div class="modal-content" style="border-color: var(--danger);">
@@ -279,6 +287,17 @@ function zoomMap(amount) {
     if (currentScale < 0.6) currentScale = 0.6;
     if (currentScale > 2.0) currentScale = 2.0;
     document.getElementById('grid').style.transform = `scale(${currentScale})`;
+    centerCameraOnPawn();
+}
+
+function centerCameraOnPawn() {
+    const area = document.getElementById('game-area');
+    const pawn = G.pawns[G.activePawnIndex];
+    if (!pawn || pawn.x === -1) return;
+    const cellSize = 40 * currentScale;
+    const targetX = (pawn.x * cellSize) - (area.clientWidth / 2) + (cellSize / 2);
+    const targetY = (pawn.y * cellSize) - (area.clientHeight / 2) + (cellSize / 2);
+    area.scrollTo({ left: targetX, top: targetY, behavior: 'smooth' });
 }
 
 // ================== ГЕНЕРАЦИЯ ПЕШКИ ==================
@@ -576,23 +595,72 @@ function doSmartAction() {
     let p = G.pawns[G.activePawnIndex];
     let cell = G.map[p.y][p.x];
     
-    if(cell.type === 'forest' || cell.type === 'water') {
-        hunt(p, cell.type);
-    } else if(cell.build === 'lazaret') {
-        if(G.res.meat >= 1) {
-            G.res.meat--; p.hp = Math.min(p.maxHp, p.hp + 4);
-            addLog(`${p.name} лечится в Лазарете.`, false, true);
-            G.ap--;
-        } else alert("Нужна еда!");
-    } else if(cell.type === 'grass' && !cell.build) {
-        openModal('build-modal');
+    let actionsHTML = "";
+    if (cell.type === 'forest') {
+        actionsHTML += `<button class="btn" onclick="executeAction('gather')">Собрать дерево (1 ОД)</button>`;
+        actionsHTML += `<button class="btn" onclick="executeAction('hunt')">Охота (1 ОД)</button>`;
+    } else if (cell.type === 'water') {
+        actionsHTML += `<button class="btn" onclick="executeAction('gather')">Собрать рыбу (1 ОД)</button>`;
+        actionsHTML += `<button class="btn" onclick="executeAction('hunt')">Охота (1 ОД)</button>`;
+    } else if (cell.type === 'mountain') {
+        actionsHTML += `<button class="btn" onclick="executeAction('gather')">Добыть камень/медь (1 ОД)</button>`;
+    } else if (cell.build === 'camp') {
+        actionsHTML += `<button class="btn" onclick="executeAction('trade')">Торговля</button>`;
+        actionsHTML += `<button class="btn" onclick="executeAction('hire')">Нанять поселенца (1 ОД)</button>`;
+    } else if (cell.build === 'lazaret') {
+        actionsHTML += `<button class="btn" onclick="executeAction('heal')">Лечиться (1🥩, 1 ОД)</button>`;
+    } else if (cell.type === 'grass' && !cell.build) {
+        actionsHTML += `<button class="btn" onclick="openModal('build-modal')">Строить</button>`;
+        actionsHTML += `<button class="btn" onclick="executeAction('rest')">Отдых (1 ОД)</button>`;
     } else {
+        actionsHTML += `<button class="btn" onclick="executeAction('rest')">Отдых (1 ОД)</button>`;
+    }
+    actionsHTML += `<button class="btn btn-red" onclick="closeModal('action-modal')" style="margin-top:10px;">Отмена</button>`;
+    document.getElementById('action-list').innerHTML = actionsHTML;
+    openModal('action-modal');
+}
+
+function executeAction(type) {
+    closeModal('action-modal');
+    let p = G.pawns[G.activePawnIndex];
+    let cell = G.map[p.y][p.x];
+    
+    if (type === 'gather') {
+        G.ap--;
+        let roll = d6() + p.craft;
+        let res = 1;
+        if (roll >= 4 && roll < 7) res = 2;
+        if (roll >= 7) res = 3;
+        
+        if (cell.type === 'forest') { G.res.wood += res; addLog(`${p.name} рубит лес: +${res} 🌲 (Бросок: ${roll})`); }
+        else if (cell.type === 'water') { G.res.meat += res; addLog(`${p.name} ловит рыбу: +${res} 🍖 (Бросок: ${roll})`); }
+        else if (cell.type === 'mountain') { G.res.stone += res; G.res.copper += (res >= 2 ? 1 : 0); addLog(`${p.name} добывает камень: +${res} 🪨 (Бросок: ${roll})`); }
+        
+        updateUI(); renderMap();
+    } else if (type === 'hunt') {
+        hunt(p, cell.type);
+    } else if (type === 'rest') {
         p.hp = Math.min(p.maxHp, p.hp + 2);
         p.san = Math.min(10, p.san + 1);
-        addLog(`${p.name} отдыхает (+2 HP, +1 Рассудок).`);
+        G.ap--; addLog(`${p.name} отдыхает (+2 HP, +1 Рассудок).`);
+        updateUI();
+    } else if (type === 'heal') {
+        if(G.res.meat >= 1) {
+            G.res.meat--; p.hp = Math.min(p.maxHp, p.hp + 4);
+            G.ap--; addLog(`${p.name} лечится в Лазарете.`, false, true);
+            updateUI();
+        } else alert("Нужна еда!");
+    } else if (type === 'trade') {
+        alert("Торговля пока в разработке.");
+    } else if (type === 'hire') {
+        if(G.ap < 1) return alert("Нет ОД!");
+        if(G.pawns.length >= 4) return alert("Максимум 4 пешки!");
         G.ap--;
+        let newP = { name: "Поселенец", str: d6(), agi: d6(), craft: d6(), wits: d6(), trait: "Нет", hp: 10, maxHp: 10, san: 10, xp: 0, lvl: 0, arrows: 0, weapon: 'Кулаки', armor: 0, x: p.x, y: p.y, diseases: [], active: true };
+        G.pawns.push(newP);
+        addLog(`Нанят новый поселенец!`);
+        updateUI(); renderPawnBar();
     }
-    updateUI(); renderMap();
 }
 
 // ================== ОХОТА ==================
