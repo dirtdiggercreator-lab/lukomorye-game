@@ -19,7 +19,7 @@
         .pawn-lvl-up { position: absolute; top: -5px; right: -5px; color: yellow; font-weight: bold; font-size: 14px; animation: pulse 1s infinite; }
 
         .game-area { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; overflow: auto; background: #000; display: block; }
-        .grid { display: grid; grid-template-columns: repeat(30, 40px); grid-template-rows: repeat(30, 40px); transform-origin: 0 0; margin: 0; transition: transform 0.1s ease-out; }
+        .grid { display: grid; grid-template-columns: repeat(30, 40px); grid-template-rows: repeat(30, 40px); transform-origin: 0 0; margin: 0; }
         
         .cell { width: 40px; height: 40px; border: 1px solid rgba(0,0,0,0.2); cursor: pointer; position: relative; display: flex; justify-content: center; align-items: center; font-size: 24px; box-sizing: border-box; }
         .tile-forest { background-color: #27ae60; }
@@ -107,8 +107,8 @@
 </div>
 
 <div class="zoom-controls" id="zoom-controls" style="display: none;">
-    <button class="zoom-btn" onclick="event.stopPropagation(); zoomMap(0.2)">+</button>
-    <button class="zoom-btn" onclick="event.stopPropagation(); zoomMap(-0.2)">-</button>
+    <button class="zoom-btn" onpointerdown="event.stopPropagation(); zoomMap(0.2)">+</button>
+    <button class="zoom-btn" onpointerdown="event.stopPropagation(); zoomMap(-0.2)">-</button>
 </div>
 
 <div class="bottom-panel" id="bottom-panel" style="display: none;">
@@ -134,7 +134,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.7</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.8</p>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
@@ -282,7 +282,50 @@ let G = {
 };
 let logs = [];
 let isMoving = false;
+
 let currentScale = 1;
+
+function zoomMap(amount) {
+    currentScale += amount;
+    if (currentScale < 0.5) currentScale = 0.5;
+    if (currentScale > 2.5) currentScale = 2.5;
+    applyZoom();
+    if (typeof centerCameraOnPawn === 'function') centerCameraOnPawn();
+}
+
+function applyZoom() {
+    var grid = document.getElementById('grid');
+    var wrapper = document.getElementById('grid-wrapper');
+    if (!grid || !wrapper) return;
+    grid.style.transform = 'scale(' + currentScale + ')';
+    grid.style.transformOrigin = '0 0';
+    wrapper.style.width = (30 * 40 * currentScale) + 'px';
+    wrapper.style.height = (30 * 40 * currentScale) + 'px';
+}
+
+function initPinchZoom() {
+    var area = document.getElementById('game-area');
+    if (!area || area.dataset.pinchInit) return;
+    area.dataset.pinchInit = '1';
+    var startDist = 0, startScale = 1;
+    area.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            startDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            startScale = currentScale;
+        }
+    }, { passive: true });
+    area.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            var dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            currentScale = startScale * (dist / startDist);
+            if (currentScale < 0.5) currentScale = 0.5;
+            if (currentScale > 2.5) currentScale = 2.5;
+            applyZoom();
+        }
+    }, { passive: false });
+}
+
 
 function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function d6() { return rnd(1, 6); }
@@ -398,7 +441,7 @@ function startGame() {
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
     initPinchZoom();
-    addLog("Версия v38.7. Игра началась!");
+    addLog("Версия v38.8. Игра началась!");
     
     setTimeout(() => {
         const area = document.getElementById('game-area');
@@ -574,6 +617,19 @@ function doSmartAction() {
     } else {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     }
+    // Adjacent incomplete builds
+    var __p2 = G.pawns[G.activePawnIndex];
+    for (var __dx = -1; __dx <= 1; __dx++) {
+        for (var __dy = -1; __dy <= 1; __dy++) {
+            if (__dx === 0 && __dy === 0) continue;
+            var __nx = __p2.x + __dx, __ny = __p2.y + __dy;
+            if (__nx < 0 || __nx >= 30 || __ny < 0 || __ny >= 30) continue;
+            var __c = G.map[__ny][__nx];
+            if (__c.build && __c.progress < getBuildCost(__c.build).turns) {
+                actionsHTML += '<button class="btn action-btn" onclick="executeContinueBuild(' + __nx + ',' + __ny + ')">🏗️ Достроить (' + __c.progress + '/' + getBuildCost(__c.build).turns + ')</button>';
+            }
+        }
+    }
     document.getElementById('action-list').innerHTML = actionsHTML;
     openModal('action-modal');
 }
@@ -686,6 +742,29 @@ function doBuild(type, costW, costS, turns) {
     addLog(`Выбрана постройка: ${type}. Кликните на траву.`);
 }
 
+function executeContinueBuild(bx, by) {
+    var c = G.map[by][bx];
+    if (!c.build) return;
+    var cost = getBuildCost(c.build);
+    if (c.progress >= cost.turns) return alert("Уже достроено!");
+    if (G.ap <= 0) return alert("Нет ОД!");
+    var pp = G.pawns[G.activePawnIndex];
+    if (Math.max(Math.abs(pp.x - bx), Math.abs(pp.y - by)) > 1) return alert("Слишком далеко!");
+    G.ap--;
+    c.progress++;
+    if (c.progress >= cost.turns) {
+        addLog('✅ Достроено: ' + c.build, false, true);
+        if (c.build === 'great_hearth') {
+            downloadLogs();
+            setTimeout(function() { alert("ВЫ ПОБЕДИЛИ!"); location.reload(); }, 300);
+            return;
+        }
+    } else {
+        addLog('🏗️ ' + c.build + ' ' + c.progress + '/' + cost.turns);
+    }
+    updateVision(); updateUI(); renderMap();
+}
+
 function placeBuild(x, y) {
     if(G.map[y][x].type !== 'grass') return alert("Строить можно только на траве!");
     if(G.map[y][x].build) return alert("Уже занято!");
@@ -700,10 +779,12 @@ function placeBuild(x, y) {
     if (G.buildMode === 'great_hearth') G.res.copper -= 8;
     
     G.map[y][x].build = G.buildMode;
-    G.map[y][x].progress = G.buildCost.turns;
+    var __tot = getBuildCost(G.buildMode).turns;
+    G.map[y][x].progress = 1;
+    if (__tot > 1) addLog('🏗️ Начато: ' + G.buildMode + ' (1/' + __tot + ')');
     G.ap--; if (G.ap < 0) G.ap = 0;
     
-    if(G.buildMode === 'great_hearth') {
+    if(G.buildMode === 'great_hearth' && G.map[y][x].progress >= getBuildCost('great_hearth').turns) {
         addLog("ПОБЕДА. Построен Великий Очаг.", false, true);
         downloadLogs();
         setTimeout(() => {
@@ -1187,7 +1268,7 @@ function gameOver(reason) {
     }, 500);
 }
 
-console.log("v38.7 loaded");
+console.log("v38.8 loaded");
 </script>
 </body>
 </html>
