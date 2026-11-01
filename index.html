@@ -47,7 +47,7 @@
         .explored-fog { opacity: 0.55; }
         .build-progress { font-size: 10px; color: white; position: absolute; bottom: 0; right: 2px; font-weight: bold;}
 
-        .zoom-controls { position: fixed; bottom: 170px; right: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 3000; }
+        .zoom-controls { position: fixed; bottom: 170px; right: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 9999; }
         .zoom-btn { width: 40px; height: 40px; background: rgba(0,0,0,0.8); color: white; border: 2px solid var(--accent); border-radius: 5px; font-size: 20px; font-weight: bold; cursor: pointer; }
 
         .bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; height: 160px; background: var(--panel); display: flex; flex-direction: column; z-index: 1000; border-top: 2px solid #000; }
@@ -134,7 +134,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.8</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.9</p>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
@@ -282,27 +282,21 @@ let G = {
 };
 let logs = [];
 let isMoving = false;
-
 let currentScale = 1;
-
 function zoomMap(amount) {
     currentScale += amount;
     if (currentScale < 0.5) currentScale = 0.5;
     if (currentScale > 2.5) currentScale = 2.5;
     applyZoom();
-    if (typeof centerCameraOnPawn === 'function') centerCameraOnPawn();
 }
-
 function applyZoom() {
     var grid = document.getElementById('grid');
     var wrapper = document.getElementById('grid-wrapper');
     if (!grid || !wrapper) return;
     grid.style.transform = 'scale(' + currentScale + ')';
-    grid.style.transformOrigin = '0 0';
     wrapper.style.width = (30 * 40 * currentScale) + 'px';
     wrapper.style.height = (30 * 40 * currentScale) + 'px';
 }
-
 function initPinchZoom() {
     var area = document.getElementById('game-area');
     if (!area || area.dataset.pinchInit) return;
@@ -325,6 +319,38 @@ function initPinchZoom() {
         }
     }, { passive: false });
 }
+
+// --- МИНИ-КАРТА ---
+function drawMinimap() {
+    let cvs = document.getElementById('minimap');
+    if (!cvs) return;
+    let ctx = cvs.getContext('2d');
+    ctx.clearRect(0, 0, 120, 120);
+    for (let y = 0; y < 30; y++) {
+        for (let x = 0; x < 30; x++) {
+            let c = G.map[y][x];
+            if (!c || !c.explored) continue;
+            let color = '#a4b0be';
+            if (c.type === 'forest') color = '#27ae60';
+            else if (c.type === 'mountain') color = '#7f8c8d';
+            else if (c.type === 'water') color = '#2980b9';
+            if (c.build) color = '#fff';
+            ctx.fillStyle = color;
+            ctx.fillRect(x * 4, y * 4, 4, 4);
+        }
+    }
+    G.enemies.forEach(e => { ctx.fillStyle = '#e84118'; ctx.fillRect(e.x * 4, e.y * 4, 4, 4); });
+    G.pawns.forEach(p => { if (p.x !== -1) { ctx.fillStyle = '#fbc531'; ctx.fillRect(p.x * 4, p.y * 4, 4, 4); } });
+}
+
+
+
+
+
+
+
+
+
 
 
 function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -441,7 +467,7 @@ function startGame() {
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
     initPinchZoom();
-    addLog("Версия v38.8. Игра началась!");
+    addLog("Версия v38.9. Игра началась!");
     
     setTimeout(() => {
         const area = document.getElementById('game-area');
@@ -501,6 +527,7 @@ function renderMap() {
         }
     }
     renderPawnBar();
+    drawMinimap();
 }
 
 function renderPawnBar() {
@@ -586,8 +613,8 @@ function updateSmartButton() {
     if(cell.type === 'forest') btn.innerText = "Действия (Лес)";
     else if(cell.type === 'water') btn.innerText = "Действия (Вода)";
     else if(cell.type === 'mountain') btn.innerText = "Действия (Горы)";
-    else if(cell.build === 'lazaret') btn.innerText = "Лечиться (1🍖)";
-    else if(cell.build === 'camp' || cell.build === 'houses') btn.innerText = "Нанять";
+    else if(cell.build === 'lazaret' && cell.progress >= 2) btn.innerText = "Лечиться (1🍖)";
+    else if((cell.build === 'camp' && cell.progress >= 1) || (cell.build === 'houses' && cell.progress >= 2)) btn.innerText = "Нанять";
     else if(cell.type === 'grass' && !cell.build) btn.innerText = "Строить / Отдых";
     else btn.innerText = "Отдых";
 }
@@ -606,10 +633,10 @@ function doSmartAction() {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('hunt')">🏹 Охота</button>`;
     } else if (cell.type === 'mountain') {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('gather')">⛏️ Добыть камень/медь</button>`;
-    } else if (cell.build === 'camp' || cell.build === 'houses') {
+    } else if ((cell.build === 'camp' && cell.progress >= 1) || (cell.build === 'houses' && cell.progress >= 2)) {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('hire')">🧑‍🌾 Нанять поселенца</button>`;
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
-    } else if (cell.build === 'lazaret') {
+    } else if (cell.build === 'lazaret' && cell.progress >= 2) {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('heal')">⛑️ Лечиться (1🍖)</button>`;
     } else if (cell.type === 'grass' && !cell.build) {
         actionsHTML += `<button class="btn action-btn" onclick="closeModal('action-modal'); openModal('build-modal')">🏗️ Строить</button>`;
@@ -1268,7 +1295,7 @@ function gameOver(reason) {
     }, 500);
 }
 
-console.log("v38.8 loaded");
+console.log("v38.9 loaded");
 </script>
 </body>
 </html>
