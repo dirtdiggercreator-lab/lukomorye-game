@@ -18,10 +18,12 @@
         .pawn-hp { color: var(--danger); font-size: 12px; font-weight: bold; }
         .pawn-lvl-up { position: absolute; top: -5px; right: -5px; color: yellow; font-weight: bold; font-size: 14px; animation: pulse 1s infinite; }
 
+        #minimap { position: fixed; top: 85px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.7); border: 2px solid var(--accent); border-radius: 5px; pointer-events: none; }
+
         .game-area { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; overflow: auto; background: #000; display: block; }
-        .grid { display: grid; grid-template-columns: repeat(30, 40px); grid-template-rows: repeat(30, 40px); transform-origin: 0 0; margin: 0; }
+        .grid { display: grid; grid-template-columns: repeat(30, var(--size, 40px)); grid-template-rows: repeat(30, var(--size, 40px)); transform-origin: 0 0; margin: 0; }
         
-        .cell { width: 40px; height: 40px; border: 1px solid rgba(0,0,0,0.2); cursor: pointer; position: relative; display: flex; justify-content: center; align-items: center; font-size: 24px; box-sizing: border-box; }
+        .cell { width: var(--size, 40px); height: var(--size, 40px); border: 1px solid rgba(0,0,0,0.2); cursor: pointer; position: relative; display: flex; justify-content: center; align-items: center; font-size: var(--font, 24px); box-sizing: border-box; }
         .tile-forest { background-color: #27ae60; }
         .tile-mountain { background-color: #7f8c8d; }
         .tile-water { background-color: #2980b9; }
@@ -45,18 +47,16 @@
         .pawn-unit { outline: 2px solid yellow; z-index: 10; }
         .fog { background-color: #111 !important; color: transparent !important; font-size: 0 !important; border: 1px solid #222; }
         .explored-fog { opacity: 0.55; }
-        .build-progress { font-size: 10px; color: white; position: absolute; bottom: 0; right: 2px; font-weight: bold;}
+        .build-progress { font-size: 10px; color: white; position: absolute; bottom: 0; right: 2px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 0 2px;}
 
         .zoom-controls { position: fixed; bottom: 170px; right: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 9999; }
         .zoom-btn { width: 40px; height: 40px; background: rgba(0,0,0,0.8); color: white; border: 2px solid var(--accent); border-radius: 5px; font-size: 20px; font-weight: bold; cursor: pointer; }
 
         .bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; height: 160px; background: var(--panel); display: flex; flex-direction: column; z-index: 1000; border-top: 2px solid #000; }
-        
         .log-box { height: 100px; overflow-y: scroll; background: #000; padding: 5px; font-size: 11px; font-family: monospace; border-bottom: 1px solid #333; display: flex; flex-direction: column; }
         .log-msg { margin-bottom: 2px; }
         .log-danger { color: red; }
         .log-success { color: #4cd137; }
-        .log-name { color: yellow; font-weight: bold; }
         
         .btn-row { display: flex; height: 60px; gap: 5px; padding: 5px; }
         .btn { flex: 1; background: var(--btn); color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; text-align: center; }
@@ -71,23 +71,11 @@
         .wheel-container { position: relative; width: 150px; height: 150px; margin: 20px auto; flex-shrink: 0; }
         .wheel { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(#e84118 0 45deg, #00a8ff 45deg 90deg, #4cd137 90deg 135deg, #fbc531 135deg 180deg, #9b59b6 180deg 225deg, #e67e22 225deg 270deg, #1abc9c 270deg 315deg, #34495e 315deg 360deg); border: 4px solid #fff; transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
         .wheel-arrow { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 24px; color: yellow; z-index: 10; }
-
         #wheel-modal .modal-content { height: 450px; display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 25px; }
 
+        .action-sheet { position: fixed; bottom: 60px; left: 0; right: 0; background: rgba(47, 54, 64, 0.98); padding: 10px 15px 15px 15px; z-index: 2500; border-top: 2px solid var(--accent); border-radius: 15px 15px 0 0; box-shadow: 0 -10px 20px rgba(0,0,0,0.8); display: none; }
+        .action-sheet .btn { padding: 15px 10px; font-size: 14px; border-radius: 8px; margin: 0; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
-        
-        .action-sheet {
-            position: fixed; bottom: 60px; left: 0; right: 0;
-            background: rgba(47, 54, 64, 0.98);
-            padding: 10px 15px 15px 15px;
-            z-index: 2500;
-            border-top: 2px solid var(--accent);
-            border-radius: 15px 15px 0 0;
-            box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
-        }
-        .action-sheet .btn {
-            padding: 15px 10px; font-size: 14px; border-radius: 8px; margin: 0;
-        }
     </style>
 </head>
 <body>
@@ -100,6 +88,7 @@
     <button class="exit-btn" onclick="if(confirm('Сдаться и выйти?')) location.reload()">🚪</button>
 </div>
 
+<canvas id="minimap" width="120" height="120"></canvas>
 <div class="pawn-bar" id="pawn-bar" style="display: none;"></div>
 
 <div class="game-area" id="game-area" style="display: none;">
@@ -107,8 +96,8 @@
 </div>
 
 <div class="zoom-controls" id="zoom-controls" style="display: none;">
-    <button class="zoom-btn" onpointerdown="event.stopPropagation(); zoomMap(0.2)">+</button>
-    <button class="zoom-btn" onpointerdown="event.stopPropagation(); zoomMap(-0.2)">-</button>
+    <button class="zoom-btn" onclick="zoomMap(0.2)">+</button>
+    <button class="zoom-btn" onclick="zoomMap(-0.2)">-</button>
 </div>
 
 <div class="bottom-panel" id="bottom-panel" style="display: none;">
@@ -121,26 +110,23 @@
     </div>
 </div>
 
-<!-- МЕНЮ ДЕЙСТВИЙ -->
-<div id="action-modal" class="action-sheet" style="display: none;">
+<div id="action-modal" class="action-sheet">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h3 style="color: var(--accent); margin: 0;">Действия</h3>
-        <button class="btn" onclick="closeModal('action-modal')" style="width: auto; padding: 8px 15px; background: #555;">✖ Закрыть</button>
+        <button class="btn" onclick="document.getElementById('action-modal').style.display='none'" style="width: auto; padding: 8px 15px; background: #555;">✖ Закрыть</button>
     </div>
     <div id="action-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
 </div>
 
-<!-- ГЛАВНОЕ МЕНЮ -->
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v38.9</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v40.0</p>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
 </div>
 
-<!-- ВЫБОР СЛОЖНОСТИ -->
 <div class="modal" id="diff-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;">Сложность</h3>
@@ -151,7 +137,6 @@
     </div>
 </div>
 
-<!-- ГЕНЕРАЦИЯ ПЕШКИ -->
 <div class="modal" id="gen-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;">Создание персонажа</h3>
@@ -169,7 +154,6 @@
     </div>
 </div>
 
-<!-- СТРОЙКА -->
 <div class="modal" id="build-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;">Строительство</h3>
@@ -188,7 +172,6 @@
     </div>
 </div>
 
-<!-- КРАФТ -->
 <div class="modal" id="craft-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;">Крафт</h3>
@@ -205,7 +188,6 @@
     </div>
 </div>
 
-<!-- КАРАВАН -->
 <div class="modal" id="caravan-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;">Караван</h3>
@@ -216,14 +198,10 @@
     </div>
 </div>
 
-<!-- КОЛЕСО -->
 <div class="modal" id="wheel-modal">
     <div class="modal-content">
         <h3 style="margin-top: 0; color: var(--accent);">Событие</h3>
-        <div class="wheel-container">
-            <div class="wheel-arrow">▼</div>
-            <div class="wheel" id="wheel"></div>
-        </div>
+        <div class="wheel-container"><div class="wheel-arrow">▼</div><div class="wheel" id="wheel"></div></div>
         <div style="height: 70px;">
             <button class="btn" id="spin-btn" onclick="spinWheel()" style="width: 100%; padding: 12px;">Крутить!</button>
             <p id="wheel-text" style="font-weight: bold; color: yellow; height: 20px; margin-top: 10px;"></p>
@@ -231,7 +209,6 @@
     </div>
 </div>
 
-<!-- КАРТОЧКА ПЕШКИ -->
 <div class="modal" id="pawn-card-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;" id="pc-name">Пешка</h3>
@@ -250,7 +227,6 @@
     </div>
 </div>
 
-<!-- БОЙ -->
 <div class="modal" id="combat-modal">
     <div class="modal-content" style="border-color: var(--danger);">
         <h3 style="color: var(--danger); margin-top: 0;">Бой</h3>
@@ -278,53 +254,29 @@ let G = {
     pawns: [], enemies: [], map: [],
     buildMode: null, buildCost: {w:0, s:0, turns:0},
     inCombat: false, activeEnemy: null, activePawnIndex: 0, combatSteps: 0,
-    fledThisCombat: false
+    fledThisCombat: false, pendingStandardSpawn: false, pendingWheelSpawn: false
 };
 let logs = [];
 let isMoving = false;
 let currentScale = 1;
+
 function zoomMap(amount) {
     currentScale += amount;
-    if (currentScale < 0.5) currentScale = 0.5;
-    if (currentScale > 2.5) currentScale = 2.5;
-    applyZoom();
-}
-function applyZoom() {
-    var grid = document.getElementById('grid');
-    var wrapper = document.getElementById('grid-wrapper');
-    if (!grid || !wrapper) return;
-    grid.style.transform = 'scale(' + currentScale + ')';
-    wrapper.style.width = (30 * 40 * currentScale) + 'px';
-    wrapper.style.height = (30 * 40 * currentScale) + 'px';
-}
-function initPinchZoom() {
-    var area = document.getElementById('game-area');
-    if (!area || area.dataset.pinchInit) return;
-    area.dataset.pinchInit = '1';
-    var startDist = 0, startScale = 1;
-    area.addEventListener('touchstart', function(e) {
-        if (e.touches.length === 2) {
-            startDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-            startScale = currentScale;
-        }
-    }, { passive: true });
-    area.addEventListener('touchmove', function(e) {
-        if (e.touches.length === 2) {
-            e.preventDefault();
-            var dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-            currentScale = startScale * (dist / startDist);
-            if (currentScale < 0.5) currentScale = 0.5;
-            if (currentScale > 2.5) currentScale = 2.5;
-            applyZoom();
-        }
-    }, { passive: false });
+    if (currentScale < 0.6) currentScale = 0.6;
+    if (currentScale > 2.0) currentScale = 2.0;
+    let grid = document.getElementById('grid');
+    if (!grid) return;
+    let sz = Math.round(40 * currentScale);
+    let fz = Math.round(24 * currentScale);
+    grid.style.setProperty('--size', sz + 'px');
+    grid.style.setProperty('--font', fz + 'px');
 }
 
-// --- МИНИ-КАРТА ---
 function drawMinimap() {
     let cvs = document.getElementById('minimap');
     if (!cvs) return;
     let ctx = cvs.getContext('2d');
+    if (!ctx) return;
     ctx.clearRect(0, 0, 120, 120);
     for (let y = 0; y < 30; y++) {
         for (let x = 0; x < 30; x++) {
@@ -342,16 +294,6 @@ function drawMinimap() {
     G.enemies.forEach(e => { ctx.fillStyle = '#e84118'; ctx.fillRect(e.x * 4, e.y * 4, 4, 4); });
     G.pawns.forEach(p => { if (p.x !== -1) { ctx.fillStyle = '#fbc531'; ctx.fillRect(p.x * 4, p.y * 4, 4, 4); } });
 }
-
-
-
-
-
-
-
-
-
-
 
 function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function d6() { return rnd(1, 6); }
@@ -402,7 +344,6 @@ function rollStats() {
         hp: 10, maxHp: 10, san: 10, xp: 0, lvl: 0, arrows: 0, weapon: 'fists', armor: 0, x: 15, y: 15,
         diseases: [], active: true, maxArrows: 2
     };
-    
     if(tempPawn.trait === 'Силач') tempPawn.str += 1;
     if(tempPawn.trait === 'Ловкач') tempPawn.agi += 1;
     if(tempPawn.trait === 'Умелец') tempPawn.craft += 1;
@@ -414,7 +355,6 @@ function rollStats() {
     document.getElementById('gen-craft').innerText = tempPawn.craft;
     document.getElementById('gen-wits').innerText = tempPawn.wits;
     document.getElementById('gen-trait').innerText = tempPawn.trait;
-    
     document.getElementById('btn-roll').style.display = 'none';
     document.getElementById('btn-accept').style.display = 'block';
     document.getElementById('btn-reroll').style.display = 'block';
@@ -424,6 +364,8 @@ function startGame() {
     closeModal('gen-modal');
     G.map = [];
     G.combatSteps = tempPawn.agi;
+    G.pendingStandardSpawn = false;
+    G.pendingWheelSpawn = false;
     
     for(let y=0; y<30; y++) {
         let row = [];
@@ -440,7 +382,6 @@ function startGame() {
         G.map.push(row);
     }
     
-    // Поиск травы для спавна, чтобы не родиться в воде
     let spawnX = 15, spawnY = 15;
     if (G.map[spawnY][spawnX].type !== 'grass') {
         let found = false;
@@ -461,13 +402,12 @@ function startGame() {
     
     document.getElementById('top-panel').style.display = 'flex';
     document.getElementById('pawn-bar').style.display = 'flex';
-    document.getElementById('game-area').style.display = 'flex';
+    document.getElementById('game-area').style.display = 'block';
     document.getElementById('zoom-controls').style.display = 'flex';
     document.getElementById('bottom-panel').style.display = 'flex';
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
-    initPinchZoom();
-    addLog("Версия v38.9. Игра началась!");
+    addLog("Версия v40.0. Игра началась!");
     
     setTimeout(() => {
         const area = document.getElementById('game-area');
@@ -539,11 +479,9 @@ function renderPawnBar() {
         let d = document.createElement('div');
         d.className = `pawn-icon ${i === G.activePawnIndex ? 'active' : ''}`;
         d.innerHTML = `🧑‍🌾 <span class="pawn-hp">${p.hp}</span>`;
-        
         if(p.xp >= getNeededXp(p.lvl) && p.lvl < getMaxLevel()) {
             d.innerHTML += `<span class="pawn-lvl-up">+</span>`;
         }
-        
         d.onclick = () => { G.activePawnIndex = i; renderPawnBar(); openPawnCard(); };
         bar.appendChild(d);
     });
@@ -614,7 +552,7 @@ function updateSmartButton() {
     else if(cell.type === 'water') btn.innerText = "Действия (Вода)";
     else if(cell.type === 'mountain') btn.innerText = "Действия (Горы)";
     else if(cell.build === 'lazaret' && cell.progress >= 2) btn.innerText = "Лечиться (1🍖)";
-    else if((cell.build === 'camp' && cell.progress >= 1) || (cell.build === 'houses' && cell.progress >= 2)) btn.innerText = "Нанять";
+    else if((cell.build === 'camp') || (cell.build === 'houses' && cell.progress >= 2)) btn.innerText = "Нанять";
     else if(cell.type === 'grass' && !cell.build) btn.innerText = "Строить / Отдых";
     else btn.innerText = "Отдых";
 }
@@ -633,36 +571,37 @@ function doSmartAction() {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('hunt')">🏹 Охота</button>`;
     } else if (cell.type === 'mountain') {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('gather')">⛏️ Добыть камень/медь</button>`;
-    } else if ((cell.build === 'camp' && cell.progress >= 1) || (cell.build === 'houses' && cell.progress >= 2)) {
+    } else if (cell.build === 'camp' || (cell.build === 'houses' && cell.progress >= 2)) {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('hire')">🧑‍🌾 Нанять поселенца</button>`;
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     } else if (cell.build === 'lazaret' && cell.progress >= 2) {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('heal')">⛑️ Лечиться (1🍖)</button>`;
     } else if (cell.type === 'grass' && !cell.build) {
-        actionsHTML += `<button class="btn action-btn" onclick="closeModal('action-modal'); openModal('build-modal')">🏗️ Строить</button>`;
+        actionsHTML += `<button class="btn action-btn" onclick="document.getElementById('action-modal').style.display='none'; openModal('build-modal')">🏗️ Строить</button>`;
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     } else {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     }
-    // Adjacent incomplete builds
-    var __p2 = G.pawns[G.activePawnIndex];
-    for (var __dx = -1; __dx <= 1; __dx++) {
-        for (var __dy = -1; __dy <= 1; __dy++) {
-            if (__dx === 0 && __dy === 0) continue;
-            var __nx = __p2.x + __dx, __ny = __p2.y + __dy;
-            if (__nx < 0 || __nx >= 30 || __ny < 0 || __ny >= 30) continue;
-            var __c = G.map[__ny][__nx];
-            if (__c.build && __c.progress < getBuildCost(__c.build).turns) {
-                actionsHTML += '<button class="btn action-btn" onclick="executeContinueBuild(' + __nx + ',' + __ny + ')">🏗️ Достроить (' + __c.progress + '/' + getBuildCost(__c.build).turns + ')</button>';
+    
+    let p2 = G.pawns[G.activePawnIndex];
+    for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+            if (dx === 0 && dy === 0) continue;
+            let nx = p2.x + dx, ny = p2.y + dy;
+            if (nx < 0 || nx >= 30 || ny < 0 || ny >= 30) continue;
+            let c = G.map[ny][nx];
+            if (c.build && c.progress < getBuildCost(c.build).turns) {
+                actionsHTML += `<button class="btn action-btn" onclick="executeContinueBuild(${nx},${ny})" style="background: #2980b9;">🏗️ Достроить (${c.progress}/${getBuildCost(c.build).turns})</button>`;
             }
         }
     }
+    
     document.getElementById('action-list').innerHTML = actionsHTML;
-    openModal('action-modal');
+    document.getElementById('action-modal').style.display = 'block';
 }
 
 function executeAction(type) {
-    closeModal('action-modal');
+    document.getElementById('action-modal').style.display = 'none';
     let p = G.pawns[G.activePawnIndex];
     let cell = G.map[p.y][p.x];
     
@@ -689,7 +628,6 @@ function executeAction(type) {
             addLog(`${p.name} добывает камень: +${res} 🪨 (Кубик: ${roll})`, false, true); 
             cell.type = 'grass';
         }
-        
         updateUI(); renderMap();
     } else if (type === 'hunt') {
         G.ap--;
@@ -738,6 +676,33 @@ function executeAction(type) {
     }
 }
 
+function executeContinueBuild(bx, by) {
+    document.getElementById('action-modal').style.display = 'none';
+    let c = G.map[by][bx];
+    if (!c.build) return;
+    let cost = getBuildCost(c.build);
+    if (c.progress >= cost.turns) return alert("Уже достроено!");
+    if (G.ap <= 0) return alert("Нет ОД!");
+    
+    let pp = G.pawns[G.activePawnIndex];
+    if (Math.max(Math.abs(pp.x - bx), Math.abs(pp.y - by)) > 1) return alert("Слишком далеко!");
+    
+    G.ap--;
+    c.progress++;
+    
+    if (c.progress >= cost.turns) {
+        addLog(`✅ Достроено: ${c.build}`, false, true);
+        if (c.build === 'great_hearth') {
+            downloadLogs();
+            setTimeout(() => { alert("ВЫ ПОБЕДИЛИ!"); location.reload(); }, 300);
+            return;
+        }
+    } else {
+        addLog(`🏗️ ${c.build} (${c.progress}/${cost.turns})`);
+    }
+    updateVision(); updateUI(); renderMap();
+}
+
 function getBuildCost(type) {
     if(type === 'camp') return {w:0,s:0,turns:1};
     if(type === 'wall_wood') return {w:2,s:0,turns:1};
@@ -755,41 +720,16 @@ function getBuildCost(type) {
 
 function doBuild(type, costW, costS, turns) {
     if(G.ap <= 0) return alert("Нет ОД!");
-    
     if(type === 'great_hearth' && G.diff === 'hard') {
         costW = Math.floor(15 * 2.5);
         costS = Math.floor(15 * 2.5);
     }
-    
     if(G.res.wood < costW || G.res.stone < costS) return alert("Не хватает ресурсов!");
     if(type === 'great_hearth' && G.res.copper < 8) return alert("Нужно 8 меди!");
     
     G.buildMode = type; G.buildCost = {w:costW, s:costS, turns:turns};
     closeModal('build-modal');
     addLog(`Выбрана постройка: ${type}. Кликните на траву.`);
-}
-
-function executeContinueBuild(bx, by) {
-    var c = G.map[by][bx];
-    if (!c.build) return;
-    var cost = getBuildCost(c.build);
-    if (c.progress >= cost.turns) return alert("Уже достроено!");
-    if (G.ap <= 0) return alert("Нет ОД!");
-    var pp = G.pawns[G.activePawnIndex];
-    if (Math.max(Math.abs(pp.x - bx), Math.abs(pp.y - by)) > 1) return alert("Слишком далеко!");
-    G.ap--;
-    c.progress++;
-    if (c.progress >= cost.turns) {
-        addLog('✅ Достроено: ' + c.build, false, true);
-        if (c.build === 'great_hearth') {
-            downloadLogs();
-            setTimeout(function() { alert("ВЫ ПОБЕДИЛИ!"); location.reload(); }, 300);
-            return;
-        }
-    } else {
-        addLog('🏗️ ' + c.build + ' ' + c.progress + '/' + cost.turns);
-    }
-    updateVision(); updateUI(); renderMap();
 }
 
 function placeBuild(x, y) {
@@ -806,40 +746,36 @@ function placeBuild(x, y) {
     if (G.buildMode === 'great_hearth') G.res.copper -= 8;
     
     G.map[y][x].build = G.buildMode;
-    var __tot = getBuildCost(G.buildMode).turns;
+    let __tot = getBuildCost(G.buildMode).turns;
     G.map[y][x].progress = 1;
-    if (__tot > 1) addLog('🏗️ Начато: ' + G.buildMode + ' (1/' + __tot + ')');
     G.ap--; if (G.ap < 0) G.ap = 0;
     
-    if(G.buildMode === 'great_hearth' && G.map[y][x].progress >= getBuildCost('great_hearth').turns) {
-        addLog("ПОБЕДА. Построен Великий Очаг.", false, true);
-        downloadLogs();
-        setTimeout(() => {
-            alert("ВЫ ПОБЕДИЛИ!");
-            location.reload();
-        }, 300);
-        return;
+    if (__tot > 1) {
+        addLog(`🏗️ Начато: ${G.buildMode} (1/${__tot})`);
+    } else {
+        addLog(`Построено: ${G.buildMode}`);
+        if (G.buildMode === 'great_hearth') {
+            addLog("ПОБЕДА. Построен Великий Очаг.", false, true);
+            downloadLogs();
+            setTimeout(() => { alert("ВЫ ПОБЕДИЛИ!"); location.reload(); }, 300);
+            return;
+        }
     }
-    
-    addLog(`Построено: ${G.buildMode}`);
     G.buildMode = null;
-    updateVision(); updateUI();
+    updateVision(); updateUI(); renderMap();
 }
 
 function doCraft(item, costW, costH, costS, costC, costArrows) {
     if(G.res.wood < costW || G.res.hide < costH || G.res.stone < costS || G.res.copper < costC) {
         return alert("Не хватает ресурсов!");
     }
-    
     let p = G.pawns[G.activePawnIndex];
     G.res.wood -= costW; G.res.hide -= costH; G.res.stone -= costS; G.res.copper -= costC;
-    
     if(item === 'armor') { p.armor += 2; p.maxHp += 2; p.hp += 2; }
     else if(item === 'arrows_stone') { p.arrows = Math.min(p.maxArrows || 2, (p.arrows || 0) + 5); }
     else if(item === 'quiver') { p.maxArrows = 5; }
     else if(item === 'potion') { p.hp = Math.min(p.maxHp, p.hp + 5); }
     else if (WEAPONS[item]) { p.weapon = item; }
-
     addLog(`${p.name} крафтит ${item}.`, false, true);
     updateUI(); closeModal('craft-modal');
 }
@@ -847,7 +783,6 @@ function doCraft(item, costW, costH, costS, costC, costArrows) {
 function sendCaravan(distance) {
     if(G.ap < 1 || G.res.meat < distance) return alert("Нужно " + distance + " ОД и " + distance + " еды!");
     if(G.pawns.filter(pw => pw.x !== -1 && pw.hp > 0).length === 1) return alert("Нельзя отправить последнюю пешку!");
-    
     G.ap -= distance; if (G.ap < 0) G.ap = 0;
     G.res.meat -= distance;
     let p = G.pawns[G.activePawnIndex];
@@ -861,7 +796,7 @@ function nextTurn() {
     if(G.inCombat) return;
 
     let hasHearth = false;
-    for(let y=0; y<30; y++) for(let x=0; x<30; x++) if(G.map[y][x].build === 'hearth') hasHearth = true;
+    for(let y=0; y<30; y++) for(let x=0; x<30; x++) if(G.map[y][x].build === 'hearth' && G.map[y][x].progress >= 1) hasHearth = true;
 
     G.pawns.forEach(p => {
         if(p.hp <= 0) return;
@@ -874,7 +809,6 @@ function nextTurn() {
             }
             return;
         }
-        
         if(G.res.meat > 0) { G.res.meat--; } 
         else { p.hp -= 2; p.san -= 2; addLog(`${p.name} голодает! -2 HP`, true); }
 
@@ -890,7 +824,6 @@ function nextTurn() {
                 addLog(`Очаг погас (нет дров). ${p.name} мёрзнет (-1 HP)`, true);
             }
         }
-        
         if(p.san <= 0) {
             p.san = 5;
             addLog(`БЕЗУМИЕ! ${p.name} теряет контроль!`, true);
@@ -909,6 +842,7 @@ function nextTurn() {
     }
 
     G.pendingStandardSpawn = (G.round % 2 === 0);
+    G.pendingWheelSpawn = false;
     
     G.ap = G.diff === 'easy' ? 4 : 3;
     if (G.pawns[G.activePawnIndex]) G.combatSteps = G.pawns[G.activePawnIndex].agi;
@@ -918,6 +852,25 @@ function nextTurn() {
     document.getElementById('wheel').style.transform = 'rotate(0deg)';
     document.getElementById('spin-btn').style.display = 'block';
     document.getElementById('wheel-text').innerText = '';
+}
+
+function spawnEnemyWithArrow(x, y, type) {
+    spawnEnemy(x, y, type);
+    
+    let arrowDir = '';
+    let posStyle = '';
+    if (y === 0) { arrowDir = '⬆️'; posStyle = 'top: 100px; left: 50%; transform: translateX(-50%);'; }
+    else if (y === 29) { arrowDir = '⬇️'; posStyle = 'bottom: 200px; left: 50%; transform: translateX(-50%);'; }
+    else if (x === 0) { arrowDir = '⬅️'; posStyle = 'left: 10px; top: 50%; transform: translateY(-50%);'; }
+    else if (x === 29) { arrowDir = '➡️'; posStyle = 'right: 10px; top: 50%; transform: translateY(-50%);'; }
+    
+    if (arrowDir) {
+        let arrowEl = document.createElement('div');
+        arrowEl.style.cssText = 'position:fixed; ' + posStyle + ' font-size:60px; z-index:9999; pointer-events:none; text-shadow: 0 0 15px red;';
+        arrowEl.innerText = arrowDir;
+        document.body.appendChild(arrowEl);
+        setTimeout(function() { arrowEl.remove(); }, 3000);
+    }
 }
 
 function spinWheel() {
@@ -944,7 +897,6 @@ function spinWheel() {
         setTimeout(() => {
             closeModal('wheel-modal');
             
-            // СПАВН ПОСЛЕ КОЛЕСА
             let spawned = false;
             if (G.pendingStandardSpawn) {
                 let side = rnd(0,3), ex, ey;
@@ -952,7 +904,7 @@ function spinWheel() {
                 else if (side === 1) { ex = rnd(0,29); ey = 29; }
                 else if (side === 2) { ex = 0; ey = rnd(0,29); }
                 else { ex = 29; ey = rnd(0,29); }
-                spawnEnemy(ex, ey, 'Волк');
+                spawnEnemyWithArrow(ex, ey, 'Волк');
                 addLog("⚠️ На карте появился враг!", true);
                 G.pendingStandardSpawn = false;
                 spawned = true;
@@ -963,16 +915,12 @@ function spinWheel() {
                 else if (side === 1) { ex = rnd(0,29); ey = 29; }
                 else if (side === 2) { ex = 0; ey = rnd(0,29); }
                 else { ex = 29; ey = rnd(0,29); }
-                spawnEnemy(ex, ey, 'Волк');
+                spawnEnemyWithArrow(ex, ey, 'Волк');
                 addLog("⚠️ РЕЙД! На карте появился враг!", true);
                 G.pendingWheelSpawn = false;
                 spawned = true;
             }
-
-            if (spawned) {
-                renderMap(); updateVision();
-            }
-
+            if (spawned) { renderMap(); updateVision(); }
             if (G.enemies.length > 0 && !G.inCombat) {
                 addLog("Ход врагов...", true);
                 setTimeout(() => { moveEnemies(); addLog("Твой ход!", false, true); updateUI(); }, 1000);
@@ -987,24 +935,7 @@ function spawnEnemy(x, y, type) {
     if(type === 'Медведь') stats = { hp: 10, agi: 2, dmg: 3, armor: 2, icon: '🐻' };
     if(type === 'Змея') stats = { hp: 3, agi: 4, dmg: 1, armor: 0, icon: '🐍' };
     if(type === 'Водяной') stats = { hp: 6, agi: 1, dmg: 2, armor: 1, icon: '🧜' };
-    
     G.enemies.push({ x, y, hp: stats.hp, maxHp: stats.hp, agi: stats.agi, dmg: stats.dmg, armor: stats.armor, icon: stats.icon, name: type });
-    
-    // Стрелка направления при спавне на краю
-    let arrowDir = '';
-    let posStyle = '';
-    if (y === 0) { arrowDir = '⬆️'; posStyle = 'top: 100px; left: 50%; transform: translateX(-50%);'; }
-    else if (y === 29) { arrowDir = '⬇️'; posStyle = 'bottom: 200px; left: 50%; transform: translateX(-50%);'; }
-    else if (x === 0) { arrowDir = '⬅️'; posStyle = 'left: 10px; top: 50%; transform: translateY(-50%);'; }
-    else if (x === 29) { arrowDir = '➡️'; posStyle = 'right: 10px; top: 50%; transform: translateY(-50%);'; }
-    
-    if (arrowDir) {
-        let arrowEl = document.createElement('div');
-        arrowEl.style.cssText = 'position:fixed; ' + posStyle + ' font-size:60px; z-index:9999; pointer-events:none; text-shadow: 0 0 15px red;';
-        arrowEl.innerText = arrowDir;
-        document.body.appendChild(arrowEl);
-        setTimeout(function() { arrowEl.remove(); }, 2500);
-    }
 }
 
 function moveEnemies() {
@@ -1017,11 +948,7 @@ function moveEnemies() {
             if(d < bestDist) { bestDist = d; best = p; }
         });
         if(!best) return;
-
-        if(bestDist <= 1) {
-            startCombat(e, best);
-            return;
-        }
+        if(bestDist <= 1) { startCombat(e, best); return; }
 
         let path = findPath(e.x, e.y, best.x, best.y);
         if (path.length > 0) {
@@ -1088,7 +1015,6 @@ function handleCellClick(x, y) {
         }
         isMoving = false;
         updateUI();
-        
         if (G.enemies.length > 0) {
             let adj = G.enemies.find(e => Math.max(Math.abs(e.x-p.x), Math.abs(e.y-p.y)) <= 1);
             if (adj) startCombat(adj, p);
@@ -1102,17 +1028,14 @@ function findPath(sx, sy, tx, ty) {
     while(queue.length > 0) {
         let cur = queue.shift();
         if(cur.x === tx && cur.y === ty) return cur.path;
-        
         for(let dx=-1; dx<=1; dx++) {
             for(let dy=-1; dy<=1; dy++) {
                 if(dx===0 && dy===0) continue;
                 let nx = cur.x + dx, ny = cur.y + dy;
-                
                 if(nx>=0 && nx<30 && ny>=0 && ny<30 && !visited.has(`${nx},${ny}`)) {
                     let cell = G.map[ny][nx];
                     let isWalkable = (cell.type !== 'water' && cell.type !== 'mountain' && cell.type !== 'water_empty');
                     if (['wall_wood', 'wall_stone', 'trap'].includes(cell.build)) isWalkable = false;
-                    
                     if (isWalkable) {
                         visited.add(`${nx},${ny}`);
                         queue.push({x:nx, y:ny, path:[...cur.path, {x:nx, y:ny}]});
@@ -1132,7 +1055,6 @@ function startCombat(enemy, pawn) {
     currentEnemy = enemy;
     currentPawn = pawn;
     G.fledThisCombat = false;
-    
     let info = document.getElementById('combat-info');
     info.innerHTML = `<p>${enemy.icon} ${enemy.name} | HP: <span id="c-ehp">${enemy.hp}</span></p><p>🧑‍🌾 ${pawn.name} | HP: <span id="c-php">${pawn.hp}</span></p>`;
     document.getElementById('c-log').innerHTML = "Бой начался!<br>";
@@ -1143,13 +1065,10 @@ function startCombat(enemy, pawn) {
 function combatAttack() {
     if (!currentEnemy || !currentPawn) return;
     let logBox = document.getElementById('c-log');
-    
     let pInit = d6() + currentPawn.agi;
     let eInit = d6() + currentEnemy.agi;
-    
     let attacker = pInit >= eInit ? 'player' : 'enemy';
     logBox.innerHTML += `<br>Инициатива: Вы ${pInit} vs Враг ${eInit} (${attacker === 'player' ? 'Вы первый' : 'Враг первый'}).<br>`;
-    
     if (attacker === 'player') {
         doPlayerHit(logBox);
         if (currentEnemy.hp > 0) doEnemyHit(logBox);
@@ -1164,13 +1083,11 @@ function doPlayerHit(logBox) {
     let w = WEAPONS[currentPawn.weapon] || WEAPONS['fists'];
     let pHit = d6() + currentPawn.agi + w.acc;
     let eDodge = d6() + currentEnemy.agi;
-    
     if(pHit >= eDodge) {
         let pDmg = d6() + currentPawn.str + w.dmg - currentEnemy.armor;
         if (pDmg < 1) pDmg = 1;
         currentEnemy.hp -= pDmg;
         logBox.innerHTML += `Вы попали (${pHit} vs ${eDodge})! Урон: ${pDmg}<br>`;
-        
         if(currentPawn.agi - currentEnemy.agi >= 2 && d6() >= 5) {
             currentEnemy.hp -= pDmg;
             logBox.innerHTML += `КРИТ! Двойной урон!<br>`;
@@ -1185,7 +1102,6 @@ function doPlayerHit(logBox) {
 function doEnemyHit(logBox) {
     let eHit = d6() + currentEnemy.agi;
     let pDodge = d6() + currentPawn.agi;
-    
     if(eHit >= pDodge) {
         let eDmg = d6() + currentEnemy.dmg - currentPawn.armor;
         if (eDmg < 1) eDmg = 1;
@@ -1205,7 +1121,6 @@ function checkCombatEnd() {
         let xp = strongNames.includes(currentEnemy.name) ? 5 : 2;
         currentPawn.xp += xp;
         addLog(`${currentPawn.name} победил ${currentEnemy.name}! +${xp} XP`, false, true);
-        
         G.enemies = G.enemies.filter(e => e !== currentEnemy);
         setTimeout(() => { 
             closeModal('combat-modal'); 
@@ -1218,7 +1133,6 @@ function checkCombatEnd() {
         let deadPawn = currentPawn;
         addLog(`${deadPawn.name} погиб в бою!`, true);
         G.pawns = G.pawns.filter(p => p !== deadPawn);
-        
         setTimeout(() => { 
             closeModal('combat-modal'); 
             G.inCombat = false; 
@@ -1232,10 +1146,8 @@ function checkCombatEnd() {
 function combatFlee() {
     if (!currentPawn || !currentEnemy) return;
     if (G.fledThisCombat) return alert("Нельзя отступать дважды!");
-    
     let eAtk = d6() + currentEnemy.agi + 2;
     let pDef = d6() + currentPawn.agi;
-    
     if (eAtk >= pDef) {
         let dmg = (d6() + currentEnemy.dmg - currentPawn.armor) * 2;
         if (dmg < 1) dmg = 1;
@@ -1245,12 +1157,10 @@ function combatFlee() {
     } else {
         addLog(`${currentPawn.name} успешно отступил!`, false, true);
     }
-    
     G.fledThisCombat = true;
     closeModal('combat-modal');
     G.inCombat = false;
     currentEnemy = null; currentPawn = null;
-    
     updateUI(); renderMap();
 }
 
@@ -1266,7 +1176,6 @@ function openPawnCard() {
     document.getElementById('pc-weap').innerText = (WEAPONS[p.weapon] || WEAPONS['fists']).name;
     document.getElementById('pc-armor').innerText = p.armor;
     document.getElementById('pc-trait').innerText = p.trait;
-    
     if(p.xp >= getNeededXp(p.lvl) && p.lvl < getMaxLevel()) {
         document.getElementById('btn-levelup').style.display = 'block';
     } else {
@@ -1295,7 +1204,7 @@ function gameOver(reason) {
     }, 500);
 }
 
-console.log("v38.9 loaded");
+console.log("v40.0 loaded");
 </script>
 </body>
 </html>
