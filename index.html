@@ -13,6 +13,7 @@
     <div>Сезон: <span id="ui-season">Весна</span></div>
     <div>ОД: <span id="ui-ap">3</span> | Шаги: <span id="ui-steps">0</span></div>
     <div>🌲<span id="ui-wood">0</span> 🪨<span id="ui-stone">0</span> 🍖<span id="ui-meat">5</span> 🐻<span id="ui-hide">0</span> 🔶<span id="ui-copper">0</span> 🏹<span id="ui-arrows">0</span></div>
+    <button class="exit-btn" style="background:#27ae60; margin-right:5px;" onclick="saveGame()">💾</button>
     <button class="exit-btn" onclick="if(confirm('Сдаться и выйти?')) location.reload()">🚪</button>
 </div>
 
@@ -49,7 +50,8 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v42.0</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v42.1</p>
+        <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>

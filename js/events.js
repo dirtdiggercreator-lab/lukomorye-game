@@ -108,7 +108,12 @@ function spinWheel() {
             if (spawned) { renderMap(); updateVision(); }
             if (G.enemies.length > 0 && !G.inCombat) {
                 addLog("Ход врагов...", true);
-                setTimeout(() => { moveEnemies(); addLog("Твой ход!", false, true); updateUI(); }, 1000);
+                setTimeout(() => { 
+                    moveEnemies(); 
+                    addLog("Твой ход!", false, true); 
+                    updateUI(); 
+                    if(!G.inCombat) saveGame(); 
+                }, 1000);
             }
         }, 1500);
     }, 3000);

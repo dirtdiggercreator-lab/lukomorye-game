@@ -76,6 +76,7 @@ function checkCombatEnd() {
             G.inCombat = false; 
             currentEnemy = null; currentPawn = null;
             updateUI(); renderMap(); 
+            saveGame();
         }, 1000);
     } else if(currentPawn.hp <= 0) {
         document.getElementById('c-log').innerHTML += "Вы погибли...<br>";
@@ -87,7 +88,7 @@ function checkCombatEnd() {
             G.inCombat = false; 
             currentEnemy = null; currentPawn = null;
             if (G.pawns.length === 0) gameOver("Все пешки погибли.");
-            else { G.activePawnIndex = 0; updateUI(); renderMap(); }
+            else { G.activePawnIndex = 0; updateUI(); renderMap(); saveGame(); }
         }, 1500);
     }
 }

@@ -22,3 +22,48 @@ function downloadLogs() {
 
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+function saveGame() {
+    if (isMoving || G.inCombat) {
+        alert("Нельзя сохраняться во время боя или движения!");
+        return;
+    }
+    let saveData = { G: G, logs: logs };
+    localStorage.setItem('lukomorye_save', JSON.stringify(saveData));
+    addLog("💾 Игра сохранена.");
+}
+
+function loadGame() {
+    let saveStr = localStorage.getItem('lukomorye_save');
+    if (!saveStr) return alert("Сохранение не найдено!");
+    let saveData = JSON.parse(saveStr);
+    G = saveData.G;
+    logs = saveData.logs;
+    
+    closeModal('menu-modal');
+    closeModal('diff-modal');
+    
+    document.getElementById('top-panel').style.display = 'flex';
+    document.getElementById('pawn-bar').style.display = 'flex';
+    document.getElementById('game-area').style.display = 'block';
+    document.getElementById('zoom-controls').style.display = 'flex';
+    document.getElementById('bottom-panel').style.display = 'flex';
+    
+    let box = document.getElementById('log-box');
+    box.innerHTML = '';
+    logs.forEach(l => {
+        box.innerHTML += `<div class="log-msg">[Ход ${l.turn}] ${l.text}</div>`;
+    });
+    
+    updateUI(); updateVision(); renderMap(); renderPawnBar();
+    setTimeout(centerCameraOnPawn, 100);
+    addLog("Игра загружена.");
+}
+
+function checkSaveExists() {
+    if (localStorage.getItem('lukomorye_save')) {
+        document.getElementById('btn-continue').style.display = 'block';
+    }
+}
+
+window.addEventListener('load', checkSaveExists);
