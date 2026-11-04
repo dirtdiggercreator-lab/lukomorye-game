@@ -3,11 +3,11 @@ function zoomMap(amount) {
     if (currentScale < 0.6) currentScale = 0.6;
     if (currentScale > 2.0) currentScale = 2.0;
     let grid = document.getElementById('grid');
-    if (!grid) return;
-    let sz = Math.round(40 * currentScale);
-    let fz = Math.round(24 * currentScale);
-    grid.style.setProperty('--size', sz + 'px');
-    grid.style.setProperty('--font', fz + 'px');
+    let wrapper = document.getElementById('grid-wrapper');
+    if (!grid || !wrapper) return;
+    grid.style.transform = 'scale(' + currentScale + ')';
+    wrapper.style.width = (2000 * currentScale) + 'px';
+    wrapper.style.height = (1200 * currentScale) + 'px';
     centerCameraOnPawn();
 }
 
@@ -15,11 +15,10 @@ function centerCameraOnPawn() {
     const area = document.getElementById('game-area');
     const p = G.pawns[G.activePawnIndex];
     if (!p || p.x === -1 || !area) return;
-    const cellSize = 40 * currentScale;
-    const targetX = (p.x * cellSize) - (area.clientWidth / 2) + (cellSize / 2);
-    const targetY = (p.y * cellSize) - (area.clientHeight / 2) + (cellSize / 2);
-    area.scrollLeft = targetX;
-    area.scrollTop = targetY;
+    const px = ((p.x - p.y) * 32 + 1000) * currentScale;
+    const py = ((p.x + p.y) * 16 + 100) * currentScale;
+    area.scrollLeft = px - area.clientWidth / 2;
+    area.scrollTop = py - area.clientHeight / 2;
 }
 
 function drawMinimap() {
@@ -106,6 +105,10 @@ function renderMap() {
             let cell = G.map[y][x];
             let d = document.createElement('div');
             d.className = `cell tile-${cell.type}`;
+            // Магия изометрии: (x - y) и (x + y)
+            d.style.left = ((x - y) * 32 + 1000) + 'px';
+            d.style.top = ((x + y) * 16 + 100) + 'px';
+            d.style.zIndex = x + y + 10; // Передние клетки рисуются поверх задних
             
             let isVisible = cell.currentVision;
             let isExplored = cell.explored;

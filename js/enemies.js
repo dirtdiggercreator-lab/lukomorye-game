@@ -27,6 +27,7 @@ function spawnEnemy(x, y, type) {
 
 function moveEnemies() {
     if(G.inCombat) return;
+    let trapHits = [];
     G.enemies.forEach(e => {
         let best = null, bestDist = Infinity;
         G.pawns.forEach(p => {
@@ -45,6 +46,7 @@ function moveEnemies() {
                 cell.build = null;
                 e.hp -= 3;
                 addLog(`${e.name} наступил на ловушку! -3 HP`, true);
+                trapHits.push({x: step.x, y: step.y});
                 if (e.hp <= 0) {
                     G.enemies = G.enemies.filter(en => en !== e);
                     addLog(`${e.name} погиб в ловушке!`, false, true);
@@ -55,4 +57,19 @@ function moveEnemies() {
         }
     });
     renderMap(); updateVision();
+    
+    // Рисуем взрывы ПОСЛЕ обновления карты
+    trapHits.forEach(hit => {
+        let tx = ((hit.x - hit.y) * 32 + 1000);
+        let ty = ((hit.x + hit.y) * 16 + 100);
+        let boom = document.createElement('div');
+        boom.innerText = '💥';
+        boom.style.cssText = `position:absolute; left:${tx}px; top:${ty}px; font-size:48px; z-index:9999; pointer-events:none; transform:translate(-50%, -50%); animation: trap-boom 0.6s ease-out forwards;`;
+        document.getElementById('grid').appendChild(boom);
+        
+        let txt = document.createElement('div');
+        txt.innerText = '-3 HP';
+        txt.style.cssText = `position:absolute; left:${tx}px; top:${ty - 20}px; color:red; font-weight:bold; font-size:20px; z-index:9999; pointer-events:none; transform:translate(-50%, -50%); animation: float-up 0.8s ease-out forwards;`;
+        document.getElementById('grid').appendChild(txt);
+    });
 }
