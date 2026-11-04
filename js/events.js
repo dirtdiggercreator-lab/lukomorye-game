@@ -65,10 +65,7 @@ function spinWheel() {
     setTimeout(() => {
         let s = rnd(0,7);
         let msg = "Тишина.";
-        if(s === 0) { 
-            msg = "Рейд!"; 
-            G.pendingWheelSpawn = true;
-        }
+        if(s === 0) { msg = "Рейд!"; G.pendingWheelSpawn = true; }
         else if(s === 1) { msg = "Ресурсы (+2🌲, +2🪨)"; G.res.wood += 2; G.res.stone += 2; }
         else if(s === 2) { msg = "Болезнь (-2HP)"; if(G.pawns[0]) G.pawns[0].hp -= 2; }
         else if(s === 3) { msg = "Удачная охота (+3🍖)"; G.res.meat += 3; }
@@ -114,6 +111,8 @@ function spinWheel() {
                     updateUI(); 
                     if(!G.inCombat) saveGame(); 
                 }, 1000);
+            } else {
+                saveGame();
             }
         }, 1500);
     }, 3000);

@@ -112,4 +112,5 @@ function combatFlee() {
     G.inCombat = false;
     currentEnemy = null; currentPawn = null;
     updateUI(); renderMap();
+    saveGame();
 }
