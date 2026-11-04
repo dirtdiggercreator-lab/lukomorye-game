@@ -139,6 +139,9 @@ function renderMap() {
                 content = `<span class="build-progress">${cell.progress}/${getBuildCost(cell.build).turns}</span>`;
             }
 
+            let n = G.npcs && G.npcs.find(nn => nn.x === x && nn.y === y);
+            if(n && isVisible) { content = n.icon; }
+            
             let e = G.enemies.find(en => en.x === x && en.y === y);
             if(e && isVisible) { content = e.icon; d.classList.add('enemy-unit'); }
 

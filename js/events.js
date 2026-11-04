@@ -60,6 +60,8 @@ function nextTurn() {
     G.pendingWheelSpawn = false;
     
     rollWeather();
+    trySpawnNPC();
+    updateNPCs();
     
     G.ap = G.diff === 'easy' ? 4 : 3;
     if (G.pawns[G.activePawnIndex]) G.combatSteps = G.pawns[G.activePawnIndex].agi;

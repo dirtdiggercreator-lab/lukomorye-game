@@ -55,7 +55,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v44.1</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v44.2</p>
         <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
@@ -148,6 +148,15 @@
     </div>
 </div>
 
+
+<div class="modal" id="npc-modal">
+    <div class="modal-content">
+        <h3 style="color: var(--accent); margin-top: 0;" id="npc-title">NPC</h3>
+        <div id="npc-body" style="text-align: left; font-size: 14px; margin-bottom: 10px;"></div>
+        <button class="btn" onclick="document.getElementById('npc-modal').style.display='none'" style="width: 100%; padding: 8px; background:#555;">Закрыть</button>
+    </div>
+</div>
+
 <div class="modal" id="pawn-card-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;" id="pc-name">Пешка</h3>
@@ -185,6 +194,7 @@
 <script src="js/craft.js"></script>
 <script src="js/caravan.js"></script>
 <script src="js/enemies.js"></script>
+<script src="js/npc.js"></script>
 <script src="js/combat.js"></script>
 <script src="js/events.js"></script>
 </body>

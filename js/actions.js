@@ -25,6 +25,14 @@ function doSmartAction() {
     }
     
     let p2 = G.pawns[G.activePawnIndex];
+    // Проверка на NPC рядом
+    if (G.npcs) {
+        G.npcs.forEach(npc => {
+            if (Math.max(Math.abs(npc.x - p2.x), Math.abs(npc.y - p2.y)) <= 1) {
+                actionsHTML += `<button class="btn action-btn" onclick="npcInteraction(${G.npcs.indexOf(npc)})" style="background: #8e44ad; grid-column: span 2;">🗣️ Поговорить с ${npc.name}</button>`;
+            }
+        });
+    }
     for (let dx = -1; dx <= 1; dx++) {
         for (let dy = -1; dy <= 1; dy++) {
             if (dx === 0 && dy === 0) continue;
@@ -189,4 +197,12 @@ function placeBuild(x, y) {
     }
     G.buildMode = null;
     updateVision(); updateUI(); renderMap();
+}
+
+function npcInteraction(idx) {
+    let npc = G.npcs[idx];
+    if (!npc) return;
+    document.getElementById('action-modal').style.display = 'none';
+    let p = G.pawns[G.activePawnIndex];
+    npc.interact(p);
 }
