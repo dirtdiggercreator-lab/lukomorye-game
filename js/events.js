@@ -54,14 +54,14 @@ function nextTurn() {
     updateUI(); updateVision();
     
     openModal('wheel-modal');
-    document.getElementById('wheel').style.transform = 'rotate(0deg)';
+    document.getElementById('wheel').style.transform = 'rotateX(60deg) rotate(0deg)';
     document.getElementById('spin-btn').style.display = 'block';
     document.getElementById('wheel-text').innerText = '';
 }
 
 function spinWheel() {
     document.getElementById('spin-btn').style.display = 'none';
-    document.getElementById('wheel').style.transform = `rotate(${1440 + rnd(0,360)}deg)`;
+    document.getElementById('wheel').style.transform = `rotateX(60deg) rotate(${1440 + rnd(0,360)}deg)`;
     setTimeout(() => {
         let s = rnd(0,7);
         let msg = "Тишина.";
