@@ -67,3 +67,13 @@ function checkSaveExists() {
 }
 
 window.addEventListener('load', checkSaveExists);
+
+function showToast(msg, type = 'info') {
+    let container = document.getElementById('toast-container');
+    if (!container) return;
+    let toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerText = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}

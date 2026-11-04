@@ -1,5 +1,5 @@
 function doSmartAction() {
-    if(G.ap <= 0) return alert("Нет ОД!");
+    if(G.ap <= 0) return showToast("Нет ОД!", "danger");
     let p = G.pawns[G.activePawnIndex];
     let cell = G.map[p.y][p.x];
     
@@ -46,7 +46,7 @@ function executeAction(type) {
     let p = G.pawns[G.activePawnIndex];
     let cell = G.map[p.y][p.x];
     
-    if (G.ap <= 0 && type !== 'rest') return alert("Нет ОД!");
+    if (G.ap <= 0 && type !== 'rest') return showToast("Нет ОД!", "danger");
     
     if (type === 'gather') {
         G.ap--;
@@ -105,9 +105,9 @@ function executeAction(type) {
             G.ap--; if (G.ap < 0) G.ap = 0;
             addLog(`${p.name} лечится в Лазарете (+4 HP).`, false, true);
             updateUI();
-        } else alert("Нужна еда!");
+        } else showToast("Нужна еда!", "danger");
     } else if (type === 'hire') {
-        if(G.ap < 1) return alert("Нет ОД!");
+        if(G.ap < 1) return showToast("Нет ОД!", "danger");
         if(G.pawns.length >= 4) return alert("Максимум 4 пешки!");
         G.ap--;
         let newP = { name: "Поселенец", str: d6(), agi: d6(), craft: d6(), wits: d6(), trait: "Нет", hp: 10, maxHp: 10, san: 10, xp: 0, lvl: 0, arrows: 0, weapon: 'fists', armor: 0, x: p.x, y: p.y, diseases: [], active: true, maxArrows: 2 };
@@ -123,10 +123,10 @@ function executeContinueBuild(bx, by) {
     if (!c.build) return;
     let cost = getBuildCost(c.build);
     if (c.progress >= cost.turns) return alert("Уже достроено!");
-    if (G.ap <= 0) return alert("Нет ОД!");
+    if (G.ap <= 0) return showToast("Нет ОД!", "danger");
     
     let pp = G.pawns[G.activePawnIndex];
-    if (Math.max(Math.abs(pp.x - bx), Math.abs(pp.y - by)) > 1) return alert("Слишком далеко!");
+    if (Math.max(Math.abs(pp.x - bx), Math.abs(pp.y - by)) > 1) return showToast("Слишком далеко!", "danger");
     
     G.ap--;
     c.progress++;
@@ -145,12 +145,12 @@ function executeContinueBuild(bx, by) {
 }
 
 function doBuild(type, costW, costS, turns) {
-    if(G.ap <= 0) return alert("Нет ОД!");
+    if(G.ap <= 0) return showToast("Нет ОД!", "danger");
     if(type === 'great_hearth' && G.diff === 'hard') {
         costW = Math.floor(15 * 2.5);
         costS = Math.floor(15 * 2.5);
     }
-    if(G.res.wood < costW || G.res.stone < costS) return alert("Не хватает ресурсов!");
+    if(G.res.wood < costW || G.res.stone < costS) return showToast("Не хватает ресурсов!", "danger");
     if(type === 'great_hearth' && G.res.copper < 8) return alert("Нужно 8 меди!");
     
     G.buildMode = type; G.buildCost = {w:costW, s:costS, turns:turns};
@@ -160,13 +160,13 @@ function doBuild(type, costW, costS, turns) {
 
 function placeBuild(x, y) {
     if(G.map[y][x].type !== 'grass') return alert("Строить можно только на траве!");
-    if(G.map[y][x].build) return alert("Уже занято!");
+    if(G.map[y][x].build) return showToast("Уже занято!", "danger");
     
     let p = G.pawns[G.activePawnIndex];
     let dist = Math.max(Math.abs(p.x - x), Math.abs(p.y - y));
     if(dist > 1) return alert("Строить можно только рядом с собой (макс 1 клетка)!");
     
-    if(G.res.wood < G.buildCost.w || G.res.stone < G.buildCost.s) return alert("Не хватает ресурсов!");
+    if(G.res.wood < G.buildCost.w || G.res.stone < G.buildCost.s) return showToast("Не хватает ресурсов!", "danger");
     
     G.res.wood -= G.buildCost.w; G.res.stone -= G.buildCost.s;
     if (G.buildMode === 'great_hearth') G.res.copper -= 8;
