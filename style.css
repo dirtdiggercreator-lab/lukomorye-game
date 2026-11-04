@@ -62,9 +62,10 @@ body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text)
 .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
 .modal-content { background: var(--panel); padding: 15px; border-radius: 10px; width: 100%; max-width: 350px; text-align: center; border: 2px solid var(--btn); max-height: 80vh; overflow-y: auto; }
 
-.wheel-container { position: relative; width: 200px; height: 130px; margin: 20px auto; perspective: 800px; display: flex; justify-content: center; align-items: center; }
-.wheel { width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(#e84118 0 45deg, #00a8ff 45deg 90deg, #4cd137 90deg 135deg, #fbc531 135deg 180deg, #9b59b6 180deg 225deg, #e67e22 225deg 270deg, #1abc9c 270deg 315deg, #34495e 315deg 360deg); border: 4px solid #fff; box-shadow: 0 25px 40px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.6); transform-origin: center; transform-style: preserve-3d; transform: rotateX(60deg); transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
-.wheel-arrow { position: absolute; top: -35px; left: 50%; transform: translateX(-50%) rotateX(-60deg); font-size: 28px; color: yellow; z-index: 10; text-shadow: 0 5px 10px rgba(0,0,0,0.8); }
+.wheel-container { position: relative; width: 200px; height: 160px; margin: 20px auto; perspective: 800px; display: flex; justify-content: center; align-items: center; }
+.wheel-tilt { transform: rotateX(60deg); transform-style: preserve-3d; position: absolute; top: 0; left: 0; width: 200px; height: 200px; }
+.wheel { width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(#e84118 0 45deg, #00a8ff 45deg 90deg, #4cd137 90deg 135deg, #fbc531 135deg 180deg, #9b59b6 180deg 225deg, #e67e22 225deg 270deg, #1abc9c 270deg 315deg, #34495e 315deg 360deg); border: 4px solid #fff; transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99); position: absolute; top: 0; left: 0; }
+.wheel-arrow { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 30px; color: yellow; z-index: 10; text-shadow: 0 5px 10px rgba(0,0,0,0.8); }
 #wheel-modal .modal-content { height: 450px; display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 25px; }
 
 .action-sheet { position: fixed; bottom: 60px; left: 0; right: 0; background: rgba(47, 54, 64, 0.98); padding: 10px 15px 15px 15px; z-index: 2500; border-top: 2px solid var(--accent); border-radius: 15px 15px 0 0; box-shadow: 0 -10px 20px rgba(0,0,0,0.8); display: none; }
@@ -87,3 +88,15 @@ body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text)
 .toast.success { border-color: #27ae60; color: #99ff99; }
 @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+
+.wheel-container::after {
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 60px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 50%;
+    bottom: 20px;
+    filter: blur(10px);
+    z-index: -1;
+}

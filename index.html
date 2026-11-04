@@ -51,7 +51,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v42.3</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v42.4</p>
         <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
@@ -132,7 +132,7 @@
 <div class="modal" id="wheel-modal">
     <div class="modal-content">
         <h3 style="margin-top: 0; color: var(--accent);">Событие</h3>
-        <div class="wheel-container"><div class="wheel-arrow">▼</div><div class="wheel" id="wheel"></div></div>
+        <div class="wheel-container"><div class="wheel-arrow">▼</div><div class="wheel-tilt"><div class="wheel" id="wheel"></div></div></div>
         <div style="height: 70px;">
             <button class="btn" id="spin-btn" onclick="spinWheel()" style="width: 100%; padding: 12px;">Крутить!</button>
             <p id="wheel-text" style="font-weight: bold; color: yellow; height: 20px; margin-top: 10px;"></p>
