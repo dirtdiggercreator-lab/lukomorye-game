@@ -24,6 +24,7 @@
 <canvas id="minimap" width="90" height="90"></canvas>
 <div class="pawn-bar" id="pawn-bar" style="display: none;"></div>
 
+<div id="weather-overlay"></div>
 <div class="game-area" id="game-area" style="display: none;">
     <div id="grid-wrapper"><div class="grid" id="grid"></div></div>
 </div>
@@ -54,7 +55,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v43.4</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v44.0</p>
         <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>

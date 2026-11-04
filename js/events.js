@@ -29,6 +29,16 @@ function nextTurn() {
                 addLog(`Очаг погас (нет дров). ${p.name} мёрзнет (-1 HP)`, true);
             }
         }
+        // Обработка болезней
+        if (p.diseases && p.diseases.includes('Кровотечение')) {
+            p.hp -= 1;
+            addLog(`🩸 ${p.name} истекает кровью (-1 HP)`, true);
+        }
+        if (p.diseases && p.diseases.includes('Отравление')) {
+            G.ap = Math.max(0, G.ap - 1);
+            addLog(`🤢 ${p.name} отравлен (потеря 1 ОД)`, true);
+        }
+
         if(p.san <= 0) {
             p.san = 5;
             addLog(`БЕЗУМИЕ! ${p.name} теряет контроль!`, true);
@@ -48,6 +58,8 @@ function nextTurn() {
 
     G.pendingStandardSpawn = (G.round % 2 === 0);
     G.pendingWheelSpawn = false;
+    
+    rollWeather();
     
     G.ap = G.diff === 'easy' ? 4 : 3;
     if (G.pawns[G.activePawnIndex]) G.combatSteps = G.pawns[G.activePawnIndex].agi;
@@ -125,4 +137,28 @@ function gameOver(reason) {
         alert("ИГРА ОКОНЧЕНА: " + reason);
         location.reload();
     }, 500);
+}
+
+function rollWeather() {
+    let roll = d6();
+    let overlay = document.getElementById('weather-overlay');
+    overlay.className = '';
+    
+    if (roll <= 2) {
+        // Негатив по сезону
+        if (G.season === 'Весна') { G.weather = 'Паводок'; addLog("🌧 Погода: Паводок", true); overlay.classList.add('rain'); }
+        else if (G.season === 'Лето') { G.weather = 'Засуха'; addLog("☀️ Погода: Засуха", true); overlay.classList.add('drought'); }
+        else if (G.season === 'Осень') { G.weather = 'Ураган'; addLog("🌪 Погода: Ураган", true); overlay.classList.add('rain'); }
+        else { G.weather = 'Мороз'; addLog("❄️ Погода: Мороз", true); overlay.classList.add('snow'); }
+    } else if (roll <= 4) {
+        G.weather = 'Ясно';
+        addLog("☀️ Погода: Ясно");
+    } else {
+        // Позитив
+        if (d6() >= 4) { G.weather = 'Обилие'; addLog("🌿 Погода: Обилие (+1 к добыче)", false, true); }
+        else { G.weather = 'Теплый ветер'; 
+            G.pawns.forEach(p => { if (p.hp > 0 && p.x !== -1) p.hp = Math.min(p.maxHp, p.hp + 1); });
+            addLog("🍃 Погода: Теплый ветер (+1 HP)", false, true);
+        }
+    }
 }

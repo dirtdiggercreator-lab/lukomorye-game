@@ -7,7 +7,7 @@ function doCraft(item, costW, costH, costS, costC, costArrows) {
     if(item === 'armor') { p.armor += 2; p.maxHp += 2; p.hp += 2; }
     else if(item === 'arrows_stone') { p.arrows = Math.min(p.maxArrows || 2, (p.arrows || 0) + 5); }
     else if(item === 'quiver') { p.maxArrows = 5; }
-    else if(item === 'potion') { p.hp = Math.min(p.maxHp, p.hp + 5); }
+    else if(item === 'potion') { p.hp = Math.min(p.maxHp, p.hp + 5); p.diseases = []; showToast('Болезни вылечены!', 'success'); }
     else if (WEAPONS[item]) { p.weapon = item; }
     const itemNames = {
         'spear_stone': 'каменное копье', 'axe_stone': 'каменный топор', 'bow': 'лук',

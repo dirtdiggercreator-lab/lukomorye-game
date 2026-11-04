@@ -24,6 +24,7 @@ body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text)
 #grid-wrapper { position: relative; width: 2000px; height: 1200px; transform-origin: 0 0; }
 .grid { position: absolute; top: 0; left: 0; width: 2000px; height: 1200px; transform-origin: 0 0; }
 
+.cell::before { content: ''; position: absolute; inset: 0; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); background: rgba(0,0,0,0.5); transform: translateY(6px); z-index: -1; }
 .cell { position: absolute; width: 64px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 24px; box-sizing: border-box; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
 .tile-forest { background-color: #27ae60; }
 .tile-mountain { background-color: #7f8c8d; }
@@ -79,3 +80,11 @@ body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text)
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
 @keyframes trap-boom { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2); opacity: 0; } }
 @keyframes float-up { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(-50%, -150%); opacity: 0; } }
+
+#weather-overlay { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; pointer-events: none; z-index: 100; transition: background 0.5s; }
+#weather-overlay.rain { background: repeating-linear-gradient(15deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 12px); animation: rainFall 0.5s linear infinite; }
+#weather-overlay.snow { background-image: radial-gradient(white 1px, transparent 1px); background-size: 20px 20px; opacity: 0.5; animation: snowFall 3s linear infinite; }
+#weather-overlay.fog { background: rgba(200, 200, 200, 0.3); backdrop-filter: blur(2px); }
+#weather-overlay.drought { background: rgba(255, 165, 0, 0.15); }
+@keyframes rainFall { 0% { background-position: 0 0; } 100% { background-position: 20px 20px; } }
+@keyframes snowFall { 0% { background-position: 0 0; } 100% { background-position: 0 40px; } }
