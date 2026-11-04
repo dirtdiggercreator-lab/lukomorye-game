@@ -231,7 +231,7 @@ function handleCellClick(x, y) {
         for(let step of path) {
             p.x = step.x; p.y = step.y;
             if (G.enemies.length > 0) G.combatSteps--;
-            updateVision(); renderMap();
+            updateVision(); renderMap(); updateUI();
             await sleep(100);
         }
         isMoving = false;

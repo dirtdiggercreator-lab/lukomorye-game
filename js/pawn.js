@@ -58,7 +58,7 @@ function updateUI() {
     if (se) se.innerText = G.season;
     document.getElementById('ui-round').innerText = G.round;
     document.getElementById('ui-ap').innerText = G.ap;
-    document.getElementById('ui-steps').innerText = G.inCombat ? G.combatSteps : 0;
+    document.getElementById('ui-steps').innerText = (G.enemies.length > 0 || G.inCombat) ? G.combatSteps : 0;
     document.getElementById('ui-wood').innerText = G.res.wood;
     document.getElementById('ui-stone').innerText = G.res.stone;
     document.getElementById('ui-meat').innerText = G.res.meat;
