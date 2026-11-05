@@ -1,6 +1,6 @@
 function zoomMap(amount) {
     currentScale += amount;
-    if (currentScale < 0.6) currentScale = 0.6;
+    if (currentScale < 0.2) currentScale = 0.2;
     if (currentScale > 2.0) currentScale = 2.0;
     let grid = document.getElementById('grid');
     let wrapper = document.getElementById('grid-wrapper');
@@ -91,7 +91,7 @@ function startGame() {
     document.getElementById('bottom-panel').style.display = 'flex';
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
-    addLog("Версия v41.0. Игра началась!");
+    addLog("Версия v45.1. Игра началась!");
     
     setTimeout(() => { centerCameraOnPawn(); }, 100);
 }
