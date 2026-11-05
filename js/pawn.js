@@ -16,7 +16,7 @@ function rollStats() {
         name: names[rnd(0, names.length-1)],
         str: d6(), agi: d6(), craft: d6(), wits: d6(), stam: d6(),
         trait: traits[rnd(0, traits.length-1)],
-        hp: 10, maxHp: 10, san: 10, xp: 0, lvl: 0, arrows: 0, weapon: 'fists', armor: 0, x: 15, y: 15,
+        hp: 10, maxHp: 10, san: 10, xp: 0, lvl: 0, arrows: 0, weapon: ITEMS['fists'], armorItem: null, x: 15, y: 15,
         diseases: [], active: true, maxArrows: 2
     };
     if(tempPawn.trait === 'Силач') tempPawn.str += 1;
@@ -95,8 +95,8 @@ function openPawnCard() {
     document.getElementById('pc-xp').innerText = p.xp;
     document.getElementById('pc-lvl').innerText = p.lvl;
     document.getElementById('pc-arr').innerText = p.arrows;
-    document.getElementById('pc-weap').innerText = (WEAPONS[p.weapon] || WEAPONS['fists']).name;
-    document.getElementById('pc-armor').innerText = p.armor;
+    document.getElementById('pc-weap').innerText = p.weapon ? p.weapon.name : 'Кулаки';
+    document.getElementById('pc-armor').innerText = p.armorItem ? p.armorItem.defense : 0;
     document.getElementById('pc-stam').innerText = p.stam || 0;
     document.getElementById('pc-trait').innerText = p.trait;
     if(p.xp >= getNeededXp(p.lvl) && p.lvl < getMaxLevel()) document.getElementById('btn-levelup').style.display = 'block';

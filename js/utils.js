@@ -37,7 +37,7 @@ function loadGame() {
     let saveStr = localStorage.getItem('lukomorye_save');
     if (!saveStr) return alert("Сохранение не найдено!");
     let saveData = JSON.parse(saveStr);
-    G = saveData.G;
+    G = saveData.G; migrateSave();
     logs = saveData.logs;
     
     closeModal('menu-modal');
@@ -76,4 +76,17 @@ function showToast(msg, type = 'info') {
     toast.innerText = msg;
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
+}
+
+function migrateSave() {
+    // Если загрузили старый сейв, где armor это число, а weapon - строка
+    G.pawns.forEach(p => {
+        if (typeof p.armor === 'number') {
+            p.armorItem = p.armor > 0 ? ITEMS['armor_leather'] : null;
+            delete p.armor;
+        }
+        if (typeof p.weapon === 'string') {
+            p.weapon = ITEMS[p.weapon] || ITEMS['fists'];
+        }
+    });
 }

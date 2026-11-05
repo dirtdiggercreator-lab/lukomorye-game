@@ -1,12 +1,49 @@
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
-const WEAPONS = {
-    'fists': { name: 'Кулаки', acc: 0, dmg: 0 },
-    'spear_stone': { name: 'Каменное копье', acc: 1, dmg: 1 },
-    'axe_stone': { name: 'Каменный топор', acc: 0, dmg: 2 },
-    'bow': { name: 'Лук', acc: 1, dmg: 2, ranged: true },
-    'spear_copper': { name: 'Медное копье', acc: 2, dmg: 2 },
-    'axe_copper': { name: 'Медный топор', acc: 0, dmg: 3 }
+
+class Item {
+    constructor(name, icon, quality = 'Обычное') {
+        this.name = name;
+        this.icon = icon;
+        this.quality = quality;
+    }
+}
+
+class Weapon extends Item {
+    constructor(name, icon, dmg, acc, range = 1) {
+        super(name, icon);
+        this.dmg = dmg;
+        this.acc = acc;
+        this.range = range;
+    }
+}
+
+class Armor extends Item {
+    constructor(name, icon, defense) {
+        super(name, icon);
+        this.defense = defense;
+    }
+}
+
+class Resource extends Item {
+    constructor(name, icon, amount = 0) {
+        super(name, icon);
+        this.amount = amount;
+    }
+}
+
+// Инициализация предметов
+const ITEMS = {
+    'fists': new Weapon('Кулаки', '✊', 0, 0, 1),
+    'spear_stone': new Weapon('Каменное копье', '🗡️', 1, 1, 1),
+    'axe_stone': new Weapon('Каменный топор', '🪓', 2, 0, 1),
+    'bow': new Weapon('Лук', '🏹', 2, 1, 3),
+    'spear_copper': new Weapon('Медное копье', '🗡️', 2, 2, 1),
+    'axe_copper': new Weapon('Медный топор', '🪓', 3, 0, 1),
+    'armor_leather': new Armor('Кожаный доспех', '🛡️', 2)
 };
+
+const WEAPONS = ITEMS; // Для обратной совместимости
+
 function getMaxLevel() { return G.diff === 'easy' ? 3 : G.diff === 'normal' ? 5 : 7; }
 function getNeededXp(lvl) { return [20, 40, 70, 110, 160, 220, 300][lvl] || 9999; }
 function getBuildCost(type) {

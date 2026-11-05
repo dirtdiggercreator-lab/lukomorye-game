@@ -29,7 +29,7 @@ function combatAttack() {
 }
 
 function doPlayerHit(logBox) {
-    let w = WEAPONS[currentPawn.weapon] || WEAPONS['fists'];
+    let w = currentPawn.weapon || ITEMS['fists'];
     let pHit = d6() + currentPawn.agi + w.acc;
     let eDodge = d6() + currentEnemy.agi;
     if(pHit >= eDodge) {
@@ -52,7 +52,7 @@ function doEnemyHit(logBox) {
     let eHit = d6() + currentEnemy.agi;
     let pDodge = d6() + currentPawn.agi;
     if(eHit >= pDodge) {
-        let eDmg = d6() + currentEnemy.dmg - currentPawn.armor;
+        let def = currentPawn.armorItem ? currentPawn.armorItem.defense : 0; let eDmg = d6() + currentEnemy.dmg - def;
         if (eDmg < 1) eDmg = 1;
         currentPawn.hp -= eDmg;
         logBox.innerHTML += `Враг попал (${eHit} vs ${pDodge})! Урон: ${eDmg}<br>`;

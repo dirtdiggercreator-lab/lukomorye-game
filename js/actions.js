@@ -109,7 +109,7 @@ function executeAction(type) {
         updateUI();
     } else if (type === 'heal') {
         if(G.res.meat >= 1) {
-            if (p.maxHp < 10) p.maxHp = 10; // Фикс
+             // Фикс
             G.res.meat--; p.hp = Math.min(p.maxHp, p.hp + 4);
             G.ap--; if (G.ap < 0) G.ap = 0;
             addLog(`${p.name} лечится в Лазарете (+4 HP).`, false, true);
@@ -120,7 +120,7 @@ function executeAction(type) {
         if(G.pawns.length >= 4) return alert("Максимум 4 пешки!");
         G.ap--;
         let newStam = d6();
-        let newP = { name: "Поселенец", str: d6(), agi: d6(), craft: d6(), wits: d6(), stam: newStam, trait: "Нет", hp: 10 + newStam, maxHp: 10 + newStam, san: 10, xp: 0, lvl: 0, arrows: 0, weapon: 'fists', armor: 0, x: p.x, y: p.y, diseases: [], active: true, maxArrows: 2 };
+        let newP = { name: "Поселенец", str: d6(), agi: d6(), craft: d6(), wits: d6(), stam: newStam, trait: "Нет", hp: 10 + newStam, maxHp: 10 + newStam, san: 10, xp: 0, lvl: 0, arrows: 0, weapon: ITEMS['fists'], armorItem: null, x: p.x, y: p.y, diseases: [], active: true, maxArrows: 2 };
         G.pawns.push(newP);
         addLog(`Нанят новый поселенец!`);
         updateUI(); renderPawnBar();
