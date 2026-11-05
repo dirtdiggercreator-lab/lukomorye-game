@@ -20,37 +20,45 @@ body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text)
 
 #minimap { position: fixed; top: 85px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.7); border: 1px solid var(--accent); border-radius: 5px; pointer-events: none; }
 
-.game-area { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; overflow: auto; background: #1a2529; display: block; }
+.game-area { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; overflow: auto; background: #000; display: block; }
 #grid-wrapper { position: relative; width: 4000px; height: 2400px; transform-origin: 0 0; }
 .grid { position: absolute; top: 0; left: 0; width: 4000px; height: 2400px; transform-origin: 0 0; }
 
+/* --- ИЗОМЕТРИЧЕСКИЕ ТАЙЛЫ --- */
+.cell { position: absolute; width: 64px; height: 32px; cursor: pointer; z-index: 1; }
 
-.cell { position: absolute; width: 64px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-sizing: border-box; z-index: 1; }
+.cell-bg { position: absolute; inset: 0; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); background-color: #a4b0be; filter: drop-shadow(0 0 1px rgba(0,0,0,0.8)); z-index: 1; }
 
-.tile-forest { background-color: #27ae60; }
-.tile-mountain { background-color: #7f8c8d; }
-.tile-water { background-color: #2980b9; }
-.tile-grass { background-color: #a4b0be; }
-.tile-ford { background-color: #5dade2; border: none; }
-.tile-water_empty { background-color: #1b4f72; }
+.cell-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; font-size: 22px; line-height: 1; pointer-events: none; }
 
-.tile-wall_wood { background-color: #a0522d; }
-.tile-wall_stone { background-color: #95a5a6; }
-.tile-trap { background-color: #2c3e50; }
-.tile-hearth { background-color: #d35400; }
-.tile-camp { background-color: #8e44ad; border: 2px solid var(--accent); }
-.tile-lazaret { background-color: #c0392b; }
-.tile-field { background-color: #d4ac0d; }
-.tile-master { background-color: #34495e; border: 1px solid #fff; }
-.tile-houses { background-color: #8e44ad; border: 1px dashed #fff; }
-.tile-warehouse { background-color: #7f8c8d; border: 1px dashed #fff; }
-.tile-great_hearth { background-color: #f1c40f; border: 2px solid #fff; }
+/* ФОНЫ */
+.cell-bg.tile-grass { background-color: #a4b0be; }
+.cell-bg.tile-forest { background-color: #27ae60; }
+.cell-bg.tile-mountain { background-color: #7f8c8d; }
+.cell-bg.tile-water { background-color: #2980b9; }
+.cell-bg.tile-ford { background-color: #5dade2; }
+.cell-bg.tile-water_empty { background-color: #1b4f72; }
+.cell-bg.tile-wall_wood { background-color: #a0522d; }
+.cell-bg.tile-wall_stone { background-color: #95a5a6; }
+.cell-bg.tile-trap { background-color: #2c3e50; }
+.cell-bg.tile-hearth { background-color: #d35400; }
+.cell-bg.tile-camp { background-color: #8e44ad; }
+.cell-bg.tile-lazaret { background-color: #c0392b; }
+.cell-bg.tile-field { background-color: #d4ac0d; }
+.cell-bg.tile-master { background-color: #34495e; }
+.cell-bg.tile-houses { background-color: #8e44ad; }
+.cell-bg.tile-warehouse { background-color: #7f8c8d; }
+.cell-bg.tile-great_hearth { background-color: #f1c40f; }
+
+/* ТУМАН */
+.cell.fog { background-color: transparent !important; }
+.cell.fog .cell-bg { display: none; }
+.cell.fog .cell-content { display: none; }
+.cell.fog::after { content: ''; position: absolute; inset: 0; background: #000; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); z-index: 0; }
 
 .enemy-unit { outline: 2px solid red; z-index: 5; }
 .pawn-unit { outline: 2px solid yellow; z-index: 10; }
-.fog { background-color: #000 !important; }
-.explored-fog { opacity: 0.55; }
-.build-progress { font-size: 10px; color: white; position: absolute; bottom: 0; right: 2px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 0 2px;}
+.build-progress { font-size: 10px; color: white; position: absolute; bottom: 0; right: 2px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 0 2px; }
 
 .zoom-controls { position: fixed; bottom: 170px; right: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 9999; }
 .zoom-btn { width: 40px; height: 40px; background: rgba(0,0,0,0.8); color: white; border: 2px solid var(--accent); border-radius: 5px; font-size: 20px; font-weight: bold; cursor: pointer; }
@@ -81,17 +89,3 @@ body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text)
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
 @keyframes trap-boom { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2); opacity: 0; } }
 @keyframes float-up { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(-50%, -150%); opacity: 0; } }
-
-#weather-overlay { position: fixed; top: 80px; bottom: 160px; left: 0; right: 0; pointer-events: none; z-index: 100; transition: background 0.5s; }
-#weather-overlay.rain { background: rgba(52, 152, 219, 0.15); }
-#weather-overlay.snow { background-image: radial-gradient(white 1px, transparent 1px); background-size: 20px 20px; opacity: 0.3; animation: snowFall 3s linear infinite; }
-#weather-overlay.fog { background-color: #000 !important; }
-#weather-overlay.drought { background: rgba(255, 165, 0, 0.15); }
-@keyframes rainFall { 0% { background-position: 0 0; } 100% { background-position: 20px 20px; } }
-@keyframes snowFall { 0% { background-position: 0 0; } 100% { background-position: 0 40px; } }
-
-.fog::after { display: none; }
-.cell-bg { position: absolute; inset: 0; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); background-color: inherit; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3); z-index: 1; }
-.cell-content { position: relative; z-index: 2; font-size: 22px; transform: scale(1.2); pointer-events: none; }
-.fog .cell-bg { display: none; }
-.fog .cell-content { display: none; }

@@ -55,8 +55,8 @@ function startGame() {
         let row = [];
         for(let x=0; x<60; x++) {
             let type = 'grass';
-            if (x < 4 || x > 25) type = Math.random() < 0.6 ? 'forest' : 'grass';
-            else if (y < 4 || y > 25) type = Math.random() < 0.4 ? 'mountain' : 'grass';
+            if (x < 8 || x > 51) type = Math.random() < 0.6 ? 'forest' : 'grass';
+            else if (y < 8 || y > 51) type = Math.random() < 0.4 ? 'mountain' : 'grass';
             else if (x >= 28 && x <= 31) {
                 type = 'water';
                 if (y === 10 || y === 50) type = 'ford';
@@ -91,7 +91,7 @@ function startGame() {
     document.getElementById('bottom-panel').style.display = 'flex';
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
-    addLog("Версия v45.2. Игра началась!");
+    addLog("Версия v46.0. Игра началась!");
     
     setTimeout(() => { centerCameraOnPawn(); }, 100);
 }
@@ -104,18 +104,16 @@ function renderMap() {
         for(let x=0; x<60; x++) {
             let cell = G.map[y][x];
             let d = document.createElement('div');
-            d.className = `cell tile-${cell.type}`;
-            // Магия изометрии: (x - y) и (x + y)
+            d.className = `cell`;
             d.style.left = ((x - y) * 32 + 2000) + 'px';
             d.style.top = ((x + y) * 16 + 100) + 'px';
-            d.style.zIndex = x + y + 10; // Передние клетки рисуются поверх задних
+            d.style.zIndex = x + y + 10;
             
             let isVisible = cell.currentVision;
             let isExplored = cell.explored;
             
             if(!isExplored) d.classList.add('fog');
-            else if(!isVisible) d.classList.add('explored-fog');
-
+            
             let content = '';
             if (cell.type === 'forest') content = '🌲';
             else if (cell.type === 'mountain') content = '⛰️';
@@ -147,8 +145,8 @@ function renderMap() {
 
             let p = G.pawns.find(pw => pw.x === x && pw.y === y && pw.hp > 0);
             if(p) { content = '🧑‍🌾'; d.classList.add('pawn-unit'); }
-
-            d.innerHTML = '<div class="cell-bg"></div><div class="cell-content">' + content + '</div>';
+            
+            d.innerHTML = `<div class="cell-bg tile-${cell.type}"></div><div class="cell-content">${content}</div>`;
             d.onclick = () => handleCellClick(x, y);
             grid.appendChild(d);
         }
@@ -196,7 +194,7 @@ function updateVision() {
 
 function handleCellClick(x, y) {
     if (isMoving) return;
-    if (G.inCombat) return alert("Нельзя двигаться в бою!");
+    if (G.inCombat) return showToast("Нельзя двигаться в бою!", "danger");
     let p = G.pawns[G.activePawnIndex];
     if (!p || p.x === -1) return;
 
@@ -207,12 +205,12 @@ function handleCellClick(x, y) {
     let enemy = G.enemies.find(e => e.x === x && e.y === y);
     if (enemy) {
         if (Math.max(Math.abs(p.x-x), Math.abs(p.y-y)) <= 1) startCombat(enemy, p);
-        else addLog("Слишком далеко до врага.", true);
+        else showToast("Слишком далеко до врага.", "danger");
         return;
     }
 
     let path = findPath(p.x, p.y, x, y);
-    if (path.length === 0) return addLog("Путь заблокирован.", true);
+    if (path.length === 0) return showToast("Путь заблокирован.", "danger");
     
     isMoving = true;
     let maxSteps = G.enemies.length > 0 ? G.combatSteps : 5;
