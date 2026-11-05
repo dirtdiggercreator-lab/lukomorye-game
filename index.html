@@ -55,7 +55,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v44.2</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v44.4</p>
         <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
@@ -81,6 +81,7 @@
             <div>🏹 Ловкость: <span id="gen-agi">-</span></div>
             <div>🛠 Ремесло: <span id="gen-craft">-</span></div>
             <div>🧠 Смекалка: <span id="gen-wits">-</span></div>
+            <div>🛡 Выносливость: <span id="gen-stam">-</span></div>
             <div>🎭 Черта: <span id="gen-trait">-</span></div>
         </div>
         <button class="btn" id="btn-roll" onclick="rollStats()" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #8e44ad;">Бросить кубики</button>
@@ -165,6 +166,7 @@
             <div>🧠 Рассудок: <span id="pc-san">10</span>/10</div>
             <div>⭐ Опыт: <span id="pc-xp">0</span> (Ур. <span id="pc-lvl">0</span>)</div>
             <div>🏹 Стрелы: <span id="pc-arr">0</span>/2</div>
+            <div>🛡 Выносливость: <span id="pc-stam">0</span></div>
             <div>🎭 Черта: <span id="pc-trait" style="color:yellow;">-</span></div>
             <div>🎒 Оружие: <span id="pc-weap">Кулаки</span></div>
             <div>🛡 Броня: <span id="pc-armor">0</span></div>

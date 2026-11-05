@@ -6,8 +6,8 @@ function zoomMap(amount) {
     let wrapper = document.getElementById('grid-wrapper');
     if (!grid || !wrapper) return;
     grid.style.transform = 'scale(' + currentScale + ')';
-    wrapper.style.width = (2000 * currentScale) + 'px';
-    wrapper.style.height = (1200 * currentScale) + 'px';
+    wrapper.style.width = (4000 * currentScale) + 'px';
+    wrapper.style.height = (2400 * currentScale) + 'px';
     centerCameraOnPawn();
 }
 
@@ -15,7 +15,7 @@ function centerCameraOnPawn() {
     const area = document.getElementById('game-area');
     const p = G.pawns[G.activePawnIndex];
     if (!p || p.x === -1 || !area) return;
-    const px = ((p.x - p.y) * 32 + 1000) * currentScale;
+    const px = ((p.x - p.y) * 32 + 2000) * currentScale;
     const py = ((p.x + p.y) * 16 + 100) * currentScale;
     area.scrollLeft = px - area.clientWidth / 2;
     area.scrollTop = py - area.clientHeight / 2;
@@ -27,8 +27,8 @@ function drawMinimap() {
     let ctx = cvs.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, 90, 90);
-    for (let y = 0; y < 30; y++) {
-        for (let x = 0; x < 30; x++) {
+    for (let y = 0; y < 60; y++) {
+        for (let x = 0; x < 60; x++) {
             let c = G.map[y][x];
             if (!c || !c.explored) continue;
             let color = '#a4b0be';
@@ -37,11 +37,11 @@ function drawMinimap() {
             else if (c.type === 'water') color = '#2980b9';
             if (c.build) color = '#fff';
             ctx.fillStyle = color;
-            ctx.fillRect(x * 3, y * 3, 3, 3);
+            ctx.fillRect(x * 1.5, y * 1.5, 1.5, 1.5);
         }
     }
-    G.enemies.forEach(e => { ctx.fillStyle = '#e84118'; ctx.fillRect(e.x * 3, e.y * 3, 3, 3); });
-    G.pawns.forEach(p => { if (p.x !== -1) { ctx.fillStyle = '#fbc531'; ctx.fillRect(p.x * 3, p.y * 3, 3, 3); } });
+    G.enemies.forEach(e => { ctx.fillStyle = '#e84118'; ctx.fillRect(e.x * 1.5, e.y * 1.5, 1.5, 1.5); });
+    G.pawns.forEach(p => { if (p.x !== -1) { ctx.fillStyle = '#fbc531'; ctx.fillRect(p.x * 1.5, p.y * 1.5, 1.5, 1.5); } });
 }
 
 function startGame() {
@@ -51,29 +51,29 @@ function startGame() {
     G.pendingStandardSpawn = false;
     G.pendingWheelSpawn = false;
     
-    for(let y=0; y<30; y++) {
+    for(let y=0; y<60; y++) {
         let row = [];
-        for(let x=0; x<30; x++) {
+        for(let x=0; x<60; x++) {
             let type = 'grass';
             if (x < 4 || x > 25) type = Math.random() < 0.6 ? 'forest' : 'grass';
             else if (y < 4 || y > 25) type = Math.random() < 0.4 ? 'mountain' : 'grass';
-            else if (x >= 14 && x <= 16) {
+            else if (x >= 28 && x <= 31) {
                 type = 'water';
-                if (y === 5 || y === 25) type = 'ford';
+                if (y === 10 || y === 50) type = 'ford';
             }
             row.push({ type, build: null, explored: false, currentVision: false, progress: 0 });
         }
         G.map.push(row);
     }
     
-    let spawnX = 15, spawnY = 15;
+    let spawnX = 30, spawnY = 30;
     if (G.map[spawnY][spawnX].type !== 'grass') {
         let found = false;
         for(let r=1; r<30 && !found; r++) {
             for(let dy=-r; dy<=r && !found; dy++) {
                 for(let dx=-r; dx<=r && !found; dx++) {
-                    let nx = 15+dx, ny = 15+dy;
-                    if(nx>=0 && nx<30 && ny>=0 && ny<30 && G.map[ny][nx].type === 'grass') {
+                    let nx = 30+dx, ny = 30+dy;
+                    if(nx>=0 && nx<60 && ny>=0 && ny<60 && G.map[ny][nx].type === 'grass') {
                         spawnX = nx; spawnY = ny; found = true;
                     }
                 }
@@ -100,13 +100,13 @@ function renderMap() {
     const grid = document.getElementById('grid');
     if (!grid) return;
     grid.innerHTML = '';
-    for(let y=0; y<30; y++) {
-        for(let x=0; x<30; x++) {
+    for(let y=0; y<60; y++) {
+        for(let x=0; x<60; x++) {
             let cell = G.map[y][x];
             let d = document.createElement('div');
             d.className = `cell tile-${cell.type}`;
             // Магия изометрии: (x - y) и (x + y)
-            d.style.left = ((x - y) * 32 + 1000) + 'px';
+            d.style.left = ((x - y) * 32 + 2000) + 'px';
             d.style.top = ((x + y) * 16 + 100) + 'px';
             d.style.zIndex = x + y + 10; // Передние клетки рисуются поверх задних
             
@@ -158,7 +158,7 @@ function renderMap() {
 }
 
 function updateVision() {
-    for(let y=0; y<30; y++) for(let x=0; x<30; x++) G.map[y][x].currentVision = false;
+    for(let y=0; y<60; y++) for(let x=0; x<60; x++) G.map[y][x].currentVision = false;
 
     G.pawns.forEach(p => {
         if(p.x === -1 || p.hp <= 0) return;
@@ -166,7 +166,7 @@ function updateVision() {
         for(let dy=-rad; dy<=rad; dy++) {
             for(let dx=-rad; dx<=rad; dx++) {
                 let nx = p.x + dx, ny = p.y + dy;
-                if(nx>=0 && nx<30 && ny>=0 && ny<30 && (Math.abs(dx) + Math.abs(dy) <= rad)) {
+                if(nx>=0 && nx<60 && ny>=0 && ny<60 && (Math.abs(dx) + Math.abs(dy) <= rad)) {
                     G.map[ny][nx].currentVision = true;
                     G.map[ny][nx].explored = true;
                 }
@@ -174,8 +174,8 @@ function updateVision() {
         }
     });
 
-    for(let y=0; y<30; y++) {
-        for(let x=0; x<30; x++) {
+    for(let y=0; y<60; y++) {
+        for(let x=0; x<60; x++) {
             let b = G.map[y][x].build;
             if(!b || G.map[y][x].progress < getBuildCost(b).turns) continue;
             let rad = b === 'camp' ? 5 : (b === 'lazaret' || b === 'wall_stone') ? 3 : (b === 'wall_wood' || b === 'hearth' || b === 'field') ? 2 : 0;
@@ -183,7 +183,7 @@ function updateVision() {
             for(let dy=-rad; dy<=rad; dy++) {
                 for(let dx=-rad; dx<=rad; dx++) {
                     let nx = x + dx, ny = y + dy;
-                    if(nx>=0 && nx<30 && ny>=0 && ny<30 && (Math.abs(dx) + Math.abs(dy) <= rad)) {
+                    if(nx>=0 && nx<60 && ny>=0 && ny<60 && (Math.abs(dx) + Math.abs(dy) <= rad)) {
                         G.map[ny][nx].currentVision = true;
                         G.map[ny][nx].explored = true;
                     }
@@ -256,7 +256,7 @@ function findPath(sx, sy, tx, ty) {
             for(let dy=-1; dy<=1; dy++) {
                 if(dx===0 && dy===0) continue;
                 let nx = cur.x + dx, ny = cur.y + dy;
-                if(nx>=0 && nx<30 && ny>=0 && ny<30 && !visited.has(`${nx},${ny}`)) {
+                if(nx>=0 && nx<60 && ny>=0 && ny<60 && !visited.has(`${nx},${ny}`)) {
                     let cell = G.map[ny][nx];
                     let isWalkable = (cell.type !== 'water' && cell.type !== 'mountain' && cell.type !== 'water_empty');
                     if (['wall_wood', 'wall_stone', 'trap'].includes(cell.build)) isWalkable = false;

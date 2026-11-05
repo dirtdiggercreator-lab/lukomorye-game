@@ -14,7 +14,7 @@ function rollStats() {
     const traits = ["Силач", "Ловкач", "Умелец", "Стойкий", "Тугодум", "Везунчик"];
     tempPawn = {
         name: names[rnd(0, names.length-1)],
-        str: d6(), agi: d6(), craft: d6(), wits: d6(),
+        str: d6(), agi: d6(), craft: d6(), wits: d6(), stam: d6(),
         trait: traits[rnd(0, traits.length-1)],
         hp: 10, maxHp: 10, san: 10, xp: 0, lvl: 0, arrows: 0, weapon: 'fists', armor: 0, x: 15, y: 15,
         diseases: [], active: true, maxArrows: 2
@@ -23,12 +23,14 @@ function rollStats() {
     if(tempPawn.trait === 'Ловкач') tempPawn.agi += 1;
     if(tempPawn.trait === 'Умелец') tempPawn.craft += 1;
     if(tempPawn.trait === 'Стойкий') { tempPawn.san += 2; }
+    tempPawn.maxHp = 10 + tempPawn.stam; tempPawn.hp = tempPawn.maxHp;
     
     document.getElementById('gen-name').innerText = tempPawn.name;
     document.getElementById('gen-str').innerText = tempPawn.str;
     document.getElementById('gen-agi').innerText = tempPawn.agi;
     document.getElementById('gen-craft').innerText = tempPawn.craft;
     document.getElementById('gen-wits').innerText = tempPawn.wits;
+    document.getElementById('gen-stam').innerText = tempPawn.stam;
     document.getElementById('gen-trait').innerText = tempPawn.trait;
     
     document.getElementById('btn-roll').style.display = 'none';
@@ -95,6 +97,7 @@ function openPawnCard() {
     document.getElementById('pc-arr').innerText = p.arrows;
     document.getElementById('pc-weap').innerText = (WEAPONS[p.weapon] || WEAPONS['fists']).name;
     document.getElementById('pc-armor').innerText = p.armor;
+    document.getElementById('pc-stam').innerText = p.stam || 0;
     document.getElementById('pc-trait').innerText = p.trait;
     if(p.xp >= getNeededXp(p.lvl) && p.lvl < getMaxLevel()) document.getElementById('btn-levelup').style.display = 'block';
     else document.getElementById('btn-levelup').style.display = 'none';

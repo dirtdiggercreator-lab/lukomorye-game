@@ -7,14 +7,14 @@ class NPC {
         this.type = type;
         this.x = x;
         this.y = y;
-        this.life = 5;
+        this.life = 15;
         this.name = 'NPC';
         this.icon = '❓';
     }
     
     move() {
         // Идет к лагерю (или центру карты)
-        let tx = 15, ty = 15;
+        let tx = 30, ty = 30;
         for(let y=0; y<30; y++) for(let x=0; x<30; x++) {
             if(G.map[y][x] && G.map[y][x].build === 'camp') { tx = x; ty = y; }
         }
@@ -87,10 +87,10 @@ function trySpawnNPC() {
     let chance = G.npcDaysSince * 10; // 10% за день
     if (rnd(1, 100) <= chance) {
         let side = rnd(0, 3), ex, ey;
-        if (side === 0) { ex = rnd(0,29); ey = 0; }
-        else if (side === 1) { ex = rnd(0,29); ey = 29; }
-        else if (side === 2) { ex = 0; ey = rnd(0,29); }
-        else { ex = 29; ey = rnd(0,29); }
+        if (side === 0) { ex = rnd(0,59); ey = 0; }
+        else if (side === 1) { ex = rnd(0,59); ey = 59; }
+        else if (side === 2) { ex = 0; ey = rnd(0,59); }
+        else { ex = 59; ey = rnd(0,59); }
         
         let type = rnd(0, 1) === 0 ? 'trader' : 'shaman';
         let npc = type === 'trader' ? new Trader(ex, ey) : new Shaman(ex, ey);

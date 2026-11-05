@@ -68,14 +68,14 @@ function nextTurn() {
     updateUI(); updateVision();
     
     openModal('wheel-modal');
-    document.getElementById('wheel').style.transform = 'rotateX(60deg) rotate(0deg)';
+    document.getElementById('wheel').style.transform = 'scaleY(0.6) rotate(0deg)';
     document.getElementById('spin-btn').style.display = 'block';
     document.getElementById('wheel-text').innerText = '';
 }
 
 function spinWheel() {
     document.getElementById('spin-btn').style.display = 'none';
-    document.getElementById('wheel').style.transform = `rotateX(60deg) rotate(${1440 + rnd(0,360)}deg)`;
+    document.getElementById('wheel').style.transform = `scaleY(0.6) rotate(${1440 + rnd(0,360)}deg)`;
     setTimeout(() => {
         let s = rnd(0,7);
         let msg = "Тишина.";
@@ -96,10 +96,10 @@ function spinWheel() {
             let spawned = false;
             if (G.pendingStandardSpawn) {
                 let side = rnd(0,3), ex, ey;
-                if (side === 0) { ex = rnd(0,29); ey = 0; }
-                else if (side === 1) { ex = rnd(0,29); ey = 29; }
-                else if (side === 2) { ex = 0; ey = rnd(0,29); }
-                else { ex = 29; ey = rnd(0,29); }
+                if (side === 0) { ex = rnd(0,59); ey = 0; }
+                else if (side === 1) { ex = rnd(0,59); ey = 59; }
+                else if (side === 2) { ex = 0; ey = rnd(0,59); }
+                else { ex = 59; ey = rnd(0,59); }
                 spawnEnemyWithArrow(ex, ey, 'Волк');
                 addLog("⚠️ На карте появился враг!", true);
                 G.pendingStandardSpawn = false;
@@ -107,10 +107,10 @@ function spinWheel() {
             }
             if (G.pendingWheelSpawn) {
                 let side = rnd(0,3), ex, ey;
-                if (side === 0) { ex = rnd(0,29); ey = 0; }
-                else if (side === 1) { ex = rnd(0,29); ey = 29; }
-                else if (side === 2) { ex = 0; ey = rnd(0,29); }
-                else { ex = 29; ey = rnd(0,29); }
+                if (side === 0) { ex = rnd(0,59); ey = 0; }
+                else if (side === 1) { ex = rnd(0,59); ey = 59; }
+                else if (side === 2) { ex = 0; ey = rnd(0,59); }
+                else { ex = 59; ey = rnd(0,59); }
                 spawnEnemyWithArrow(ex, ey, 'Волк');
                 addLog("⚠️ РЕЙД! На карте появился враг!", true);
                 G.pendingWheelSpawn = false;
