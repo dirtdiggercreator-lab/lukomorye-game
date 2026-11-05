@@ -37,7 +37,9 @@ function loadGame() {
     let saveStr = localStorage.getItem('lukomorye_save');
     if (!saveStr) return alert("Сохранение не найдено!");
     let saveData = JSON.parse(saveStr);
-    G = saveData.G; migrateSave();
+    G = saveData.G;
+    if (!G.rooms) G.rooms = [];
+    migrateSave();
     logs = saveData.logs;
     
     closeModal('menu-modal');

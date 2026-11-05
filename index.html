@@ -54,7 +54,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v48.0</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v49.0</p>
         <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
@@ -93,16 +93,14 @@
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;">Строительство</h3>
         <button class="btn" onclick="doBuild('camp', 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Лагерь (Бесплатно)</button>
-        <button class="btn" onclick="doBuild('wall_wood', 2, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Деревянная стена (2🌲)</button>
-        <button class="btn" onclick="doBuild('wall_stone', 3, 2, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменная стена (3🌲, 2🪨)</button>
+        <button class="btn" onclick="doBuild('wall_wood', 2, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🪵 Ограда деревянная (2🌲)</button>
+        <button class="btn" onclick="doBuild('wall_stone', 3, 2, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🪨 Ограда каменная (3🌲, 2🪨)</button>
+        <button class="btn" onclick="doBuild('wall_multi_wood', 4, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🧱 Стена деревянная (4🌲, 1 ОД)</button>
+        <button class="btn" onclick="doBuild('wall_multi_stone', 6, 4, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🧱 Стена каменная (6🌲, 4🪨, 1 ОД)</button>
         <button class="btn" onclick="doBuild('trap', 1, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Ловушка (1🌲, 1🪨)</button>
         <button class="btn" onclick="doBuild('hearth', 0, 3, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Очаг (3🪨)</button>
         <button class="btn" onclick="doBuild('field', 2, 0, 3)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Рисовое поле (2🌲, 3 ОД)</button>
-        <button class="btn" onclick="doBuild('lazaret', 3, 2, 2)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Лазарет (3🌲, 2🪨, 2 ОД)</button>
-        <button class="btn" onclick="doBuild('warehouse', 3, 2, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Склад (3🌲, 2🪨, 1 ОД)</button>
-        <button class="btn" onclick="doBuild('houses', 4, 3, 2)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Хоромы (4🌲, 3🪨, 2 ОД)</button>
-        <button class="btn" onclick="doBuild('master', 3, 3, 2)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Мастерская (3🌲, 3🪨, 2 ОД)</button>
-        <button class="btn" onclick="doBuild('road', 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🛤️ Дорога (1🪨)</button>
+                                        <button class="btn" onclick="doBuild('road', 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🛤️ Дорога (1🪨)</button>
         <button class="btn" onclick="doBuild('campfire', 1, 2, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🔥 Сторожевой костёр (1🌲, 2🪨)</button>
         <button class="btn" onclick="doBuild('watchtower', 4, 3, 2)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🗼 Сторожевая вышка (4🌲, 3🪨, 2 ОД)</button>
         <button class="btn" onclick="doBuild('great_hearth',, 15, 15, 3)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #f1c40f; color: #000;">Великий Очаг (15🌲, 15🪨, 8🔶)</button>
@@ -196,6 +194,7 @@
 <script src="js/engine/isometric.js"></script>
 <script src="js/engine/camera.js"></script>
 <script src="js/engine/renderer.js"></script>
+<script src="js/rooms.js"></script>
 <script src="js/map.js"></script>
 <script src="js/actions.js"></script>
 <script src="js/craft.js"></script>

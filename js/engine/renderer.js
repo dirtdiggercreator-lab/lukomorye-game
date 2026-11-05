@@ -217,6 +217,9 @@ function getTileColor(cell) {
     if (cell.build === 'road') return '#7f6f5f';
     if (cell.build === 'watchtower') return '#8b6f47';
     if (cell.build === 'campfire') return '#e67e22';
+    if (cell.build === 'wall_multi_wood') return '#6b3e1a';
+    if (cell.build === 'wall_multi_stone') return '#5a6c6d';
+    if (cell.build === 'door') return '#8b6914';
     if (cell.type === 'forest') return '#27ae60';
     if (cell.type === 'mountain') return '#7f8c8d';
     if (cell.type === 'water') return '#2980b9';
@@ -241,6 +244,9 @@ function getTileEmoji(cell) {
     if (cell.build === 'road') return '🛤️';
     if (cell.build === 'watchtower') return '🗼';
     if (cell.build === 'campfire') return '🔥';
+    if (cell.build === 'wall_multi_wood') return '🧱';
+    if (cell.build === 'wall_multi_stone') return '🧱';
+    if (cell.build === 'door') return '🚪';
     if (cell.type === 'forest') return '🌲';
     if (cell.type === 'mountain') return '⛰️';
     if (cell.type === 'water') return '🌊';
@@ -264,6 +270,12 @@ function drawTile(gx, gy) {
     _ctx.fillStyle = getTileColor(cell);
     _ctx.fill();
     
+    // Пол внутри помещения
+    if (cell.isFloor) {
+        _ctx.fillStyle = '#c9b896';
+        _ctx.fill();
+    }
+    
     if (cell.explored) {
         _ctx.strokeStyle = 'rgba(0,0,0,0.25)';
         _ctx.lineWidth = 1;
@@ -283,6 +295,20 @@ function drawTile(gx, gy) {
         _ctx.textAlign = 'center';
         _ctx.textBaseline = 'middle';
         _ctx.fillText(emoji, w.x, w.y);
+    }
+    
+    // Иконка комнаты в центре
+    if (G.rooms && cell.isFloor) {
+        let room = G.rooms.find(r => r.cells.some(c => c.x === gx && c.y === gy));
+        if (room && room.purpose) {
+            let center = getRoomCenter(room);
+            if (center.x === gx && center.y === gy) {
+                _ctx.font = '28px Arial';
+                _ctx.textAlign = 'center';
+                _ctx.textBaseline = 'middle';
+                _ctx.fillText(ROOM_PURPOSES[room.purpose].icon, w.x, w.y);
+            }
+        }
     }
     
     // Прогресс постройки

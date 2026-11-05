@@ -12,16 +12,30 @@ function doSmartAction() {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('hunt')">🏹 Охота</button>`;
     } else if (cell.type === 'mountain') {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('gather')">⛏️ Добыть камень/медь</button>`;
-    } else if (cell.build === 'camp' || (cell.build === 'houses' && cell.progress >= 2)) {
+    } else if (cell.build === 'camp') {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('hire')">🧑‍🌾 Нанять поселенца</button>`;
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
-    } else if (cell.build === 'lazaret' && cell.progress >= 2) {
-        actionsHTML += `<button class="btn action-btn" onclick="executeAction('heal')">⛑️ Лечиться (1🍖)</button>`;
     } else if (cell.type === 'grass' && !cell.build) {
         actionsHTML += `<button class="btn action-btn" onclick="document.getElementById('action-modal').style.display='none'; openModal('build-modal')">🏗️ Строить</button>`;
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     } else {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
+    }
+    
+    // Проверка помещения под пешкой
+    let _room = getRoomAt(p.x, p.y);
+    if (_room) {
+        if (_room.purpose === 'lazaret') {
+            actionsHTML += `<button class="btn action-btn" onclick="executeAction('heal')" style="background: #27ae60; grid-column: span 2;">⛑️ Лечиться (1🍖)</button>`;
+        } else if (_room.purpose === 'houses') {
+            actionsHTML += `<button class="btn action-btn" onclick="executeAction('hire')" style="background: #8e44ad; grid-column: span 2;">🧑‍🌾 Нанять поселенца</button>`;
+        } else if (_room.purpose === 'master') {
+            actionsHTML += `<button class="btn action-btn" onclick="document.getElementById('action-modal').style.display='none'; openModal('craft-modal')" style="background: #34495e; grid-column: span 2;">🛠️ Крафт в Мастерской</button>`;
+        } else if (_room.purpose === 'warehouse') {
+            actionsHTML += `<div style="grid-column: span 2; padding: 8px; text-align: center; color: #fbc531;">📦 Склад (расширяет лимит)</div>`;
+        } else if (!_room.purpose) {
+            actionsHTML += `<button class="btn action-btn" onclick="openRoomAssignMenu()" style="background: #fbc531; color: #000; grid-column: span 2;">🏠 Назначить помещение</button>`;
+        }
     }
     
     let p2 = G.pawns[G.activePawnIndex];
