@@ -91,7 +91,7 @@ function startGame() {
     document.getElementById('bottom-panel').style.display = 'flex';
     
     updateUI(); updateVision(); renderMap(); renderPawnBar();
-    addLog("Версия v45.1. Игра началась!");
+    addLog("Версия v45.2. Игра началась!");
     
     setTimeout(() => { centerCameraOnPawn(); }, 100);
 }
@@ -148,7 +148,7 @@ function renderMap() {
             let p = G.pawns.find(pw => pw.x === x && pw.y === y && pw.hp > 0);
             if(p) { content = '🧑‍🌾'; d.classList.add('pawn-unit'); }
 
-            d.innerHTML = content;
+            d.innerHTML = '<div class="cell-bg"></div><div class="cell-content">' + content + '</div>';
             d.onclick = () => handleCellClick(x, y);
             grid.appendChild(d);
         }
