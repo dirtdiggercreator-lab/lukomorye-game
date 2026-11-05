@@ -8,6 +8,6 @@ let G = {
 };
 let logs = [];
 let isMoving = false;
-let currentScale = 1;
+// currentScale удалён, теперь camera.zoom
 let tempPawn = {};
 let currentEnemy = null, currentPawn = null;

@@ -1,26 +1,3 @@
-function zoomMap(amount) {
-    currentScale += amount;
-    if (currentScale < 0.2) currentScale = 0.2;
-    if (currentScale > 2.0) currentScale = 2.0;
-    let grid = document.getElementById('grid');
-    let wrapper = document.getElementById('grid-wrapper');
-    if (!grid || !wrapper) return;
-    grid.style.transform = 'scale(' + currentScale + ')';
-    wrapper.style.width = (4000 * currentScale) + 'px';
-    wrapper.style.height = (2400 * currentScale) + 'px';
-    centerCameraOnPawn();
-}
-
-function centerCameraOnPawn() {
-    const area = document.getElementById('game-area');
-    const p = G.pawns[G.activePawnIndex];
-    if (!p || p.x === -1 || !area) return;
-    const px = ((p.x - p.y) * 32 + 2000) * currentScale;
-    const py = ((p.x + p.y) * 16 + 100) * currentScale;
-    area.scrollLeft = px - area.clientWidth / 2;
-    area.scrollTop = py - area.clientHeight / 2;
-}
-
 function drawMinimap() {
     let cvs = document.getElementById('minimap');
     if (!cvs) return;
@@ -90,69 +67,20 @@ function startGame() {
     document.getElementById('zoom-controls').style.display = 'flex';
     document.getElementById('bottom-panel').style.display = 'flex';
     
-    updateUI(); updateVision(); renderMap(); renderPawnBar();
-    addLog("Версия v46.0. Игра началась!");
+    updateUI(); updateVision(); renderPawnBar();
     
-    setTimeout(() => { centerCameraOnPawn(); }, 100);
+    // Инициализация canvas
+    initRenderer();
+    centerCameraOnPawn();
+    
+    addLog("Версия v47.0 (Canvas). Игра началась!");
 }
 
 function renderMap() {
-    const grid = document.getElementById('grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    for(let y=0; y<60; y++) {
-        for(let x=0; x<60; x++) {
-            let cell = G.map[y][x];
-            let d = document.createElement('div');
-            d.className = `cell`;
-            d.style.left = ((x - y) * 32 + 2000) + 'px';
-            d.style.top = ((x + y) * 16 + 100) + 'px';
-            d.style.zIndex = x + y + 10;
-            
-            let isVisible = cell.currentVision;
-            let isExplored = cell.explored;
-            
-            if(!isExplored) d.classList.add('fog');
-            
-            let content = '';
-            if (cell.type === 'forest') content = '🌲';
-            else if (cell.type === 'mountain') content = '⛰️';
-            else if (cell.type === 'water') content = '🌊';
-            else if (cell.type === 'ford') content = '💧';
-            else if (cell.type === 'water_empty') content = '';
-            
-            if(cell.build === 'camp') content = '🏕️';
-            if(cell.build === 'wall_wood') content = '🪵';
-            if(cell.build === 'wall_stone') content = '🪨';
-            if(cell.build === 'trap') content = '🕳️';
-            if(cell.build === 'hearth') content = '🔥';
-            if(cell.build === 'field') content = '🌾';
-            if(cell.build === 'lazaret') content = '⛑️';
-            if(cell.build === 'warehouse') content = '📦';
-            if(cell.build === 'houses') content = '🏠';
-            if(cell.build === 'master') content = '🛠️';
-            if(cell.build === 'great_hearth') content = '🏆';
-            
-            if(cell.build && cell.progress < getBuildCost(cell.build).turns) {
-                content = `<span class="build-progress">${cell.progress}/${getBuildCost(cell.build).turns}</span>`;
-            }
-
-            let n = G.npcs && G.npcs.find(nn => nn.x === x && nn.y === y);
-            if(n && isVisible) { content = n.icon; }
-            
-            let e = G.enemies.find(en => en.x === x && en.y === y);
-            if(e && isVisible) { content = e.icon; d.classList.add('enemy-unit'); }
-
-            let p = G.pawns.find(pw => pw.x === x && pw.y === y && pw.hp > 0);
-            if(p) { content = '🧑‍🌾'; d.classList.add('pawn-unit'); }
-            
-            d.innerHTML = `<div class="cell-bg tile-${cell.type}"></div><div class="cell-content">${content}</div>`;
-            d.onclick = () => handleCellClick(x, y);
-            grid.appendChild(d);
-        }
-    }
-    renderPawnBar();
+    // Теперь просто триггерит перерисовку следующего кадра
+    markDirty();
     drawMinimap();
+    renderPawnBar();
 }
 
 function updateVision() {
@@ -232,8 +160,10 @@ function handleCellClick(x, y) {
         for(let step of path) {
             p.x = step.x; p.y = step.y;
             if (G.enemies.length > 0) G.combatSteps--;
-            updateVision(); renderMap(); updateUI();
-            await sleep(100);
+            updateVision();
+            centerCameraOnPawn();
+            updateUI();
+            await sleep(120);
         }
         isMoving = false;
         updateUI();
