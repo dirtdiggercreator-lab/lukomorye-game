@@ -76,7 +76,7 @@ function checkForRooms() {
             q.push({x:cur.x, y:cur.y-1});
         }
         
-        if (roomCells.length < 4) continue; // минимум 2x2
+        if (roomCells.length < 1) continue; // разрешаем 1x1
         
         // Проверка на размер 6x6 = 36 макс
         if (roomCells.length > 36) continue;

@@ -54,7 +54,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v49.0</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v49.2</p>
         <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
@@ -95,7 +95,7 @@
         <button class="btn" onclick="doBuild('camp', 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Лагерь (Бесплатно)</button>
         <button class="btn" onclick="doBuild('wall_wood', 2, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🪵 Ограда деревянная (2🌲)</button>
         <button class="btn" onclick="doBuild('wall_stone', 3, 2, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🪨 Ограда каменная (3🌲, 2🪨)</button>
-        <button class="btn" onclick="doBuild('wall_multi_wood', 4, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🧱 Стена деревянная (4🌲, 1 ОД)</button>
+        <button class="btn" onclick="doBuild('wall_multi_wood', 1, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🧱 Стена деревянная (1🌲, 1 ОД)</button>
         <button class="btn" onclick="doBuild('wall_multi_stone', 6, 4, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🧱 Стена каменная (6🌲, 4🪨, 1 ОД)</button>
         <button class="btn" onclick="doBuild('trap', 1, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Ловушка (1🌲, 1🪨)</button>
         <button class="btn" onclick="doBuild('hearth', 0, 3, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Очаг (3🪨)</button>

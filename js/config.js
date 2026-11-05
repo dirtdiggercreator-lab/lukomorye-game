@@ -61,7 +61,7 @@ function getBuildCost(type) {
     if(type === 'road') return {w:0,s:1,turns:1};
     if(type === 'watchtower') return {w:4,s:3,turns:2};
     if(type === 'campfire') return {w:1,s:2,turns:1};
-    if(type === 'wall_multi_wood') return {w:4,s:0,turns:1};
+    if(type === 'wall_multi_wood') return {w:1,s:0,turns:1};
     if(type === 'wall_multi_stone') return {w:6,s:4,turns:1};
     return {w:0,s:0,turns:1};
 }
