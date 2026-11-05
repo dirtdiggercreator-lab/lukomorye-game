@@ -50,13 +50,15 @@ function nextTurn() {
     if(G.pawns.every(p => p.hp <= 0)) return gameOver("Все пешки погибли.");
 
     G.round++;
-    if(G.round % 5 === 1 && G.round > 1) {
+    if(G.round > 1 && (G.round - 1) % 12 === 0) {
         let idx = SEASONS.indexOf(G.season);
         G.season = SEASONS[(idx+1)%4];
         addLog(`Наступил сезон: ${G.season}`);
+        G.weatherDuration = 0;
     }
 
     G.pendingStandardSpawn = (G.round % 2 === 0);
+    if (isNight()) G.pendingStandardSpawn = true; // Ночью спавн чаще
     G.pendingWheelSpawn = false;
     
     rollWeather();
@@ -142,25 +144,52 @@ function gameOver(reason) {
 }
 
 function rollWeather() {
-    let roll = d6();
-    let overlay = document.getElementById('weather-overlay');
-    overlay.className = '';
+    if (G.weatherDuration > 0) {
+        G.weatherDuration--;
+        return;
+    }
     
+    let roll = d6();
+    let newWeather;
     if (roll <= 2) {
-        // Негатив по сезону
-        if (G.season === 'Весна') { G.weather = 'Паводок'; addLog("🌧 Погода: Паводок", true); overlay.classList.add('rain'); }
-        else if (G.season === 'Лето') { G.weather = 'Засуха'; addLog("☀️ Погода: Засуха", true); overlay.classList.add('drought'); }
-        else if (G.season === 'Осень') { G.weather = 'Ураган'; addLog("🌪 Погода: Ураган", true); overlay.classList.add('rain'); }
-        else { G.weather = 'Мороз'; addLog("❄️ Погода: Мороз", true); overlay.classList.add('snow'); }
+        if (G.season === 'Весна') newWeather = 'Паводок';
+        else if (G.season === 'Лето') newWeather = 'Засуха';
+        else if (G.season === 'Осень') newWeather = 'Ураган';
+        else newWeather = 'Мороз';
     } else if (roll <= 4) {
-        G.weather = 'Ясно';
-        addLog("☀️ Погода: Ясно");
+        newWeather = 'Ясно';
     } else {
-        // Позитив
-        if (d6() >= 4) { G.weather = 'Обилие'; addLog("🌿 Погода: Обилие (+1 к добыче)", false, true); }
-        else { G.weather = 'Теплый ветер'; 
-            G.pawns.forEach(p => { if (p.hp > 0 && p.x !== -1) p.hp = Math.min(p.maxHp, p.hp + 1); });
-            addLog("🍃 Погода: Теплый ветер (+1 HP)", false, true);
+        newWeather = (d6() <= 3) ? 'Обилие' : 'Теплый ветер';
+    }
+    G.weather = newWeather;
+    G.weatherDuration = 5;
+    
+    let effectsText = {
+        'Паводок': '🌧 Паводок: грязь, движение замедлено',
+        'Засуха': '☀️ Засуха: поля и вода без еды',
+        'Ураган': '🌪 Ураган: сломал постройку',
+        'Мороз': '❄️ Мороз: снег, -1 HP без Очага',
+        'Ясно': '☀️ Ясно',
+        'Обилие': '🌿 Обилие: +1 к добыче',
+        'Теплый ветер': '🍃 Теплый ветер: +1 HP'
+    };
+    let isBad = ['Паводок', 'Засуха', 'Ураган', 'Мороз'].includes(newWeather);
+    showToast(effectsText[newWeather] || newWeather, isBad ? 'danger' : 'success');
+    addLog(`Погода: ${newWeather} (${G.weatherDuration} ходов)`, isBad);
+    
+    if (newWeather === 'Теплый ветер') {
+        G.pawns.forEach(p => { if (p.hp > 0 && p.x !== -1) p.hp = Math.min(p.maxHp, p.hp + 1); });
+    }
+    if (newWeather === 'Ураган') {
+        let wooden = [];
+        for(let y=0; y<60; y++) for(let x=0; x<60; x++) {
+            let b = G.map[y][x].build;
+            if (b === 'wall_wood' || b === 'camp' || b === 'houses') wooden.push({x,y});
+        }
+        if (wooden.length > 0) {
+            let t = wooden[rnd(0, wooden.length-1)];
+            G.map[t.y][t.x].build = null;
+            addLog(`🌪 Ураган сломал постройку!`, true);
         }
     }
 }

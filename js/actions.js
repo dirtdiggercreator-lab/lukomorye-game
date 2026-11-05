@@ -61,15 +61,20 @@ function executeAction(type) {
         let roll = d6() + p.craft;
         let res = roll >= 7 ? 3 : roll >= 4 ? 2 : 1;
         
+        if (G.weather === 'Обилие') res += 1;
         if (cell.type === 'forest') { 
             G.res.wood += res; 
             addLog(`${p.name} рубит лес: +${res} 🌲 (Кубик: ${roll})`, false, true); 
             cell.type = 'grass';
         }
         else if (cell.type === 'water') { 
-            G.res.meat += res; 
-            addLog(`${p.name} ловит рыбу: +${res} 🍖 (Кубик: ${roll})`, false, true); 
-            cell.type = 'water_empty';
+            if (G.weather === 'Засуха') {
+                addLog(`${p.name} не может ловить рыбу в засуху.`, true);
+            } else {
+                G.res.meat += res; 
+                addLog(`${p.name} ловит рыбу: +${res} 🍖 (Кубик: ${roll})`, false, true); 
+                cell.type = 'water_empty';
+            }
         }
         else if (cell.type === 'mountain') { 
             G.res.stone += res; 
@@ -93,6 +98,8 @@ function executeAction(type) {
             else { G.res.meat += 5; addLog(`${p.name}: +5 🍖`, false, true); }
         }
 
+        if (G.weather === 'Засуха' && cell.type === 'water') { addLog(`${p.name} не может охотиться в засуху.`, true); updateUI(); return; }
+        
         if(roll1 === roll2) {
             addLog("ДУБЛЬ! Из засады выходит зверь!", true);
             let enemiesList = cell.type === 'forest' ? ['Волк', 'Кабан', 'Медведь'] : ['Змея', 'Водяной'];

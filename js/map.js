@@ -73,7 +73,7 @@ function startGame() {
     initRenderer();
     centerCameraOnPawn();
     
-    addLog("Версия v47.0 (Canvas). Игра началась!");
+    addLog("Версия v48.0. Игра началась!");
 }
 
 function renderMap() {
@@ -86,9 +86,10 @@ function renderMap() {
 function updateVision() {
     for(let y=0; y<60; y++) for(let x=0; x<60; x++) G.map[y][x].currentVision = false;
 
+    let night = isNight();
     G.pawns.forEach(p => {
         if(p.x === -1 || p.hp <= 0) return;
-        let rad = 2;
+        let rad = night ? 2 : 3;
         for(let dy=-rad; dy<=rad; dy++) {
             for(let dx=-rad; dx<=rad; dx++) {
                 let nx = p.x + dx, ny = p.y + dy;
@@ -104,7 +105,12 @@ function updateVision() {
         for(let x=0; x<60; x++) {
             let b = G.map[y][x].build;
             if(!b || G.map[y][x].progress < getBuildCost(b).turns) continue;
-            let rad = b === 'camp' ? 5 : (b === 'lazaret' || b === 'wall_stone') ? 3 : (b === 'wall_wood' || b === 'hearth' || b === 'field') ? 2 : 0;
+            let rad = 0;
+            if (b === 'camp') rad = 5;
+            else if (b === 'lazaret' || b === 'wall_stone') rad = 3;
+            else if (b === 'wall_wood' || b === 'hearth' || b === 'field') rad = 2;
+            else if (b === 'watchtower') rad = night ? 8 : 4;
+            else if (b === 'campfire') rad = night ? 5 : 2;
             if(rad === 0) continue;
             for(let dy=-rad; dy<=rad; dy++) {
                 for(let dx=-rad; dx<=rad; dx++) {
@@ -120,6 +126,24 @@ function updateVision() {
     renderMap();
 }
 
+function ensurePawnVisible() {
+    const p = G.pawns[G.activePawnIndex];
+    if (!p || p.x === -1) return;
+    const canvas = getCanvas();
+    if (!canvas) return;
+    const cw = canvas.getBoundingClientRect().width;
+    const ch = canvas.getBoundingClientRect().height;
+    const w = gridToWorld(p.x, p.y);
+    const screen = worldToScreen(w.x, w.y, canvas, camera);
+    const margin = 120;
+    
+    if (screen.x < margin) camera.x -= (margin - screen.x) / camera.zoom;
+    else if (screen.x > cw - margin) camera.x += (screen.x - cw + margin) / camera.zoom;
+    if (screen.y < margin) camera.y -= (margin - screen.y) / camera.zoom;
+    else if (screen.y > ch - margin) camera.y += (screen.y - ch + margin) / camera.zoom;
+    markDirty();
+}
+
 function handleCellClick(x, y) {
     if (isMoving) return;
     if (G.inCombat) return showToast("Нельзя двигаться в бою!", "danger");
@@ -129,7 +153,6 @@ function handleCellClick(x, y) {
     if (G.buildMode) { placeBuild(x, y); return; }
     if (x === p.x && y === p.y) return;
     
-    let cell = G.map[y][x];
     let enemy = G.enemies.find(e => e.x === x && e.y === y);
     if (enemy) {
         if (Math.max(Math.abs(p.x-x), Math.abs(p.y-y)) <= 1) startCombat(enemy, p);
@@ -154,16 +177,31 @@ function handleCellClick(x, y) {
         return;
     }
 
-    if (path.length > maxSteps) path = path.slice(0, maxSteps);
+    // Обрезаем путь по сумме moveCost
+    let realPath = [];
+    let totalCost = 0;
+    for (let step of path) {
+        let c = getMoveCost(G.map[step.y][step.x]);
+        if (totalCost + c > maxSteps + 0.001) break;
+        realPath.push(step);
+        totalCost += c;
+    }
+    if (realPath.length === 0) { 
+        isMoving = false; 
+        return showToast("Нет доступных шагов.", "danger"); 
+    }
 
     (async () => {
-        for(let step of path) {
+        for(let step of realPath) {
             p.x = step.x; p.y = step.y;
-            if (G.enemies.length > 0) G.combatSteps--;
+            let c = getMoveCost(G.map[step.y][step.x]);
+            if (G.enemies.length > 0) G.combatSteps -= c;
             updateVision();
-            centerCameraOnPawn();
+            ensurePawnVisible();
             updateUI();
-            await sleep(120);
+            // Анимация: по дороге быстрее, по грязи медленнее
+            let delay = c === 0.33 ? 60 : (c >= 2 ? 240 : 120);
+            await sleep(delay);
         }
         isMoving = false;
         updateUI();
@@ -175,23 +213,33 @@ function handleCellClick(x, y) {
 }
 
 function findPath(sx, sy, tx, ty) {
-    let queue = [{x:sx, y:sy, path:[]}];
-    let visited = new Set([`${sx},${sy}`]);
-    while(queue.length > 0) {
-        let cur = queue.shift();
-        if(cur.x === tx && cur.y === ty) return cur.path;
+    let openList = [{x: sx, y: sy, cost: 0, path: []}];
+    let visited = new Set();
+    let visitedCosts = {};
+    visitedCosts[`${sx},${sy}`] = 0;
+    
+    while (openList.length > 0) {
+        openList.sort((a, b) => a.cost - b.cost);
+        let cur = openList.shift();
+        if (cur.x === tx && cur.y === ty) return cur.path;
+        let key = `${cur.x},${cur.y}`;
+        if (visited.has(key)) continue;
+        visited.add(key);
+        
         for(let dx=-1; dx<=1; dx++) {
             for(let dy=-1; dy<=1; dy++) {
                 if(dx===0 && dy===0) continue;
                 let nx = cur.x + dx, ny = cur.y + dy;
-                if(nx>=0 && nx<60 && ny>=0 && ny<60 && !visited.has(`${nx},${ny}`)) {
-                    let cell = G.map[ny][nx];
-                    let isWalkable = (cell.type !== 'water' && cell.type !== 'mountain' && cell.type !== 'water_empty');
-                    if (['wall_wood', 'wall_stone', 'trap'].includes(cell.build)) isWalkable = false;
-                    if (isWalkable) {
-                        visited.add(`${nx},${ny}`);
-                        queue.push({x:nx, y:ny, path:[...cur.path, {x:nx, y:ny}]});
-                    }
+                if(nx<0 || nx>=60 || ny<0 || ny>=60) continue;
+                let nkey = `${nx},${ny}`;
+                if (visited.has(nkey)) continue;
+                let cell = G.map[ny][nx];
+                let cellCost = getMoveCost(cell);
+                if (cellCost >= 999) continue;
+                let newCost = cur.cost + cellCost;
+                if (visitedCosts[nkey] === undefined || newCost < visitedCosts[nkey]) {
+                    visitedCosts[nkey] = newCost;
+                    openList.push({x: nx, y: ny, cost: newCost, path: [...cur.path, {x:nx, y:ny}]});
                 }
             }
         }

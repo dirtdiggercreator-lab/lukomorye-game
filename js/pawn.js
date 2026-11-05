@@ -58,6 +58,8 @@ function renderPawnBar() {
 function updateUI() {
     let se = document.getElementById('ui-season');
     if (se) se.innerText = G.season;
+    let tod = document.getElementById('ui-timeofday');
+    if (tod) tod.innerText = isNight() ? '🌙' : '☀️';
     document.getElementById('ui-round').innerText = G.round;
     document.getElementById('ui-ap').innerText = G.ap;
     document.getElementById('ui-steps').innerText = (G.enemies.length > 0 || G.inCombat) ? G.combatSteps : 0;

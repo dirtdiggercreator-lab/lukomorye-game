@@ -58,5 +58,24 @@ function getBuildCost(type) {
     if(type === 'houses') return {w:4,s:3,turns:2};
     if(type === 'master') return {w:3,s:3,turns:2};
     if(type === 'great_hearth') return {w:15,s:15,turns:3, copper:8};
+    if(type === 'road') return {w:0,s:1,turns:1};
+    if(type === 'watchtower') return {w:4,s:3,turns:2};
+    if(type === 'campfire') return {w:1,s:2,turns:1};
     return {w:0,s:0,turns:1};
+}
+
+
+function getMoveCost(cell) {
+    if (!cell) return 999;
+    if (cell.type === 'water' || cell.type === 'mountain' || cell.type === 'water_empty') return 999;
+    if (cell.build === 'wall_wood' || cell.build === 'wall_stone' || cell.build === 'trap') return 999;
+    if (cell.build === 'road') return 0.33;
+    if (cell.type === 'ford') return 2.0;
+    let isMuddy = (G.weather === 'Паводок' || G.weather === 'Мороз');
+    if (isMuddy && (cell.type === 'grass' || cell.type === 'forest')) return 2.0;
+    return 1.0;
+}
+
+function isNight() {
+    return ((G.round - 1) % 4) >= 2;
 }

@@ -181,6 +181,14 @@ function render() {
         else if (item.type === 'npc') drawEntity(item.gx, item.gy, item.data.icon, '#8e44ad');
     }
     
+    // Затемнение ночью
+    if (typeof isNight === 'function' && isNight()) {
+        _ctx.fillStyle = 'rgba(10, 20, 60, 0.45)';
+        const vl = camera.x - cw / (2 * camera.zoom);
+        const vt = camera.y - ch / (2 * camera.zoom);
+        _ctx.fillRect(vl, vt, cw / camera.zoom, ch / camera.zoom);
+    }
+    
     // Эффекты
     for (let i = effects.length - 1; i >= 0; i--) {
         const eff = effects[i];
@@ -206,6 +214,9 @@ function getTileColor(cell) {
     if (cell.build === 'houses') return '#8e44ad';
     if (cell.build === 'master') return '#34495e';
     if (cell.build === 'great_hearth') return '#f1c40f';
+    if (cell.build === 'road') return '#7f6f5f';
+    if (cell.build === 'watchtower') return '#8b6f47';
+    if (cell.build === 'campfire') return '#e67e22';
     if (cell.type === 'forest') return '#27ae60';
     if (cell.type === 'mountain') return '#7f8c8d';
     if (cell.type === 'water') return '#2980b9';
@@ -227,6 +238,9 @@ function getTileEmoji(cell) {
     if (cell.build === 'houses') return '🏠';
     if (cell.build === 'master') return '🛠️';
     if (cell.build === 'great_hearth') return '🏆';
+    if (cell.build === 'road') return '🛤️';
+    if (cell.build === 'watchtower') return '🗼';
+    if (cell.build === 'campfire') return '🔥';
     if (cell.type === 'forest') return '🌲';
     if (cell.type === 'mountain') return '⛰️';
     if (cell.type === 'water') return '🌊';
