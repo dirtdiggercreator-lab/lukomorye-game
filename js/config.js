@@ -1,4 +1,4 @@
-const GAME_VERSION = '53.0';
+const GAME_VERSION = '54.0';
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
 class Item {
@@ -140,4 +140,39 @@ function isNearBuilding(px, py, b) {
         }
     }
     return false;
+}
+
+const QUALITY_TIERS = {
+    'poor':     { name: 'Плохое',     color: '#7f8c8d', mult: 0.8 },
+    'normal':   { name: 'Нормальное', color: '#ecf0f1', mult: 1.0 },
+    'good':     { name: 'Хорошее',    color: '#2ecc71', mult: 1.2 },
+    'excellent':{ name: 'Отличное',   color: '#3498db', mult: 1.5 },
+    'legendary':{ name: 'Легендарное',color: '#f1c40f', mult: 2.0 }
+};
+
+const LEGENDARY_PREFIXES = ['Перуна', 'Велеса', 'Стрибога', 'Сварога', 'Даждьбога', 'Мокоши', 'Ярило', 'Чернобога'];
+
+function getQuality(craftStat) {
+    let roll = Math.random() * 100;
+    let quality = 'normal';
+    
+    if (craftStat <= 2) {
+        quality = roll < 50 ? 'poor' : 'normal';
+    } else if (craftStat <= 4) {
+        if (roll < 20) quality = 'poor';
+        else if (roll < 80) quality = 'normal';
+        else quality = 'good';
+    } else if (craftStat <= 6) {
+        if (roll < 40) quality = 'normal';
+        else if (roll < 80) quality = 'good';
+        else quality = 'excellent';
+    } else if (craftStat <= 8) {
+        if (roll < 40) quality = 'good';
+        else if (roll < 80) quality = 'excellent';
+        else quality = 'legendary';
+    } else {
+        quality = roll < 50 ? 'excellent' : 'legendary';
+    }
+    
+    return quality;
 }

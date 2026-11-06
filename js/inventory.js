@@ -27,8 +27,10 @@ function openInventoryModal() {
     // Экипировано
     html += `<div style="margin-bottom: 10px; padding: 5px; background: #222; border-radius: 5px;">`;
     html += `<div style="color: var(--accent); font-weight: bold; margin-bottom: 5px;">Надето:</div>`;
-    html += `<div>🗡️ Оружие: ${p.weapon ? p.weapon.name : 'Кулаки'}</div>`;
-    html += `<div>🛡️ Броня: ${p.armorItem ? p.armorItem.name : 'Нет'}</div>`;
+    let wColor = p.weapon && p.weapon.quality ? QUALITY_TIERS[p.weapon.quality].color : '#fff';
+    let aColor = p.armorItem && p.armorItem.quality ? QUALITY_TIERS[p.armorItem.quality].color : '#fff';
+    html += `<div style="color: ${wColor};">🗡️ Оружие: ${p.weapon ? p.weapon.name : 'Кулаки'}</div>`;
+    html += `<div style="color: ${aColor};">🛡️ Броня: ${p.armorItem ? p.armorItem.name : 'Нет'}</div>`;
     html += `</div>`;
     
     // Рюкзак
@@ -38,17 +40,19 @@ function openInventoryModal() {
         html += `<div style="color: #888; font-style: italic; text-align: center; padding: 10px;">Пусто</div>`;
     } else {
         p.inventory.forEach((item, i) => {
+            let color = item.quality ? QUALITY_TIERS[item.quality].color : '#ecf0f1';
+            let isLegend = item.quality === 'legendary' ? ' ✨' : '';
+            let fw = item.quality === 'legendary' ? 'bold' : 'normal';
+            
             html += `<div style="display: flex; justify-content: space-between; align-items: center; background: #333; padding: 8px; margin-bottom: 5px; border-radius: 5px;">`;
-            html += `<div>${item.icon || '📦'} ${item.name}</div>`;
+            html += `<div style="color: ${color}; font-weight: ${fw};">${item.icon || '📦'} ${item.name}${isLegend}</div>`;
             html += `<div style="display: flex; gap: 5px;">`;
             
-            // Если это оружие или броня - кнопка надеть
             if (item instanceof Weapon || item instanceof Armor) {
                 html += `<button class="btn" style="padding: 4px 8px; font-size: 12px; background: #2980b9;" onclick="equipItem(${i})">Надеть</button>`;
             }
             
-            // Кнопка разобрать (только если у предмета есть стоимость)
-            if (item.costW !== undefined) {
+            if (item.costW !== undefined || item.costH !== undefined || item.costS !== undefined) {
                 html += `<button class="btn" style="padding: 4px 8px; font-size: 12px; background: #c0392b;" onclick="disassembleItem(${i})">Разобрать</button>`;
             }
             html += `</div></div>`;
