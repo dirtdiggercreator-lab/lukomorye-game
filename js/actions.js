@@ -46,6 +46,7 @@ function doSmartAction() {
             let def = BUILDINGS[_b.type] || { name: _b.type };
             actionsHTML += `<div style="grid-column: span 2; padding: 8px; text-align: center; color: #aaa;">🏗️ ${def.name} (${_b.progress}/${_b.maxProgress})</div>`;
             if (G.ap > 0) {
+                actionsHTML += `<button class="btn action-btn" onclick="demolishBuilding(${_b.id})" style="background: #c0392b; grid-column: span 2;">🔨 Снести здание (1 ОД, 50% возврат)</button>`;
                 actionsHTML += `<button class="btn action-btn" onclick="continueBuilding(${_b.id})" style="background: #2980b9; grid-column: span 2;">🏗️ Достроить (1 ОД)</button>`;
             }
         }

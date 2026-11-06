@@ -83,6 +83,7 @@ function showToast(msg, type = 'info') {
 function migrateSave() {
     // Если загрузили старый сейв, где armor это число, а weapon - строка
     G.pawns.forEach(p => {
+        if (!p.inventory) p.inventory = [];
         if (typeof p.armor === 'number') {
             p.armorItem = p.armor > 0 ? ITEMS['armor_leather'] : null;
             delete p.armor;

@@ -23,7 +23,7 @@ function rollStats() {
     if(tempPawn.trait === 'Ловкач') tempPawn.agi += 1;
     if(tempPawn.trait === 'Умелец') tempPawn.craft += 1;
     if(tempPawn.trait === 'Стойкий') { tempPawn.san += 2; }
-    tempPawn.maxHp = 10 + tempPawn.stam; tempPawn.hp = tempPawn.maxHp;
+    tempPawn.maxHp = 10 + tempPawn.stam; tempPawn.hp = tempPawn.maxHp; tempPawn.inventory = [];
     
     document.getElementById('gen-name').innerText = tempPawn.name;
     document.getElementById('gen-str').innerText = tempPawn.str;

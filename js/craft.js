@@ -3,22 +3,27 @@ function doCraft(item, costW, costH, costS, costC, costArrows) {
         return showToast("Не хватает ресурсов!", "danger");
     }
     let p = G.pawns[G.activePawnIndex];
+    initInventory(p);
+    if (p.inventory.length >= MAX_INVENTORY) return showToast("Рюкзак полон!", "danger");
+    
     G.res.wood -= costW; G.res.hide -= costH; G.res.stone -= costS; G.res.copper -= costC;
     
-    let itemNames = {
-        'spear_stone': 'каменное копье', 'axe_stone': 'каменный топор', 'bow': 'лук',
-        'arrows_stone': 'каменные стрелы', 'armor_leather': 'кожаный доспех', 'quiver': 'колчан',
-        'potion': 'зелье', 'spear_copper': 'медное копье', 'axe_copper': 'медный топор'
-    };
+    let baseItem = ITEMS[item];
+    if (!baseItem) return;
     
-    if(item === 'armor_leather') { p.armorItem = ITEMS['armor_leather']; }
-    else if(item === 'arrows_stone') { p.arrows = Math.min(p.maxArrows || 2, (p.arrows || 0) + 5); }
-    else if(item === 'quiver') { p.maxArrows = 5; }
-    else if(item === 'potion') { p.hp = Math.min(p.maxHp, p.hp + 5); p.diseases = []; }
-    else if (ITEMS[item]) { p.weapon = ITEMS[item]; }
+    // Клонируем предмет
+    let newItem = Object.assign(Object.create(Object.getPrototypeOf(baseItem)), baseItem);
     
-    let itemName = itemNames[item] || item;
-    addLog(`${p.name} крафтит: ${itemName}.`, false, true);
-    showToast(`Создано: ${itemName}`, 'success');
+    if (item === 'potion') {
+        newItem.name = 'Зелье';
+        newItem.heal = 5;
+    } else if (item === 'arrows_stone') {
+        newItem.name = 'Стрелы (x5)';
+        newItem.ammo = 5;
+    }
+    
+    p.inventory.push(newItem);
+    addLog(`${p.name} крафтит: ${newItem.name}.`, false, true);
+    showToast(`В рюкзак: ${newItem.name}`, 'success');
     updateUI(); closeModal('craft-modal');
 }
