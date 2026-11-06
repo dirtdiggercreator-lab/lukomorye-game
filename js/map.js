@@ -22,6 +22,7 @@ function drawMinimap() {
 }
 
 function startGame() {
+    try {
     closeModal('gen-modal');
     G.map = [];
     G.combatSteps = tempPawn.agi;
@@ -74,6 +75,7 @@ function startGame() {
     centerCameraOnPawn();
     
     addLog("Версия " + GAME_VERSION + " (Canvas)");
+    } catch(e) { alert("ОШИБКА СТАРТА: " + e.message); console.error(e); }
 }
 
 function renderMap() {

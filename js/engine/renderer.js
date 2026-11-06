@@ -1,5 +1,5 @@
 // ============================================================
-// CANVAS RENDERER
+// CANVAS RENDERER (Clean Rewrite)
 // ============================================================
 
 let _canvas = null;
@@ -11,7 +11,6 @@ let _isDragging = false;
 let _dragStartX = 0, _dragStartY = 0;
 let _camStartX = 0, _camStartY = 0;
 
-// Эффекты (частицы, вспышки, текст)
 const effects = [];
 function addEffect(eff) { effects.push(eff); }
 function markDirty() { _isDirty = true; }
@@ -22,16 +21,20 @@ function getCtx() { return _ctx; }
 function initRenderer() {
     _canvas = document.getElementById('game-canvas');
     if (!_canvas) {
-        console.error('Canvas #game-canvas not found!');
+        alert("ОШИБКА: <canvas id='game-canvas'> не найден в HTML!");
         return;
     }
     _ctx = _canvas.getContext('2d');
+    if (!_ctx) {
+        alert("ОШИБКА: не удалось получить 2D контекст!");
+        return;
+    }
     _dpr = window.devicePixelRatio || 1;
     
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Клик и панорама
+    // Клики и панорама
     _canvas.addEventListener('pointerdown', (e) => {
         _isPointerDown = true;
         _isDragging = false;
@@ -41,6 +44,7 @@ function initRenderer() {
         _camStartY = camera.y;
         try { _canvas.setPointerCapture(e.pointerId); } catch(_) {}
     });
+    
     _canvas.addEventListener('pointermove', (e) => {
         if (!_isPointerDown) return;
         const dx = e.clientX - _dragStartX;
@@ -52,6 +56,7 @@ function initRenderer() {
             markDirty();
         }
     });
+    
     _canvas.addEventListener('pointerup', (e) => {
         if (!_isDragging && _isPointerDown) {
             const rect = _canvas.getBoundingClientRect();
@@ -66,6 +71,7 @@ function initRenderer() {
         _isPointerDown = false;
         _isDragging = false;
     });
+    
     _canvas.addEventListener('pointercancel', () => {
         _isPointerDown = false;
         _isDragging = false;
@@ -83,6 +89,7 @@ function initRenderer() {
             _isPointerDown = false;
         }
     }, { passive: true });
+    
     _canvas.addEventListener('touchmove', (e) => {
         if (e.touches.length === 2) {
             e.preventDefault();
@@ -96,9 +103,11 @@ function initRenderer() {
             }
         }
     }, { passive: false });
+    
     _canvas.addEventListener('touchend', () => { _pinchStartDist = 0; });
     
     requestAnimationFrame(renderLoop);
+    markDirty();
 }
 
 function resizeCanvas() {
@@ -112,7 +121,12 @@ function resizeCanvas() {
 
 function renderLoop() {
     if (_isDirty) {
-        render();
+        try {
+            render();
+        } catch (e) {
+            console.error("Ошибка рендера:", e);
+            alert("Ошибка рендера: " + e.message);
+        }
         _isDirty = false;
     }
     requestAnimationFrame(renderLoop);
@@ -134,13 +148,11 @@ function render() {
     _ctx.scale(camera.zoom, camera.zoom);
     _ctx.translate(-camera.x, -camera.y);
     
-    // Видимая область в мировых координатах
     const viewLeft = camera.x - cw / (2 * camera.zoom) - TILE_W;
     const viewRight = camera.x + cw / (2 * camera.zoom) + TILE_W;
     const viewTop = camera.y - ch / (2 * camera.zoom) - TILE_H;
     const viewBottom = camera.y + ch / (2 * camera.zoom) + TILE_H;
     
-    // Собираем всё для отрисовки (тайлы + существа), сортируем по глубине
     const drawList = [];
     
     for (let gy = 0; gy < GRID_H; gy++) {
@@ -181,7 +193,6 @@ function render() {
         else if (item.type === 'npc') drawEntity(item.gx, item.gy, item.data.icon, '#8e44ad');
     }
     
-    // Затемнение ночью
     if (typeof isNight === 'function' && isNight()) {
         _ctx.fillStyle = 'rgba(10, 20, 60, 0.45)';
         const vl = camera.x - cw / (2 * camera.zoom);
@@ -189,38 +200,6 @@ function render() {
         _ctx.fillRect(vl, vt, cw / camera.zoom, ch / camera.zoom);
     }
     
-    // Превью постройки (Ghost)
-    if (G.currentBuild && _isPointerDown === false) {
-        let def = BUILDINGS[G.currentBuild.type] || { w: 1, h: 1, color: '#fff' };
-        let bw = G.buildRotation ? def.h : def.w;
-        let bh = G.buildRotation ? def.w : def.h;
-        
-        let mouseW = screenToWorld(_dragStartX - _canvas.getBoundingClientRect().left, _dragStartY - _canvas.getBoundingClientRect().top, _canvas, camera);
-        let mouseG = worldToGrid(mouseW.x, mouseW.y);
-        
-        if (mouseG.gx >= 0 && mouseG.gx < 60 && mouseG.gy >= 0 && mouseG.gy < 60) {
-            for(let dy=0; dy<bh; dy++) {
-                for(let dx=0; dx<bw; dx++) {
-                    let nx = mouseG.gx + dx, ny = mouseG.gy + dy;
-                    if (nx < 60 && ny < 60) {
-                        let ww = gridToWorld(nx, ny);
-                        _ctx.beginPath();
-                        _ctx.moveTo(ww.x, ww.y - TILE_H / 2);
-                        _ctx.lineTo(ww.x + TILE_W / 2, ww.y);
-                        _ctx.lineTo(ww.x, ww.y + TILE_H / 2);
-                        _ctx.lineTo(ww.x - TILE_W / 2, ww.y);
-                        _ctx.closePath();
-                        _ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                        _ctx.fill();
-                        _ctx.strokeStyle = '#fff';
-                        _ctx.stroke();
-                    }
-                }
-            }
-        }
-    }
-    
-    // Эффекты
     for (let i = effects.length - 1; i >= 0; i--) {
         const eff = effects[i];
         eff.life -= 0.016;
@@ -234,20 +213,23 @@ function render() {
 
 function getTileColor(cell) {
     if (!cell.explored) return '#000';
-    if (cell.build === 'camp') return '#8e44ad';
+    if (cell.buildingId !== undefined) {
+        let b = G.buildings.find(bb => bb.id === cell.buildingId);
+        if (b) {
+            let def = BUILDINGS[b.type];
+            if (def) return def.color;
+        }
+    }
     if (cell.build === 'wall_wood') return '#a0522d';
     if (cell.build === 'wall_stone') return '#95a5a6';
     if (cell.build === 'trap') return '#2c3e50';
     if (cell.build === 'hearth') return '#d35400';
     if (cell.build === 'field') return '#d4ac0d';
-    
-    
-    
-    
     if (cell.build === 'great_hearth') return '#f1c40f';
     if (cell.build === 'road') return '#7f6f5f';
     if (cell.build === 'watchtower') return '#8b6f47';
     if (cell.build === 'campfire') return '#e67e22';
+    if (cell.build === 'camp') return '#8e44ad';
     if (cell.type === 'forest') return '#27ae60';
     if (cell.type === 'mountain') return '#7f8c8d';
     if (cell.type === 'water') return '#2980b9';
@@ -258,21 +240,29 @@ function getTileColor(cell) {
 
 function getTileEmoji(cell) {
     if (!cell.explored) return '';
-    if (cell.build === 'camp') return '🏕️';
+    if (cell.isDoor) return '🚪';
+    if (cell.buildingId !== undefined) {
+        let b = G.buildings.find(bb => bb.id === cell.buildingId);
+        if (b) {
+            let cx = b.x + Math.floor(b.w / 2);
+            let cy = b.y + Math.floor(b.h / 2);
+            if (cell.gx === cx && cell.gy === cy) {
+                let def = BUILDINGS[b.type];
+                if (def) return def.icon;
+            }
+        }
+        return '';
+    }
     if (cell.build === 'wall_wood') return '🪵';
     if (cell.build === 'wall_stone') return '🪨';
     if (cell.build === 'trap') return '🕳️';
     if (cell.build === 'hearth') return '🔥';
     if (cell.build === 'field') return '🌾';
-    
-    
-    
-    
     if (cell.build === 'great_hearth') return '🏆';
     if (cell.build === 'road') return '🛤️';
     if (cell.build === 'watchtower') return '🗼';
     if (cell.build === 'campfire') return '🔥';
-    if (cell.build === 'wall_multi_wood') return '🧱';
+    if (cell.build === 'camp') return '🏕️';
     if (cell.type === 'forest') return '🌲';
     if (cell.type === 'mountain') return '⛰️';
     if (cell.type === 'water') return '🌊';
@@ -283,6 +273,8 @@ function getTileEmoji(cell) {
 function drawTile(gx, gy) {
     const cell = G.map[gy] && G.map[gy][gx];
     if (!cell) return;
+    cell.gx = gx;
+    cell.gy = gy;
     
     const w = gridToWorld(gx, gy);
     
@@ -293,28 +285,8 @@ function drawTile(gx, gy) {
     _ctx.lineTo(w.x - TILE_W / 2, w.y);
     _ctx.closePath();
     
-    // Если это часть здания
-    if (cell.buildingId !== undefined) {
-        let b = G.buildings.find(b => b.id === cell.buildingId);
-        if (b) {
-            let def = BUILDINGS[b.type] || { color: '#aaa' };
-            _ctx.fillStyle = def.color || '#aaa';
-            if (b.progress < b.maxProgress) _ctx.fillStyle = '#555'; // Строится
-            _ctx.fill();
-        } else {
-            _ctx.fillStyle = getTileColor(cell);
-            _ctx.fill();
-        }
-    } else {
-        _ctx.fillStyle = getTileColor(cell);
-        _ctx.fill();
-    }
-    
-    // Пол внутри помещения
-    if (cell.isFloor) {
-        _ctx.fillStyle = '#c9b896';
-        _ctx.fill();
-    }
+    _ctx.fillStyle = getTileColor(cell);
+    _ctx.fill();
     
     if (cell.explored) {
         _ctx.strokeStyle = 'rgba(0,0,0,0.25)';
@@ -322,13 +294,11 @@ function drawTile(gx, gy) {
         _ctx.stroke();
     }
     
-    // Туман на разведанных, но невидимых
     if (cell.explored && !cell.currentVision) {
         _ctx.fillStyle = 'rgba(0,0,0,0.55)';
         _ctx.fill();
     }
     
-    // Контент
     const emoji = getTileEmoji(cell);
     if (emoji && cell.currentVision !== false) {
         _ctx.font = '22px Arial';
@@ -337,41 +307,14 @@ function drawTile(gx, gy) {
         _ctx.fillText(emoji, w.x, w.y);
     }
     
-    // Иконка комнаты в центре
-        
-    // RENDER_BUILDING_EMOJI
-    if (cell.buildingId !== undefined && !cell.isDoor) {
-        let b = G.buildings.find(bb => bb.id === cell.buildingId);
-        if (b) {
-            let cx = b.x + Math.floor(b.w / 2);
-            let cy = b.y + Math.floor(b.h / 2);
-            if (gx === cx && gy === cy) {
-                let def = BUILDINGS[b.type] || { icon: '🏠' };
-                _ctx.font = '28px Arial';
-                _ctx.textAlign = 'center';
-                _ctx.textBaseline = 'middle';
-                _ctx.fillText(def.icon || '🏠', w.x, w.y);
-            }
-        }
-    }
-    
-    // Рендер двери
-    if (cell.isDoor) {
-        _ctx.font = '22px Arial';
-        _ctx.textAlign = 'center';
-        _ctx.textBaseline = 'middle';
-        _ctx.fillText('🚪', w.x, w.y);
-    }
-    
-    // Прогресс постройки
     if (cell.build) {
         const cost = getBuildCost(cell.build);
-        if (cell.progress < cost.turns) {
+        if (cost && cell.progress < cost.turns) {
             _ctx.font = 'bold 10px Arial';
             _ctx.fillStyle = '#fff';
             _ctx.textAlign = 'center';
             _ctx.textBaseline = 'middle';
-            _ctx.fillText(`${cell.progress}/${cost.turns}`, w.x, w.y + 8);
+            _ctx.fillText(cell.progress + '/' + cost.turns, w.x, w.y + 8);
         }
     }
 }
@@ -382,13 +325,11 @@ function drawEntity(gx, gy, emoji, outlineColor) {
     _ctx.textAlign = 'center';
     _ctx.textBaseline = 'middle';
     
-    // Тень под существом
     _ctx.fillStyle = 'rgba(0,0,0,0.4)';
     _ctx.beginPath();
     _ctx.ellipse(w.x, w.y + 8, 14, 6, 0, 0, Math.PI * 2);
     _ctx.fill();
     
-    // Обводка
     if (outlineColor) {
         _ctx.strokeStyle = outlineColor;
         _ctx.lineWidth = 3;
@@ -403,7 +344,7 @@ function drawEffect(wx, wy, eff) {
     if (eff.type === 'boom') {
         const progress = 1 - (eff.life / eff.maxLife);
         const scale = 1 + progress * 2;
-        _ctx.font = `${Math.round(32 * scale)}px Arial`;
+        _ctx.font = Math.round(32 * scale) + 'px Arial';
         _ctx.textAlign = 'center';
         _ctx.textBaseline = 'middle';
         _ctx.globalAlpha = eff.life / eff.maxLife;

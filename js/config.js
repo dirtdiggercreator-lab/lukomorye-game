@@ -1,4 +1,4 @@
-const GAME_VERSION = '57.0';
+const GAME_VERSION = '57.1';
 
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
