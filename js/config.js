@@ -1,8 +1,9 @@
-const GAME_VERSION = '55.0';
+const GAME_VERSION = '55.1';
+
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
 class Item {
-    constructor(name, icon, quality = 'Обычное') {
+    constructor(name, icon, quality = null) {
         this.name = name;
         this.icon = icon;
         this.quality = quality;
@@ -32,7 +33,6 @@ class Resource extends Item {
     }
 }
 
-// Инициализация предметов
 const ITEMS = {
     'fists': new Weapon('Кулаки', '✊', 0, 0, 1),
     'spear_stone': Object.assign(new Weapon('Каменное копье', '🗡️', 1, 1, 1), { costW: 1, costS: 1 }),
@@ -45,64 +45,47 @@ const ITEMS = {
     'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
 };
 
-const WEAPONS = ITEMS; // Для обратной совместимости
+const WEAPONS = ITEMS;
+
+const QUALITY_TIERS = {
+    'poor':     { name: 'Плохое',     color: '#7f8c8d', mult: 0.8 },
+    'normal':   { name: 'Нормальное', color: '#ecf0f1', mult: 1.0 },
+    'good':     { name: 'Хорошее',    color: '#2ecc71', mult: 1.2 },
+    'excellent':{ name: 'Отличное',   color: '#3498db', mult: 1.5 },
+    'legendary':{ name: 'Легендарное',color: '#f1c40f', mult: 2.0 }
+};
+
+const LEGENDARY_PREFIXES = ['Перуна', 'Велеса', 'Стрибога', 'Сварога', 'Даждьбога', 'Мокоши', 'Ярило', 'Чернобога'];
+
+const BUILDINGS = {
+    'camp': { name: 'Лагерь', w: 1, h: 1, icon: '🏕️', color: '#8e44ad' },
+    'lazaret': { name: 'Лазарет', w: 2, h: 3, icon: '🏥', color: '#c0392b' },
+    'warehouse': { name: 'Склад', w: 2, h: 2, icon: '🏬', color: '#7f8c8d' },
+    'houses': { name: 'Хоромы', w: 3, h: 3, icon: '🏘️', color: '#8e44ad' },
+    'master': { name: 'Мастерская', w: 2, h: 2, icon: '🏭', color: '#34495e' },
+    'great_hearth': { name: 'Великий Очаг', w: 1, h: 1, icon: '🏆', color: '#f1c40f' }
+};
 
 function getMaxLevel() { return G.diff === 'easy' ? 3 : G.diff === 'normal' ? 5 : 7; }
 function getNeededXp(lvl) { return [20, 40, 70, 110, 160, 220, 300][lvl] || 9999; }
-function getBuildCost(type) {
-    if(type === 'camp') return {w:0,s:0,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'wall_wood') return {w:2,s:0,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'wall_stone') return {w:3,s:2,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'trap') return {w:1,s:1,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'hearth') return {w:0,s:3,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'field') return {w:2,s:0,turns:3    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'lazaret') return {w:3,s:2,turns:2    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'warehouse') return {w:3,s:2,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'houses') return {w:4,s:3,turns:2    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'master') return {w:3,s:3,turns:2    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'great_hearth') return {w:15,s:15,turns:3, copper:8    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'road') return {w:0,s:1,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'watchtower') return {w:4,s:3,turns:2    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'campfire') return {w:1,s:2,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'wall_multi_wood') return {w:1,s:0,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    if(type === 'wall_multi_stone') return {w:6,s:4,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-    return {w:0,s:0,turns:1    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
-}
 
+function getBuildCost(type) {
+    if(type === 'camp') return {w:0,s:0,turns:1};
+    if(type === 'wall_wood') return {w:2,s:0,turns:1};
+    if(type === 'wall_stone') return {w:3,s:2,turns:1};
+    if(type === 'trap') return {w:1,s:1,turns:1};
+    if(type === 'hearth') return {w:0,s:3,turns:1};
+    if(type === 'field') return {w:2,s:0,turns:3};
+    if(type === 'lazaret') return {w:5,s:3,turns:2};
+    if(type === 'warehouse') return {w:4,s:2,turns:1};
+    if(type === 'houses') return {w:6,s:4,turns:2};
+    if(type === 'master') return {w:4,s:4,turns:2};
+    if(type === 'great_hearth') return {w:15,s:15,turns:3, copper:8};
+    if(type === 'road') return {w:0,s:1,turns:1};
+    if(type === 'watchtower') return {w:4,s:3,turns:2};
+    if(type === 'campfire') return {w:1,s:2,turns:1};
+    return {w:0,s:0,turns:1};
+}
 
 function getMoveCost(cell) {
     if (!cell) return 999;
@@ -116,20 +99,7 @@ function getMoveCost(cell) {
     return 1.0;
 }
 
-function isNight() {
-    return ((G.round - 1) % 4) >= 2;
-}
-
-const BUILDINGS = {
-    'camp': { name: 'Лагерь', w: 1, h: 1, icon: '🏕️', color: '#8e44ad' },
-    'lazaret': { name: 'Лазарет', w: 2, h: 3, icon: '🏥', color: '#c0392b' },
-    'warehouse': { name: 'Склад', w: 2, h: 2, icon: '🏬', color: '#7f8c8d' },
-    'houses': { name: 'Хоромы', w: 3, h: 3, icon: '🏘️', color: '#8e44ad' },
-    'master': { name: 'Мастерская', w: 2, h: 2, icon: '🏭', color: '#34495e' },
-    'great_hearth': { name: 'Великий Очаг', w: 1, h: 1, icon: '🏆', color: '#f1c40f' }
-    'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
-    'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
-};
+function isNight() { return ((G.round - 1) % 4) >= 2; }
 
 function isNearBuilding(px, py, b) {
     for (let dy = 0; dy < b.h; dy++) {
@@ -141,16 +111,6 @@ function isNearBuilding(px, py, b) {
     }
     return false;
 }
-
-const QUALITY_TIERS = {
-    'poor':     { name: 'Плохое',     color: '#7f8c8d', mult: 0.8 },
-    'normal':   { name: 'Нормальное', color: '#ecf0f1', mult: 1.0 },
-    'good':     { name: 'Хорошее',    color: '#2ecc71', mult: 1.2 },
-    'excellent':{ name: 'Отличное',   color: '#3498db', mult: 1.5 },
-    'legendary':{ name: 'Легендарное',color: '#f1c40f', mult: 2.0 }
-};
-
-const LEGENDARY_PREFIXES = ['Перуна', 'Велеса', 'Стрибога', 'Сварога', 'Даждьбога', 'Мокоши', 'Ярило', 'Чернобога'];
 
 function getQuality(craftStat) {
     let roll = Math.random() * 100;
