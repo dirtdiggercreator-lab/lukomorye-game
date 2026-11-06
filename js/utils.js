@@ -38,7 +38,7 @@ function loadGame() {
     if (!saveStr) return alert("Сохранение не найдено!");
     let saveData = JSON.parse(saveStr);
     G = saveData.G;
-    if (!G.rooms) G.rooms = [];
+    
     migrateSave();
     logs = saveData.logs;
     

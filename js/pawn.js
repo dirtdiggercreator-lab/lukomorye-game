@@ -84,8 +84,8 @@ function updateSmartButton() {
     if(cell.type === 'forest') btn.innerText = "Действия (Лес)";
     else if(cell.type === 'water') btn.innerText = "Действия (Вода)";
     else if(cell.type === 'mountain') btn.innerText = "Действия (Горы)";
-    else if(cell.build === 'lazaret' && cell.progress >= 2) btn.innerText = "Лечиться (1🍖)";
-    else if((cell.build === 'camp') || (cell.build === 'houses' && cell.progress >= 2)) btn.innerText = "Нанять";
+    
+    else if(cell.build === 'camp') btn.innerText = "Нанять";
     else if(cell.type === 'grass' && !cell.build) btn.innerText = "Строить / Отдых";
     else btn.innerText = "Отдых";
 }

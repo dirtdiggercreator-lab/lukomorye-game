@@ -240,10 +240,10 @@ function getTileColor(cell) {
     if (cell.build === 'trap') return '#2c3e50';
     if (cell.build === 'hearth') return '#d35400';
     if (cell.build === 'field') return '#d4ac0d';
-    if (cell.build === 'lazaret') return '#c0392b';
-    if (cell.build === 'warehouse') return '#7f8c8d';
-    if (cell.build === 'houses') return '#8e44ad';
-    if (cell.build === 'master') return '#34495e';
+    
+    
+    
+    
     if (cell.build === 'great_hearth') return '#f1c40f';
     if (cell.build === 'road') return '#7f6f5f';
     if (cell.build === 'watchtower') return '#8b6f47';
@@ -264,10 +264,10 @@ function getTileEmoji(cell) {
     if (cell.build === 'trap') return '🕳️';
     if (cell.build === 'hearth') return '🔥';
     if (cell.build === 'field') return '🌾';
-    if (cell.build === 'lazaret') return '⛑️';
-    if (cell.build === 'warehouse') return '📦';
-    if (cell.build === 'houses') return '🏠';
-    if (cell.build === 'master') return '🛠️';
+    
+    
+    
+    
     if (cell.build === 'great_hearth') return '🏆';
     if (cell.build === 'road') return '🛤️';
     if (cell.build === 'watchtower') return '🗼';
@@ -338,19 +338,7 @@ function drawTile(gx, gy) {
     }
     
     // Иконка комнаты в центре
-    if (G.rooms && cell.isFloor) {
-        let room = G.rooms.find(r => r.cells.some(c => c.x === gx && c.y === gy));
-        if (room && room.purpose) {
-            let center = getRoomCenter(room);
-            if (center.x === gx && center.y === gy) {
-                _ctx.font = '28px Arial';
-                _ctx.textAlign = 'center';
-                _ctx.textBaseline = 'middle';
-                _ctx.fillText(ROOM_PURPOSES[room.purpose].icon, w.x, w.y);
-            }
-        }
-    }
-    
+        
     // RENDER_BUILDING_EMOJI
     if (cell.buildingId !== undefined && !cell.isDoor) {
         let b = G.buildings.find(bb => bb.id === cell.buildingId);

@@ -24,20 +24,13 @@
 <canvas id="minimap" width="90" height="90"></canvas>
 <div class="pawn-bar" id="pawn-bar" style="display: none;"></div>
 
-<div id="weather-overlay"></div>
-<div class="game-area" id="game-area" style="display: none;"><canvas id="game-canvas"></canvas></div>
+<div class="game-area" id="game-area" style="display: none;">
+    <canvas id="game-canvas"></canvas>
 </div>
 
 <div class="zoom-controls" id="zoom-controls" style="display: none;">
     <button class="zoom-btn" onclick="zoomMap(0.2)">+</button>
     <button class="zoom-btn" onclick="zoomMap(-0.2)">-</button>
-</div>
-
-
-<div id="build-control-panel" style="display:none; position:fixed; top:80px; left:50%; transform:translateX(-50%); z-index:9999; background:rgba(0,0,0,0.9); padding:10px; border-radius:10px; text-align:center; border:2px solid var(--accent);">
-    <div style="margin-bottom:8px; color:var(--accent); font-weight:bold;" id="build-status-text">Постройка...</div>
-    <button class="btn" style="background:#2980b9; margin-bottom:5px; width:100%;" onclick="rotateBuild()">🔄 Повернуть</button>
-    <button class="btn btn-red" style="margin-bottom:0; width:100%;" onclick="cancelBuild()">❌ Отменить</button>
 </div>
 
 <div class="bottom-panel" id="bottom-panel" style="display: none;">
@@ -48,6 +41,12 @@
         <button class="btn" onclick="openModal('caravan-modal')">Караван</button>
         <button class="btn btn-red" onclick="nextTurn()">След. Ход</button>
     </div>
+</div>
+
+<div id="build-control-panel" style="display:none; position:fixed; top:80px; left:50%; transform:translateX(-50%); z-index:9999; background:rgba(0,0,0,0.9); padding:10px; border-radius:10px; text-align:center; border:2px solid var(--accent);">
+    <div style="margin-bottom:8px; color:var(--accent); font-weight:bold;" id="build-status-text">Постройка...</div>
+    <button class="btn" style="background:#2980b9; margin-bottom:5px; width:100%;" onclick="rotateBuild()">🔄 Повернуть</button>
+    <button class="btn btn-red" style="margin-bottom:0; width:100%;" onclick="cancelBuild()">❌ Отменить</button>
 </div>
 
 <div id="action-modal" class="action-sheet">
@@ -61,9 +60,10 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v55.2</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v56.0</p>
         <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
+        <button class="btn" onclick="openPrompts()" style="width: 100%; padding: 10px; background: #8e44ad; margin-bottom: 5px;">📋 Промпты для ИИ</button>
         <button class="btn" onclick="downloadLogs()" style="width: 100%; padding: 10px; background: #2980b9; margin-bottom: 5px;">Скачать логи</button>
     </div>
 </div>
@@ -123,8 +123,7 @@
         <button class="btn" onclick="doCraft('axe_stone', 1, 0, 2, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменный топор (1🌲, 2🪨)</button>
         <button class="btn" onclick="doCraft('bow', 2, 1, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Лук (2🌲, 1🐻)</button>
         <button class="btn" onclick="doCraft('arrows_stone', 1, 0, 1, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменные стрелы х5 (1🌲, 1🪨)</button>
-        <button class="btn" onclick="doCraft('armor', 0, 2, 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Кожаный доспех (2🐻, 1🔶)</button>
-        <button class="btn" onclick="doCraft('quiver', 1, 2, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Колчан (1🌲, 2🐻)</button>
+        <button class="btn" onclick="doCraft('armor_leather', 0, 2, 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Кожаный доспех (2🐻, 1🔶)</button>
         <button class="btn" onclick="doCraft('potion', 1, 1, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Зелье (1🌲, 1🐻)</button>
         <button class="btn" onclick="doCraft('spear_copper', 1, 0, 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медное копье (1🌲, 1🔶)</button>
         <button class="btn" onclick="doCraft('axe_copper', 1, 0, 0, 2, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медный топор (1🌲, 2🔶)</button>
@@ -157,15 +156,6 @@
     </div>
 </div>
 
-
-<div class="modal" id="npc-modal">
-    <div class="modal-content">
-        <h3 style="color: var(--accent); margin-top: 0;" id="npc-title">NPC</h3>
-        <div id="npc-body" style="text-align: left; font-size: 14px; margin-bottom: 10px;"></div>
-        <button class="btn" onclick="document.getElementById('npc-modal').style.display='none'" style="width: 100%; padding: 8px; background:#555;">Закрыть</button>
-    </div>
-</div>
-
 <div class="modal" id="pawn-card-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;" id="pc-name">Пешка</h3>
@@ -186,6 +176,22 @@
     </div>
 </div>
 
+<div class="modal" id="inventory-modal">
+    <div class="modal-content">
+        <h3 style="color: var(--accent); margin-top: 0;">🎒 Рюкзак</h3>
+        <div id="inv-body" style="text-align: left; font-size: 14px; margin-bottom: 10px; max-height: 50vh; overflow-y: auto;"></div>
+        <button class="btn" onclick="document.getElementById('inventory-modal').style.display='none'" style="width: 100%; padding: 8px; background:#555;">Закрыть</button>
+    </div>
+</div>
+
+<div class="modal" id="npc-modal">
+    <div class="modal-content">
+        <h3 style="color: var(--accent); margin-top: 0;" id="npc-title">NPC</h3>
+        <div id="npc-body" style="text-align: left; font-size: 14px; margin-bottom: 10px;"></div>
+        <button class="btn" onclick="document.getElementById('npc-modal').style.display='none'" style="width: 100%; padding: 8px; background:#555;">Закрыть</button>
+    </div>
+</div>
+
 <div class="modal" id="combat-modal">
     <div class="modal-content" style="border-color: var(--danger);">
         <h3 style="color: var(--danger); margin-top: 0;">Бой</h3>
@@ -196,21 +202,21 @@
     </div>
 </div>
 
-<script src="js/config.js?v=55.1"></script>
-<script src="js/state.js?v=55.1"></script>
-<script src="js/utils.js?v=55.1"></script>
-<script src="js/pawn.js?v=55.1"></script>
-<script src="js/inventory.js?v=55.1"></script>
-<script src="js/map.js?v=55.1"></script>
-<script src="js/actions.js?v=55.1"></script>
-<script src="js/craft.js?v=55.1"></script>
-<script src="js/caravan.js?v=55.1"></script>
-<script src="js/enemies.js?v=55.1"></script>
-<script src="js/npc.js?v=55.1"></script>
-<script src="js/combat.js?v=55.1"></script>
-<script src="js/events.js?v=55.1"></script>
-<script src="js/engine/isometric.js?v=55.1"></script>
-<script src="js/engine/camera.js?v=55.1"></script>
-<script src="js/engine/renderer.js?v=55.1"></script>
+<script src="js/config.js?v=56.0"></script>
+<script src="js/state.js?v=56.0"></script>
+<script src="js/utils.js?v=56.0"></script>
+<script src="js/pawn.js?v=56.0"></script>
+<script src="js/inventory.js?v=56.0"></script>
+<script src="js/map.js?v=56.0"></script>
+<script src="js/actions.js?v=56.0"></script>
+<script src="js/craft.js?v=56.0"></script>
+<script src="js/caravan.js?v=56.0"></script>
+<script src="js/enemies.js?v=56.0"></script>
+<script src="js/npc.js?v=56.0"></script>
+<script src="js/combat.js?v=56.0"></script>
+<script src="js/events.js?v=56.0"></script>
+<script src="js/engine/isometric.js?v=56.0"></script>
+<script src="js/engine/camera.js?v=56.0"></script>
+<script src="js/engine/renderer.js?v=56.0"></script>
 </body>
 </html>

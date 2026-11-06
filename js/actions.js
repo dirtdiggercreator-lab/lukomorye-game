@@ -198,7 +198,7 @@ function doBuild(type, costW, costS, turns) {
     if(G.res.wood < costW || G.res.stone < costS) return showToast("Не хватает ресурсов!", "danger");
     if(type === 'great_hearth' && G.res.copper < 8) return alert("Нужно 8 меди!");
     
-    G.buildMode = type; G.buildCost = {w:costW, s:costS, turns:turns};
+    G.currentBuild = type; G.buildCost = {w:costW, s:costS, turns:turns};
     closeModal('build-modal');
     addLog(`Выбрана постройка: ${type}. Кликните на траву.`);
 }
@@ -214,25 +214,25 @@ function placeBuild(x, y) {
     if(G.res.wood < G.buildCost.w || G.res.stone < G.buildCost.s) return showToast("Не хватает ресурсов!", "danger");
     
     G.res.wood -= G.buildCost.w; G.res.stone -= G.buildCost.s;
-    if (G.buildMode === 'great_hearth') G.res.copper -= 8;
+    if (G.currentBuild === 'great_hearth') G.res.copper -= 8;
     
-    G.map[y][x].build = G.buildMode;
-    let __tot = getBuildCost(G.buildMode).turns;
+    G.map[y][x].build = G.currentBuild;
+    let __tot = getBuildCost(G.currentBuild).turns;
     G.map[y][x].progress = 1;
     G.ap--; if (G.ap < 0) G.ap = 0;
     
     if (__tot > 1) {
-        addLog(`🏗️ Начато: ${G.buildMode} (1/${__tot})`);
+        addLog(`🏗️ Начато: ${G.currentBuild} (1/${__tot})`);
     } else {
-        addLog(`Построено: ${G.buildMode}`);
-        if (G.buildMode === 'great_hearth') {
+        addLog(`Построено: ${G.currentBuild}`);
+        if (G.currentBuild === 'great_hearth') {
             addLog("ПОБЕДА. Построен Великий Очаг.", false, true);
             downloadLogs();
             setTimeout(() => { alert("ВЫ ПОБЕДИЛИ!"); location.reload(); }, 300);
             return;
         }
     }
-    G.buildMode = null;
+    G.currentBuild = null;
     updateVision(); updateUI(); renderMap();
 }
 
