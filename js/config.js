@@ -1,4 +1,4 @@
-const GAME_VERSION = '56.0';
+const GAME_VERSION = '57.0';
 
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
@@ -42,6 +42,9 @@ const ITEMS = {
     'axe_copper': Object.assign(new Weapon('Медный топор', '🪓', 3, 0, 1), { costW: 1, costC: 2 }),
     'armor_leather': Object.assign(new Armor('Кожаный доспех', '🛡️', 2), { costH: 2, costC: 1 }),
     'potion': Object.assign(new Item('Зелье', '🧪'), { costW: 1, costH: 1, heal: 5 }),
+    'iron_sword': Object.assign(new Weapon('Железный меч', '⚔️', 4, 1, 1), { costW: 1, costI: 2 }),
+    'iron_armor': Object.assign(new Armor('Железный доспех', '🛡️', 4), { costC: 1, costI: 3 }),
+    'herbal_potion': Object.assign(new Item('Травяное зелье', '🧪'), { costH: 1, costHerbs: 1, heal: 10 }),
     'arrows_stone': Object.assign(new Item('Стрелы (x5)', '🏹'), { costW: 1, costS: 1, ammo: 5 })
 };
 

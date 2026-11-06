@@ -10,11 +10,11 @@
 
 <div id="toast-container"></div>
 
-<div class="top-panel" id="top-panel" style="display: none;">
+<div class="top-panel" id="top-panel" style="display: none; font-size: 11px;">
     <div><span id="ui-timeofday">☀️</span> Ход: <span id="ui-round">1</span></div>
     <div>Сезон: <span id="ui-season">Весна</span></div>
     <div>ОД: <span id="ui-ap">3</span> | Шаги: <span id="ui-steps">0</span></div>
-    <div>🌲<span id="ui-wood">0</span> 🪨<span id="ui-stone">0</span> 🍖<span id="ui-meat">5</span> 🐻<span id="ui-hide">0</span> 🔶<span id="ui-copper">0</span> 🏹<span id="ui-arrows">0</span></div>
+    <div>🌲<span id="ui-wood">0</span> 🪨<span id="ui-stone">0</span> 🍖<span id="ui-meat">5</span> 🐻<span id="ui-hide">0</span> 🔶<span id="ui-copper">0</span> 🪙<span id="ui-coins">5</span> ⚙️<span id="ui-iron">0</span> 🌿<span id="ui-herbs">0</span></div>
     <div style="display: flex; gap: 5px;">
         <button class="exit-btn" style="background:#27ae60;" onclick="saveGame()">💾</button>
         <button class="exit-btn" onclick="if(confirm('Сдаться и выйти?')) location.reload()">🚪</button>
@@ -60,7 +60,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v56.0</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v57.0</p>
         <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="openPrompts()" style="width: 100%; padding: 10px; background: #8e44ad; margin-bottom: 5px;">📋 Промпты для ИИ</button>
@@ -119,14 +119,21 @@
 <div class="modal" id="craft-modal">
     <div class="modal-content">
         <h3 style="color: var(--accent); margin-top: 0;">Крафт</h3>
-        <button class="btn" onclick="doCraft('spear_stone', 1, 0, 1, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменное копье (1🌲, 1🪨)</button>
-        <button class="btn" onclick="doCraft('axe_stone', 1, 0, 2, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменный топор (1🌲, 2🪨)</button>
-        <button class="btn" onclick="doCraft('bow', 2, 1, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Лук (2🌲, 1🐻)</button>
-        <button class="btn" onclick="doCraft('arrows_stone', 1, 0, 1, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменные стрелы х5 (1🌲, 1🪨)</button>
-        <button class="btn" onclick="doCraft('armor_leather', 0, 2, 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Кожаный доспех (2🐻, 1🔶)</button>
-        <button class="btn" onclick="doCraft('potion', 1, 1, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Зелье (1🌲, 1🐻)</button>
-        <button class="btn" onclick="doCraft('spear_copper', 1, 0, 0, 1, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медное копье (1🌲, 1🔶)</button>
-        <button class="btn" onclick="doCraft('axe_copper', 1, 0, 0, 2, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медный топор (1🌲, 2🔶)</button>
+        <button class="btn" onclick="doCraft('spear_stone', 1, 0, 1, 0, 0, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменное копье (1🌲, 1🪨)</button>
+        <button class="btn" onclick="doCraft('axe_stone', 1, 0, 2, 0, 0, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменный топор (1🌲, 2🪨)</button>
+        <button class="btn" onclick="doCraft('bow', 2, 1, 0, 0, 0, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Лук (2🌲, 1🐻)</button>
+        <button class="btn" onclick="doCraft('arrows_stone', 1, 0, 1, 0, 0, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Каменные стрелы х5 (1🌲, 1🪨)</button>
+        <button class="btn" onclick="doCraft('armor_leather', 0, 2, 0, 1, 0, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Кожаный доспех (2🐻, 1🔶)</button>
+        
+        <div style="margin: 10px 0 5px 0; color: var(--accent); font-weight: bold;">Только в Мастерской:</div>
+        <button class="btn" onclick="doCraft('spear_copper', 1, 0, 0, 1, 0, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медное копье (1🌲, 1🔶)</button>
+        <button class="btn" onclick="doCraft('axe_copper', 1, 0, 0, 2, 0, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Медный топор (1🌲, 2🔶)</button>
+        <button class="btn" onclick="doCraft('quiver', 1, 2, 0, 0, 0, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Колчан (1🌲, 2🐻)</button>
+        <button class="btn" onclick="doCraft('potion', 1, 1, 0, 0, 0, 0, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px;">Зелье (1🌲, 1🐻)</button>
+        <button class="btn" onclick="doCraft('iron_sword', 1, 0, 0, 0, 0, 2, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #555;">⚔️ Железный меч (1🌲, 2⚙️)</button>
+        <button class="btn" onclick="doCraft('iron_armor', 0, 0, 0, 1, 0, 3, 0)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #555;">🛡️ Железный доспех (1🔶, 3⚙️)</button>
+        <button class="btn" onclick="doCraft('herbal_potion', 0, 1, 0, 0, 0, 0, 1)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #27ae60;">🧪 Травяное зелье (1🐻, 1🌿)</button>
+        
         <button class="btn btn-red" onclick="document.getElementById('craft-modal').style.display='none'" style="width: 100%; padding: 8px;">Отмена</button>
     </div>
 </div>
@@ -202,21 +209,21 @@
     </div>
 </div>
 
-<script src="js/config.js?v=56.0"></script>
-<script src="js/state.js?v=56.0"></script>
-<script src="js/utils.js?v=56.0"></script>
-<script src="js/pawn.js?v=56.0"></script>
-<script src="js/inventory.js?v=56.0"></script>
-<script src="js/map.js?v=56.0"></script>
-<script src="js/actions.js?v=56.0"></script>
-<script src="js/craft.js?v=56.0"></script>
-<script src="js/caravan.js?v=56.0"></script>
-<script src="js/enemies.js?v=56.0"></script>
-<script src="js/npc.js?v=56.0"></script>
-<script src="js/combat.js?v=56.0"></script>
-<script src="js/events.js?v=56.0"></script>
-<script src="js/engine/isometric.js?v=56.0"></script>
-<script src="js/engine/camera.js?v=56.0"></script>
-<script src="js/engine/renderer.js?v=56.0"></script>
+<script src="js/config.js?v=57.0"></script>
+<script src="js/state.js?v=57.0"></script>
+<script src="js/utils.js?v=57.0"></script>
+<script src="js/pawn.js?v=57.0"></script>
+<script src="js/inventory.js?v=57.0"></script>
+<script src="js/map.js?v=57.0"></script>
+<script src="js/actions.js?v=57.0"></script>
+<script src="js/craft.js?v=57.0"></script>
+<script src="js/caravan.js?v=57.0"></script>
+<script src="js/enemies.js?v=57.0"></script>
+<script src="js/npc.js?v=57.0"></script>
+<script src="js/combat.js?v=57.0"></script>
+<script src="js/events.js?v=57.0"></script>
+<script src="js/engine/isometric.js?v=57.0"></script>
+<script src="js/engine/camera.js?v=57.0"></script>
+<script src="js/engine/renderer.js?v=57.0"></script>
 </body>
 </html>

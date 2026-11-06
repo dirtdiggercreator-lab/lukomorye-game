@@ -34,8 +34,47 @@ class NPC {
     }
     
     interact(pawn) {
-        // Переопределяется в наследниках
+        document.getElementById('npc-title').innerText = '🧔 Торговец';
+        let html = '<p>Что желаешь, путник?</p>';
+        
+        html += '<div style="color:var(--accent); margin-bottom:5px; font-weight:bold;">Купить (за 🪙):</div>';
+        html += `<button class="btn" onclick="buyRes('wood', 1)" style="width:100%; padding:8px; margin-bottom:5px;">🌲 Дерево (1🪙)</button>`;
+        html += `<button class="btn" onclick="buyRes('stone', 2)" style="width:100%; padding:8px; margin-bottom:5px;">🪨 Камень (2🪙)</button>`;
+        html += `<button class="btn" onclick="buyRes('meat', 3)" style="width:100%; padding:8px; margin-bottom:5px;">🍖 Мясо (3🪙)</button>`;
+        html += `<button class="btn" onclick="buyRes('hide', 4)" style="width:100%; padding:8px; margin-bottom:5px;">🐻 Шкуры (4🪙)</button>`;
+        html += `<button class="btn" onclick="buyRes('copper', 5)" style="width:100%; padding:8px; margin-bottom:5px;">🔶 Медь (5🪙)</button>`;
+        html += `<button class="btn" onclick="buyRes('herbs', 2)" style="width:100%; padding:8px; margin-bottom:5px;">🌿 Травы (2🪙)</button>`;
+        html += `<button class="btn" onclick="buyRes('iron', 8)" style="width:100%; padding:8px; margin-bottom:5px;">⚙️ Железо (8🪙)</button>`;
+        
+        html += '<div style="color:var(--accent); margin-top:10px; margin-bottom:5px; font-weight:bold;">Продать (за 🪙):</div>';
+        html += `<button class="btn" onclick="sellRes('wood', 2)" style="width:100%; padding:8px; margin-bottom:5px;">2🌲 → 1🪙</button>`;
+        html += `<button class="btn" onclick="sellRes('stone', 1)" style="width:100%; padding:8px; margin-bottom:5px;">1🪨 → 1🪙</button>`;
+        html += `<button class="btn" onclick="sellRes('meat', 1)" style="width:100%; padding:8px; margin-bottom:5px;">1🍖 → 1🪙</button>`;
+        html += `<button class="btn" onclick="sellRes('hide', 1)" style="width:100%; padding:8px; margin-bottom:5px;">1🐻 → 2🪙</button>`;
+        html += `<button class="btn" onclick="sellRes('copper', 1)" style="width:100%; padding:8px; margin-bottom:5px;">1🔶 → 3🪙</button>`;
+        
+        document.getElementById('npc-body').innerHTML = html;
+        openModal('npc-modal');
     }
+}
+
+function buyRes(type, cost) {
+    if (G.res.coins >= cost) {
+        G.res.coins -= cost;
+        G.res[type] += 1;
+        showToast("Куплено!", "success");
+        updateUI();
+    } else showToast("Мало монет!", "danger");
+}
+
+function sellRes(type, amount) {
+    if (G.res[type] >= amount) {
+        G.res[type] -= amount;
+        let gain = (type === 'hide') ? 2 : (type === 'copper') ? 3 : 1;
+        G.res.coins += gain;
+        showToast(`Продано за ${gain}🪙`, "success");
+        updateUI();
+    } else showToast("Мало ресурсов!", "danger");
 }
 
 class Trader extends NPC {
@@ -108,25 +147,7 @@ function updateNPCs() {
     });
 }
 
-function npcTrade(type) {
-    let p = G.pawns[G.activePawnIndex];
-    let ok = false;
-    if (type === 'wood_to_stone' && G.res.wood >= 2) { G.res.wood -= 2; G.res.stone += 1; ok = true; }
-    else if (type === 'stone_to_wood' && G.res.stone >= 1) { G.res.stone -= 1; G.res.wood += 2; ok = true; }
-    else if (type === 'stone_to_meat' && G.res.stone >= 2) { G.res.stone -= 2; G.res.meat += 1; ok = true; }
-    else if (type === 'meat_to_stone' && G.res.meat >= 1) { G.res.meat -= 1; G.res.stone += 2; ok = true; }
-    else if (type === 'meat_to_copper' && G.res.meat >= 3) { G.res.meat -= 3; G.res.copper += 1; ok = true; }
-    else if (type === 'copper_to_meat' && G.res.copper >= 1) { G.res.copper -= 1; G.res.meat += 3; ok = true; }
-    
-    if (ok) {
-        showToast('Сделка совершена!', 'success');
-        addLog(`${p.name} обменял ресурсы с Торговцем.`);
-        updateUI();
-        document.getElementById('npc-modal').style.display = 'none';
-    } else {
-        showToast('Не хватает ресурсов!', 'danger');
-    }
-}
+
 
 function npcHeal() {
     let p = G.pawns[G.activePawnIndex];

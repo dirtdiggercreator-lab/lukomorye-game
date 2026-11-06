@@ -92,6 +92,7 @@ function executeAction(type) {
         if (G.weather === 'Обилие') res += 1;
         if (cell.type === 'forest') { 
             G.res.wood += res; 
+            if(Math.random() < 0.15) { G.res.herbs += 1; addLog('🌿 Найдены травы!', false, true); } 
             addLog(`${p.name} рубит лес: +${res} 🌲 (Кубик: ${roll})`, false, true); 
             cell.type = 'grass';
         }
@@ -107,6 +108,7 @@ function executeAction(type) {
         else if (cell.type === 'mountain') { 
             G.res.stone += res; 
             if(res>=2) G.res.copper += 1; 
+            if(p.craft >= 4 && Math.random() < 0.1) { G.res.iron += 1; addLog('⚙️ Найдено железо!', false, true); } 
             addLog(`${p.name} добывает камень: +${res} 🪨 (Кубик: ${roll})`, false, true); 
             cell.type = 'grass';
         }

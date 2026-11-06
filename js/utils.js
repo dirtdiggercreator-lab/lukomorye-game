@@ -82,6 +82,9 @@ function showToast(msg, type = 'info') {
 
 function migrateSave() {
     // Если загрузили старый сейв, где armor это число, а weapon - строка
+    if (G.res.coins === undefined) G.res.coins = 5;
+    if (G.res.iron === undefined) G.res.iron = 0;
+    if (G.res.herbs === undefined) G.res.herbs = 0;
     G.pawns.forEach(p => {
         if (!p.inventory) p.inventory = [];
         p.craftXp = p.craftXp || 0;

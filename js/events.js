@@ -85,7 +85,7 @@ function spinWheel() {
         else if(s === 1) { msg = "Ресурсы (+2🌲, +2🪨)"; G.res.wood += 2; G.res.stone += 2; }
         else if(s === 2) { msg = "Болезнь (-2HP)"; if(G.pawns[0]) G.pawns[0].hp -= 2; }
         else if(s === 3) { msg = "Удачная охота (+3🍖)"; G.res.meat += 3; }
-        else if(s === 4) { msg = "Клад (+2🔶)"; G.res.copper += 2; }
+        else if(s === 4) { msg = "Клад (+3🪙)"; G.res.coins += 3; }
         else if(s === 5) { msg = "Обмен (+5🌲, -2🍖)"; G.res.wood += 5; G.res.meat = Math.max(0, G.res.meat-2); }
         else if(s === 6) { msg = "Воры (-3🌲)"; G.res.wood = Math.max(0, G.res.wood-3); }
         

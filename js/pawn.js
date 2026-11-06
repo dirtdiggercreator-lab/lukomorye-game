@@ -70,6 +70,9 @@ function updateUI() {
     document.getElementById('ui-meat').innerText = G.res.meat;
     document.getElementById('ui-hide').innerText = G.res.hide;
     document.getElementById('ui-copper').innerText = G.res.copper;
+    document.getElementById('ui-coins').innerText = G.res.coins || 0;
+    document.getElementById('ui-iron').innerText = G.res.iron || 0;
+    document.getElementById('ui-herbs').innerText = G.res.herbs || 0;
     document.getElementById('ui-arrows').innerText = G.pawns.reduce((sum, p) => sum + (p.arrows || 0), 0);
     updateSmartButton();
 }
