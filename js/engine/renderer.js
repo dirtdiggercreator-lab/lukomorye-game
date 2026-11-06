@@ -351,6 +351,22 @@ function drawTile(gx, gy) {
         }
     }
     
+    // RENDER_BUILDING_EMOJI
+    if (cell.buildingId !== undefined && !cell.isDoor) {
+        let b = G.buildings.find(bb => bb.id === cell.buildingId);
+        if (b) {
+            let cx = b.x + Math.floor(b.w / 2);
+            let cy = b.y + Math.floor(b.h / 2);
+            if (gx === cx && gy === cy) {
+                let def = BUILDINGS[b.type] || { icon: '🏠' };
+                _ctx.font = '28px Arial';
+                _ctx.textAlign = 'center';
+                _ctx.textBaseline = 'middle';
+                _ctx.fillText(def.icon || '🏠', w.x, w.y);
+            }
+        }
+    }
+    
     // Рендер двери
     if (cell.isDoor) {
         _ctx.font = '22px Arial';

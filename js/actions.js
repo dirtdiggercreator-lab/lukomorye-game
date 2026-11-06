@@ -230,3 +230,22 @@ function npcInteraction(idx) {
     let p = G.pawns[G.activePawnIndex];
     npc.interact(p);
 }
+
+function continueBuilding(id) {
+    let b = G.buildings.find(bb => bb.id === id);
+    if (!b) { showToast("Здание не найдено!", "danger"); return; }
+    if (G.ap <= 0) { showToast("Нет ОД!", "danger"); return; }
+    G.ap--;
+    b.progress++;
+    let def = BUILDINGS[b.type] || { name: b.type };
+    addLog(`🏗️ ${def.name} (${b.progress}/${b.maxProgress})`);
+    if (b.progress >= b.maxProgress) {
+        showToast(`${def.name} достроен!`, 'success');
+        if (b.type === 'great_hearth') {
+            downloadLogs();
+            setTimeout(() => { alert("ВЫ ПОБЕДИЛИ!"); location.reload(); }, 300);
+        }
+    }
+    document.getElementById('action-modal').style.display = 'none';
+    updateUI(); markDirty();
+}

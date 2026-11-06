@@ -73,7 +73,7 @@ function startGame() {
     initRenderer();
     centerCameraOnPawn();
     
-    addLog("Версия v49.0. Игра началась!");
+    addLog("Версия " + GAME_VERSION + " (Canvas)");
 }
 
 function renderMap() {
