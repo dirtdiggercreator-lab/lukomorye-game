@@ -22,18 +22,30 @@ function doSmartAction() {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     }
     
-    // Проверка здания под пешкой
+    // Проверка зданий рядом
+    let _b = null;
     let _bCell = G.map[p.y][p.x];
     if (_bCell.buildingId !== undefined) {
-        let _b = G.buildings.find(b => b.id === _bCell.buildingId);
-        if (_b && _b.progress >= _b.maxProgress) {
+        _b = G.buildings.find(b => b.id === _bCell.buildingId);
+    } else {
+        for (let i = 0; i < G.buildings.length; i++) {
+            if (isNearBuilding(p.x, p.y, G.buildings[i])) {
+                _b = G.buildings[i];
+                break;
+            }
+        }
+    }
+    
+    if (_b) {
+        if (_b.progress >= _b.maxProgress) {
             if (_b.type === 'lazaret') actionsHTML += `<button class="btn action-btn" onclick="executeAction('heal')" style="background: #c0392b; grid-column: span 2;">🏥 Лечиться (1🍖)</button>`;
             else if (_b.type === 'houses') actionsHTML += `<button class="btn action-btn" onclick="executeAction('hire')" style="background: #8e44ad; grid-column: span 2;">🏘️ Нанять поселенца</button>`;
             else if (_b.type === 'master') actionsHTML += `<button class="btn action-btn" onclick="document.getElementById('action-modal').style.display='none'; openModal('craft-modal')" style="background: #34495e; grid-column: span 2;">🏭 Крафт в Мастерской</button>`;
             else if (_b.type === 'warehouse') actionsHTML += `<div style="grid-column: span 2; padding: 8px; text-align: center; color: #fbc531;">🏬 Склад (расширяет лимит)</div>`;
-        } else if (_b) {
-            actionsHTML += `<div style="grid-column: span 2; padding: 8px; text-align: center; color: #aaa;">🏗️ Строится (${_b.progress}/${_b.maxProgress})</div>`;
-            if (Math.max(Math.abs(p.x - _b.x), Math.abs(p.y - _b.y)) <= 1 && G.ap > 0) {
+        } else {
+            let def = BUILDINGS[_b.type] || { name: _b.type };
+            actionsHTML += `<div style="grid-column: span 2; padding: 8px; text-align: center; color: #aaa;">🏗️ ${def.name} (${_b.progress}/${_b.maxProgress})</div>`;
+            if (G.ap > 0) {
                 actionsHTML += `<button class="btn action-btn" onclick="continueBuilding(${_b.id})" style="background: #2980b9; grid-column: span 2;">🏗️ Достроить (1 ОД)</button>`;
             }
         }
@@ -230,6 +242,8 @@ function npcInteraction(idx) {
     let p = G.pawns[G.activePawnIndex];
     npc.interact(p);
 }
+
+
 
 function continueBuilding(id) {
     let b = G.buildings.find(bb => bb.id === id);

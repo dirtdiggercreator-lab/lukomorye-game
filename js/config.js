@@ -1,4 +1,4 @@
-const GAME_VERSION = '51.0';
+const GAME_VERSION = '52.0';
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
 class Item {
@@ -92,3 +92,14 @@ const BUILDINGS = {
     'master': { name: 'Мастерская', w: 2, h: 2, icon: '🏭', color: '#34495e' },
     'great_hearth': { name: 'Великий Очаг', w: 1, h: 1, icon: '🏆', color: '#f1c40f' }
 };
+
+function isNearBuilding(px, py, b) {
+    for (let dy = 0; dy < b.h; dy++) {
+        for (let dx = 0; dx < b.w; dx++) {
+            let bx = b.x + dx;
+            let by = b.y + dy;
+            if (Math.max(Math.abs(px - bx), Math.abs(py - by)) <= 1) return true;
+        }
+    }
+    return false;
+}
