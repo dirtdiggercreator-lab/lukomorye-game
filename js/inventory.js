@@ -19,48 +19,50 @@ function addItemToInventory(p, item) {
 }
 
 function openInventoryModal() {
-    let p = G.pawns[G.activePawnIndex];
-    initInventory(p);
-    
-    let html = '';
-    
-    // Экипировано
-    html += `<div style="margin-bottom: 10px; padding: 5px; background: #222; border-radius: 5px;">`;
-    html += `<div style="color: var(--accent); font-weight: bold; margin-bottom: 5px;">Надето:</div>`;
-    let wColor = p.weapon && p.weapon.quality ? QUALITY_TIERS[p.weapon.quality].color : '#fff';
-    let aColor = p.armorItem && p.armorItem.quality ? QUALITY_TIERS[p.armorItem.quality].color : '#fff';
-    html += `<div style="color: ${wColor};">🗡️ Оружие: ${p.weapon ? p.weapon.name : 'Кулаки'}</div>`;
-    html += `<div style="color: ${aColor};">🛡️ Броня: ${p.armorItem ? p.armorItem.name : 'Нет'}</div>`;
-    html += `</div>`;
-    
-    // Рюкзак
-    html += `<div style="color: var(--accent); font-weight: bold; margin-bottom: 5px;">Рюкзак (${p.inventory.length}/${MAX_INVENTORY}):</div>`;
-    
-    if (p.inventory.length === 0) {
-        html += `<div style="color: #888; font-style: italic; text-align: center; padding: 10px;">Пусто</div>`;
-    } else {
-        p.inventory.forEach((item, i) => {
-            let color = item.quality ? QUALITY_TIERS[item.quality].color : '#ecf0f1';
-            let isLegend = item.quality === 'legendary' ? ' ✨' : '';
-            let fw = item.quality === 'legendary' ? 'bold' : 'normal';
-            
-            html += `<div style="display: flex; justify-content: space-between; align-items: center; background: #333; padding: 8px; margin-bottom: 5px; border-radius: 5px;">`;
-            html += `<div style="color: ${color}; font-weight: ${fw};">${item.icon || '📦'} ${item.name}${isLegend}</div>`;
-            html += `<div style="display: flex; gap: 5px;">`;
-            
-            if (item instanceof Weapon || item instanceof Armor) {
-                html += `<button class="btn" style="padding: 4px 8px; font-size: 12px; background: #2980b9;" onclick="equipItem(${i})">Надеть</button>`;
-            }
-            
-            if (item.costW !== undefined || item.costH !== undefined || item.costS !== undefined) {
-                html += `<button class="btn" style="padding: 4px 8px; font-size: 12px; background: #c0392b;" onclick="disassembleItem(${i})">Разобрать</button>`;
-            }
-            html += `</div></div>`;
-        });
+    try {
+        let p = G.pawns[G.activePawnIndex];
+        if (!p) return showToast("Пешка не найдена!", "danger");
+        initInventory(p);
+        
+        let html = '';
+        html += `<div style="margin-bottom: 10px; padding: 5px; background: #222; border-radius: 5px;">`;
+        html += `<div style="color: var(--accent); font-weight: bold; margin-bottom: 5px;">Надето:</div>`;
+        let wColor = p.weapon && p.weapon.quality ? QUALITY_TIERS[p.weapon.quality].color : '#fff';
+        let aColor = p.armorItem && p.armorItem.quality ? QUALITY_TIERS[p.armorItem.quality].color : '#fff';
+        html += `<div style="color: ${wColor};">🗡️ Оружие: ${p.weapon ? p.weapon.name : 'Кулаки'}</div>`;
+        html += `<div style="color: ${aColor};">🛡️ Броня: ${p.armorItem ? p.armorItem.name : 'Нет'}</div>`;
+        html += `</div>`;
+        
+        html += `<div style="color: var(--accent); font-weight: bold; margin-bottom: 5px;">Рюкзак (${p.inventory.length}/${MAX_INVENTORY}):</div>`;
+        
+        if (p.inventory.length === 0) {
+            html += `<div style="color: #888; font-style: italic; text-align: center; padding: 10px;">Пусто</div>`;
+        } else {
+            p.inventory.forEach((item, i) => {
+                let color = item.quality ? QUALITY_TIERS[item.quality].color : '#ecf0f1';
+                let isLegend = item.quality === 'legendary' ? ' ✨' : '';
+                let fw = item.quality === 'legendary' ? 'bold' : 'normal';
+                
+                html += `<div style="display: flex; justify-content: space-between; align-items: center; background: #333; padding: 8px; margin-bottom: 5px; border-radius: 5px;">`;
+                html += `<div style="color: ${color}; font-weight: ${fw};">${item.icon || '📦'} ${item.name}${isLegend}</div>`;
+                html += `<div style="display: flex; gap: 5px;">`;
+                
+                if (item instanceof Weapon || item instanceof Armor) {
+                    html += `<button class="btn" style="padding: 4px 8px; font-size: 12px; background: #2980b9;" onclick="equipItem(${i})">Надеть</button>`;
+                }
+                
+                if (item.costW !== undefined || item.costH !== undefined || item.costS !== undefined) {
+                    html += `<button class="btn" style="padding: 4px 8px; font-size: 12px; background: #c0392b;" onclick="disassembleItem(${i})">Разобрать</button>`;
+                }
+                html += `</div></div>`;
+            });
+        }
+        
+        document.getElementById('inv-body').innerHTML = html;
+        openModal('inventory-modal');
+    } catch (e) {
+        alert("Ошибка в рюкзаке: " + e.message);
     }
-    
-    document.getElementById('inv-body').innerHTML = html;
-    openModal('inventory-modal');
 }
 
 function equipItem(index) {
