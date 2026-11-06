@@ -189,6 +189,37 @@ function render() {
         _ctx.fillRect(vl, vt, cw / camera.zoom, ch / camera.zoom);
     }
     
+    // Превью постройки (Ghost)
+    if (G.currentBuild && _isPointerDown === false) {
+        let def = BUILDINGS[G.currentBuild.type] || { w: 1, h: 1, color: '#fff' };
+        let bw = G.buildRotation ? def.h : def.w;
+        let bh = G.buildRotation ? def.w : def.h;
+        
+        let mouseW = screenToWorld(_dragStartX - _canvas.getBoundingClientRect().left, _dragStartY - _canvas.getBoundingClientRect().top, _canvas, camera);
+        let mouseG = worldToGrid(mouseW.x, mouseW.y);
+        
+        if (mouseG.gx >= 0 && mouseG.gx < 60 && mouseG.gy >= 0 && mouseG.gy < 60) {
+            for(let dy=0; dy<bh; dy++) {
+                for(let dx=0; dx<bw; dx++) {
+                    let nx = mouseG.gx + dx, ny = mouseG.gy + dy;
+                    if (nx < 60 && ny < 60) {
+                        let ww = gridToWorld(nx, ny);
+                        _ctx.beginPath();
+                        _ctx.moveTo(ww.x, ww.y - TILE_H / 2);
+                        _ctx.lineTo(ww.x + TILE_W / 2, ww.y);
+                        _ctx.lineTo(ww.x, ww.y + TILE_H / 2);
+                        _ctx.lineTo(ww.x - TILE_W / 2, ww.y);
+                        _ctx.closePath();
+                        _ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                        _ctx.fill();
+                        _ctx.strokeStyle = '#fff';
+                        _ctx.stroke();
+                    }
+                }
+            }
+        }
+    }
+    
     // Эффекты
     for (let i = effects.length - 1; i >= 0; i--) {
         const eff = effects[i];
@@ -217,9 +248,6 @@ function getTileColor(cell) {
     if (cell.build === 'road') return '#7f6f5f';
     if (cell.build === 'watchtower') return '#8b6f47';
     if (cell.build === 'campfire') return '#e67e22';
-    if (cell.build === 'wall_multi_wood') return '#6b3e1a';
-    if (cell.build === 'wall_multi_stone') return '#5a6c6d';
-    if (cell.build === 'door') return '#8b6914';
     if (cell.type === 'forest') return '#27ae60';
     if (cell.type === 'mountain') return '#7f8c8d';
     if (cell.type === 'water') return '#2980b9';
@@ -245,8 +273,6 @@ function getTileEmoji(cell) {
     if (cell.build === 'watchtower') return '🗼';
     if (cell.build === 'campfire') return '🔥';
     if (cell.build === 'wall_multi_wood') return '🧱';
-    if (cell.build === 'wall_multi_stone') return '🧱';
-    if (cell.build === 'door') return '🚪';
     if (cell.type === 'forest') return '🌲';
     if (cell.type === 'mountain') return '⛰️';
     if (cell.type === 'water') return '🌊';
@@ -267,8 +293,22 @@ function drawTile(gx, gy) {
     _ctx.lineTo(w.x - TILE_W / 2, w.y);
     _ctx.closePath();
     
-    _ctx.fillStyle = getTileColor(cell);
-    _ctx.fill();
+    // Если это часть здания
+    if (cell.buildingId !== undefined) {
+        let b = G.buildings.find(b => b.id === cell.buildingId);
+        if (b) {
+            let def = BUILDINGS[b.type] || { color: '#aaa' };
+            _ctx.fillStyle = def.color || '#aaa';
+            if (b.progress < b.maxProgress) _ctx.fillStyle = '#555'; // Строится
+            _ctx.fill();
+        } else {
+            _ctx.fillStyle = getTileColor(cell);
+            _ctx.fill();
+        }
+    } else {
+        _ctx.fillStyle = getTileColor(cell);
+        _ctx.fill();
+    }
     
     // Пол внутри помещения
     if (cell.isFloor) {
@@ -309,6 +349,14 @@ function drawTile(gx, gy) {
                 _ctx.fillText(ROOM_PURPOSES[room.purpose].icon, w.x, w.y);
             }
         }
+    }
+    
+    // Рендер двери
+    if (cell.isDoor) {
+        _ctx.font = '22px Arial';
+        _ctx.textAlign = 'center';
+        _ctx.textBaseline = 'middle';
+        _ctx.fillText('🚪', w.x, w.y);
     }
     
     // Прогресс постройки

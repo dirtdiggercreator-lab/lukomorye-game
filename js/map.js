@@ -144,13 +144,95 @@ function ensurePawnVisible() {
     markDirty();
 }
 
+function startBuilding(type, costW, costS) {
+    if (G.ap <= 0) return showToast("Нет ОД!", "danger");
+    if (G.res.wood < costW || G.res.stone < costS) return showToast("Не хватает ресурсов!", "danger");
+    
+    G.currentBuild = { type, costW, costS };
+    G.buildRotation = 0;
+    
+    let def = BUILDINGS[type] || { w: 1, h: 1 };
+    document.getElementById('build-status-text').innerText = `Постройка: ${def.name || type} (${G.buildRotation ? def.h+'x'+def.w : def.w+'x'+def.h})`;
+    document.getElementById('build-control-panel').style.display = 'block';
+    document.getElementById('build-modal').style.display = 'none';
+    showToast("Укажите место на карте", "info");
+}
+
+function rotateBuild() {
+    if (!G.currentBuild) return;
+    G.buildRotation = G.buildRotation === 0 ? 1 : 0;
+    let def = BUILDINGS[G.currentBuild.type] || { w: 1, h: 1 };
+    document.getElementById('build-status-text').innerText = `Постройка: ${def.name || G.currentBuild.type} (${G.buildRotation ? def.h+'x'+def.w : def.w+'x'+def.h})`;
+}
+
+function cancelBuild() {
+    G.currentBuild = null;
+    document.getElementById('build-control-panel').style.display = 'none';
+    showToast("Постройка отменена");
+}
+
+function tryPlaceBuilding(x, y) {
+    if (!G.currentBuild) return;
+    let type = G.currentBuild.type;
+    let def = BUILDINGS[type] || { w: 1, h: 1 };
+    let w = G.buildRotation ? def.h : def.w;
+    let h = G.buildRotation ? def.w : def.h;
+    
+    // Проверка на траву и свободность
+    for(let dy=0; dy<h; dy++) {
+        for(let dx=0; dx<w; dx++) {
+            let nx = x + dx, ny = y + dy;
+            if (nx < 0 || nx >= 60 || ny < 0 || ny >= 60) return showToast("Выход за карту", "danger");
+            let c = G.map[ny][nx];
+            if (c.type !== 'grass' || c.build || c.buildingId !== undefined) return showToast("Место занято или не трава", "danger");
+        }
+    }
+    
+    // Списываем ресурсы
+    G.res.wood -= G.currentBuild.costW;
+    G.res.stone -= G.currentBuild.costS;
+    G.ap--;
+    
+    // Создаем здание
+    let bid = Date.now();
+    let building = {
+        id: bid, type: type, x: x, y: y, w: w, h: h,
+        progress: 1, maxProgress: (type === 'great_hearth') ? 3 : (type === 'lazaret' || type === 'houses' || type === 'master') ? 2 : 1,
+        door: { x: x, y: y + h - 1 } // Дверь всегда внизу
+    };
+    
+    // Записываем тайлы
+    for(let dy=0; dy<h; dy++) {
+        for(let dx=0; dx<w; dx++) {
+            G.map[y+dy][x+dx].buildingId = bid;
+            G.map[y+dy][x+dx].isDoor = (dx === 0 && dy === h - 1); // Левая нижняя клетка = дверь
+        }
+    }
+    
+    G.buildings.push(building);
+    G.currentBuild = null;
+    document.getElementById('build-control-panel').style.display = 'none';
+    
+    if (building.progress >= building.maxProgress) {
+        addLog(`Построено: ${def.name}`, false, true);
+        if (type === 'great_hearth') {
+            downloadLogs();
+            setTimeout(() => { alert("ВЫ ПОБЕДИЛИ!"); location.reload(); }, 300);
+        }
+    } else {
+        addLog(`Начато: ${def.name} (1/${building.maxProgress})`);
+    }
+    
+    updateVision(); updateUI(); markDirty();
+}
+
 function handleCellClick(x, y) {
     if (isMoving) return;
     if (G.inCombat) return showToast("Нельзя двигаться в бою!", "danger");
     let p = G.pawns[G.activePawnIndex];
     if (!p || p.x === -1) return;
 
-    if (G.buildMode) { placeBuild(x, y); return; }
+    if (G.currentBuild) { tryPlaceBuilding(x, y); return; }
     if (x === p.x && y === p.y) return;
     
     let enemy = G.enemies.find(e => e.x === x && e.y === y);

@@ -22,19 +22,20 @@ function doSmartAction() {
         actionsHTML += `<button class="btn action-btn" onclick="executeAction('rest')">💤 Отдых</button>`;
     }
     
-    // Проверка помещения под пешкой
-    let _room = getRoomAt(p.x, p.y);
-    if (_room) {
-        if (_room.purpose === 'lazaret') {
-            actionsHTML += `<button class="btn action-btn" onclick="executeAction('heal')" style="background: #27ae60; grid-column: span 2;">⛑️ Лечиться (1🍖)</button>`;
-        } else if (_room.purpose === 'houses') {
-            actionsHTML += `<button class="btn action-btn" onclick="executeAction('hire')" style="background: #8e44ad; grid-column: span 2;">🧑‍🌾 Нанять поселенца</button>`;
-        } else if (_room.purpose === 'master') {
-            actionsHTML += `<button class="btn action-btn" onclick="document.getElementById('action-modal').style.display='none'; openModal('craft-modal')" style="background: #34495e; grid-column: span 2;">🛠️ Крафт в Мастерской</button>`;
-        } else if (_room.purpose === 'warehouse') {
-            actionsHTML += `<div style="grid-column: span 2; padding: 8px; text-align: center; color: #fbc531;">📦 Склад (расширяет лимит)</div>`;
-        } else if (!_room.purpose) {
-            actionsHTML += `<button class="btn action-btn" onclick="openRoomAssignMenu()" style="background: #fbc531; color: #000; grid-column: span 2;">🏠 Назначить помещение</button>`;
+    // Проверка здания под пешкой
+    let _bCell = G.map[p.y][p.x];
+    if (_bCell.buildingId !== undefined) {
+        let _b = G.buildings.find(b => b.id === _bCell.buildingId);
+        if (_b && _b.progress >= _b.maxProgress) {
+            if (_b.type === 'lazaret') actionsHTML += `<button class="btn action-btn" onclick="executeAction('heal')" style="background: #c0392b; grid-column: span 2;">🏥 Лечиться (1🍖)</button>`;
+            else if (_b.type === 'houses') actionsHTML += `<button class="btn action-btn" onclick="executeAction('hire')" style="background: #8e44ad; grid-column: span 2;">🏘️ Нанять поселенца</button>`;
+            else if (_b.type === 'master') actionsHTML += `<button class="btn action-btn" onclick="document.getElementById('action-modal').style.display='none'; openModal('craft-modal')" style="background: #34495e; grid-column: span 2;">🏭 Крафт в Мастерской</button>`;
+            else if (_b.type === 'warehouse') actionsHTML += `<div style="grid-column: span 2; padding: 8px; text-align: center; color: #fbc531;">🏬 Склад (расширяет лимит)</div>`;
+        } else if (_b) {
+            actionsHTML += `<div style="grid-column: span 2; padding: 8px; text-align: center; color: #aaa;">🏗️ Строится (${_b.progress}/${_b.maxProgress})</div>`;
+            if (Math.max(Math.abs(p.x - _b.x), Math.abs(p.y - _b.y)) <= 1 && G.ap > 0) {
+                actionsHTML += `<button class="btn action-btn" onclick="continueBuilding(${_b.id})" style="background: #2980b9; grid-column: span 2;">🏗️ Достроить (1 ОД)</button>`;
+            }
         }
     }
     

@@ -71,7 +71,7 @@ function getMoveCost(cell) {
     if (!cell) return 999;
     if (cell.type === 'water' || cell.type === 'mountain' || cell.type === 'water_empty') return 999;
     if (cell.build === 'wall_wood' || cell.build === 'wall_stone' || cell.build === 'trap') return 999;
-    if (cell.build === 'wall_multi_wood' || cell.build === 'wall_multi_stone') return 999;
+    if (cell.buildingId !== undefined && !cell.isDoor) return 999;
     if (cell.build === 'road') return 0.33;
     if (cell.type === 'ford') return 2.0;
     let isMuddy = (G.weather === 'Паводок' || G.weather === 'Мороз');
@@ -82,3 +82,12 @@ function getMoveCost(cell) {
 function isNight() {
     return ((G.round - 1) % 4) >= 2;
 }
+
+const BUILDINGS = {
+    'camp': { name: 'Лагерь', w: 1, h: 1, icon: '🏕️', color: '#8e44ad' },
+    'lazaret': { name: 'Лазарет', w: 2, h: 3, icon: '🏥', color: '#c0392b' },
+    'warehouse': { name: 'Склад', w: 2, h: 2, icon: '🏬', color: '#7f8c8d' },
+    'houses': { name: 'Хоромы', w: 3, h: 3, icon: '🏘️', color: '#8e44ad' },
+    'master': { name: 'Мастерская', w: 2, h: 2, icon: '🏭', color: '#34495e' },
+    'great_hearth': { name: 'Великий Очаг', w: 1, h: 1, icon: '🏆', color: '#f1c40f' }
+};
