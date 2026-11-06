@@ -10,6 +10,7 @@ function setupGen(diff) {
 }
 
 function rollStats() {
+    try {
     const names = ["Ратмир", "Ольга", "Илья", "Деяна", "Святозар", "Лада"];
     const traits = ["Силач", "Ловкач", "Умелец", "Стойкий", "Тугодум", "Везунчик"];
     tempPawn = {
@@ -36,6 +37,7 @@ function rollStats() {
     document.getElementById('btn-roll').style.display = 'none';
     document.getElementById('btn-accept').style.display = 'block';
     document.getElementById('btn-reroll').style.display = 'block';
+    } catch(e) { alert('Ошибка: ' + e.message); }
 }
 
 function renderPawnBar() {

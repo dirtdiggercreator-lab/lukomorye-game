@@ -1,4 +1,4 @@
-const GAME_VERSION = '54.0';
+const GAME_VERSION = '55.0';
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
 class Item {
