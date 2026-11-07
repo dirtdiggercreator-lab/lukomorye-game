@@ -147,6 +147,7 @@ function ensurePawnVisible() {
 }
 
 function startBuilding(type, costW, costS) {
+    if (type !== 'camp' && !G.buildings.some(b => b.type === 'camp')) return showToast("Сначала постройте Лагерь!", "danger");
     if (G.ap <= 0) return showToast("Нет ОД!", "danger");
     if (G.res.wood < costW || G.res.stone < costS) return showToast("Не хватает ресурсов!", "danger");
     
@@ -199,7 +200,7 @@ function tryPlaceBuilding(x, y) {
     let bid = Date.now();
     let building = {
         id: bid, type: type, x: x, y: y, w: w, h: h,
-        progress: 1, maxProgress: (type === 'great_hearth') ? 3 : (type === 'lazaret' || type === 'houses' || type === 'master') ? 2 : 1,
+        progress: 1, maxProgress: BUILDINGS[type].maxProgress || 1,
         door: { x: x, y: y + h - 1 } // Дверь всегда внизу
     };
     

@@ -60,7 +60,7 @@
 <div class="modal" id="menu-modal" style="display: flex;">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 28px;">ЛУКОМОРЬЕ</h2>
-        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v58.0</p>
+        <p style="color: #888; margin-top: -10px; margin-bottom: 20px;">Версия v59.0</p>
         <button class="btn" id="btn-continue" onclick="loadGame()" style="width: 100%; padding: 15px; margin-bottom: 10px; background: #27ae60; display: none;">Продолжить</button>
         <button class="btn" onclick="document.getElementById('menu-modal').style.display='none'; document.getElementById('diff-modal').style.display='flex'" style="width: 100%; padding: 15px; margin-bottom: 10px;">Начать игру</button>
         <button class="btn" onclick="openPrompts()" style="width: 100%; padding: 10px; background: #8e44ad; margin-bottom: 5px;">📋 Промпты для ИИ</button>
@@ -109,9 +109,9 @@
         <button class="btn" onclick="startBuilding('watchtower', 4, 3)" style="width: 100%; padding: 8px; margin-bottom: 5px;">🗼 Сторожевая вышка (4🌲, 3🪨)</button>
         <button class="btn" onclick="startBuilding('lazaret', 5, 3)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #c0392b;">🏥 Лазарет 2x3 (5🌲, 3🪨)</button>
         <button class="btn" onclick="startBuilding('warehouse', 4, 2)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #7f8c8d;">🏬 Склад 2x2 (4🌲, 2🪨)</button>
-        <button class="btn" onclick="startBuilding('houses', 6, 4)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #8e44ad;">🏘️ Хоромы 3x3 (6🌲, 4🪨)</button>
+        <button class="btn" onclick="startBuilding('houses', 8, 6)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #8e44ad;">🏘️ Хоромы 3x3 (8🌲, 6🪨)</button>
         <button class="btn" onclick="startBuilding('master', 4, 4)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #34495e;">🏭 Мастерская 2x2 (4🌲, 4🪨)</button>
-        <button class="btn" onclick="startBuilding('great_hearth', 15, 15)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #f1c40f; color: #000;">🏆 Великий Очаг (15🌲, 15🪨)</button>
+        <button class="btn" onclick="startBuilding('great_hearth', 15, 15)" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #f1c40f; color: #000;">🏆 Великий Очаг 3x3 (15🌲, 15🪨)</button>
         <button class="btn btn-red" onclick="document.getElementById('build-modal').style.display='none'" style="width: 100%; padding: 8px;">Отмена</button>
     </div>
 </div>
@@ -209,21 +209,21 @@
     </div>
 </div>
 
-<script src="js/config.js?v=58.0"></script>
-<script src="js/state.js?v=58.0"></script>
-<script src="js/utils.js?v=58.0"></script>
-<script src="js/pawn.js?v=58.0"></script>
-<script src="js/inventory.js?v=58.0"></script>
-<script src="js/map.js?v=58.0"></script>
-<script src="js/actions.js?v=58.0"></script>
-<script src="js/craft.js?v=58.0"></script>
-<script src="js/caravan.js?v=58.0"></script>
-<script src="js/enemies.js?v=58.0"></script>
-<script src="js/npc.js?v=58.0"></script>
-<script src="js/combat.js?v=58.0"></script>
-<script src="js/events.js?v=58.0"></script>
-<script src="js/engine/isometric.js?v=58.0"></script>
-<script src="js/engine/camera.js?v=58.0"></script>
-<script src="js/engine/renderer.js?v=58.0"></script>
+<script src="js/config.js?v=59.0"></script>
+<script src="js/state.js?v=59.0"></script>
+<script src="js/utils.js?v=59.0"></script>
+<script src="js/pawn.js?v=59.0"></script>
+<script src="js/inventory.js?v=59.0"></script>
+<script src="js/map.js?v=59.0"></script>
+<script src="js/actions.js?v=59.0"></script>
+<script src="js/craft.js?v=59.0"></script>
+<script src="js/caravan.js?v=59.0"></script>
+<script src="js/enemies.js?v=59.0"></script>
+<script src="js/npc.js?v=59.0"></script>
+<script src="js/combat.js?v=59.0"></script>
+<script src="js/events.js?v=59.0"></script>
+<script src="js/engine/isometric.js?v=59.0"></script>
+<script src="js/engine/camera.js?v=59.0"></script>
+<script src="js/engine/renderer.js?v=59.0"></script>
 </body>
 </html>

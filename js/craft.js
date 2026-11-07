@@ -5,6 +5,7 @@ function isNearWorkshop() {
 }
 
 function doCraft(item, costW, costH, costS, costC, costArrows, costI = 0, costHerbs = 0) {
+    if (!G.buildings.some(b => b.type === 'camp')) return showToast("Сначала постройте Лагерь!", "danger");
     let workshopRequired = ['spear_copper', 'axe_copper', 'quiver', 'potion', 'iron_sword', 'iron_armor', 'herbal_potion'];
     
     if (workshopRequired.includes(item) && !isNearWorkshop()) {

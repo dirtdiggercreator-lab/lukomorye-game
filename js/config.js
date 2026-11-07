@@ -1,4 +1,4 @@
-const GAME_VERSION = '58.0';
+const GAME_VERSION = '59.0';
 
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
@@ -61,12 +61,19 @@ const QUALITY_TIERS = {
 const LEGENDARY_PREFIXES = ['Перуна', 'Велеса', 'Стрибога', 'Сварога', 'Даждьбога', 'Мокоши', 'Ярило', 'Чернобога'];
 
 const BUILDINGS = {
-    'camp': { name: 'Лагерь', w: 2, h: 2, icon: '🏕️', color: '#8e44ad' },
-    'lazaret': { name: 'Лазарет', w: 2, h: 3, icon: '🏥', color: '#c0392b' },
-    'warehouse': { name: 'Склад', w: 2, h: 2, icon: '🏬', color: '#7f8c8d' },
-    'houses': { name: 'Хоромы', w: 3, h: 3, icon: '🏘️', color: '#8e44ad' },
-    'master': { name: 'Мастерская', w: 2, h: 2, icon: '🏭', color: '#34495e' },
-    'great_hearth': { name: 'Великий Очаг', w: 1, h: 1, icon: '🏆', color: '#f1c40f' }
+    'camp': { name: 'Лагерь', w: 2, h: 2, icon: '🏕️', color: '#8e44ad', maxProgress: 1 },
+    'lazaret': { name: 'Лазарет', w: 2, h: 3, icon: '🏥', color: '#c0392b', maxProgress: 2 },
+    'warehouse': { name: 'Склад', w: 2, h: 2, icon: '🏬', color: '#7f8c8d', maxProgress: 2 },
+    'houses': { name: 'Хоромы', w: 3, h: 3, icon: '🏘️', color: '#8e44ad', maxProgress: 3 },
+    'master': { name: 'Мастерская', w: 2, h: 2, icon: '🏭', color: '#34495e', maxProgress: 2 },
+    'great_hearth': { name: 'Великий Очаг', w: 3, h: 3, icon: '🏆', color: '#f1c40f', maxProgress: 3 },
+    'watchtower': { name: 'Вышка', w: 2, h: 2, icon: '🗼', color: '#8b6f47', maxProgress: 2 },
+    'campfire': { name: 'Костёр', w: 1, h: 1, icon: '🔥', color: '#e67e22', maxProgress: 1 },
+    'hearth': { name: 'Очаг', w: 1, h: 1, icon: '🔥', color: '#d35400', maxProgress: 1 },
+    'trap': { name: 'Ловушка', w: 1, h: 1, icon: '🕳️', color: '#2c3e50', maxProgress: 1 },
+    'road': { name: 'Дорога', w: 1, h: 1, icon: '🛤️', color: '#7f6f5f', maxProgress: 1 },
+    'wall_wood': { name: 'Ограда', w: 1, h: 1, icon: '🪵', color: '#a0522d', maxProgress: 1 },
+    'wall_stone': { name: 'Ограда', w: 1, h: 1, icon: '🪨', color: '#95a5a6', maxProgress: 1 }
 };
 
 function getMaxLevel() { return G.diff === 'easy' ? 3 : G.diff === 'normal' ? 5 : 7; }
@@ -80,8 +87,8 @@ function getBuildCost(type) {
     if(type === 'hearth') return {w:0,s:3,turns:1};
     if(type === 'field') return {w:2,s:0,turns:3};
     if(type === 'lazaret') return {w:5,s:3,turns:2};
-    if(type === 'warehouse') return {w:4,s:2,turns:1};
-    if(type === 'houses') return {w:6,s:4,turns:2};
+    if(type === 'warehouse') return {w:4,s:2,turns:2};
+    if(type === 'houses') return {w:8,s:6,turns:3};
     if(type === 'master') return {w:4,s:4,turns:2};
     if(type === 'great_hearth') return {w:15,s:15,turns:3, copper:8};
     if(type === 'road') return {w:0,s:1,turns:1};
@@ -93,8 +100,8 @@ function getBuildCost(type) {
 function getMoveCost(cell) {
     if (!cell) return 999;
     if (cell.type === 'water' || cell.type === 'mountain' || cell.type === 'water_empty') return 999;
-    if (cell.build === 'wall_wood' || cell.build === 'wall_stone' || cell.build === 'trap') return 999;
-    if (cell.buildingId !== undefined && !cell.isDoor) return 999;
+    if (cell.build === 'wall_wood' || cell.build === 'wall_stone') return 999;
+    if (cell.buildingId !== undefined && !cell.isDoor && G.buildings.find(b => b.id === cell.buildingId)?.type !== 'road') return 999;
     if (cell.build === 'road') return 0.33;
     if (cell.type === 'ford') return 2.0;
     let isMuddy = (G.weather === 'Паводок' || G.weather === 'Мороз');
