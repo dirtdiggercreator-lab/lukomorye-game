@@ -216,7 +216,7 @@ function getTileColor(cell) {
     if (cell.buildingId !== undefined) {
         let b = G.buildings.find(bb => bb.id === cell.buildingId);
         if (b) {
-            if (b.progress < b.maxProgress) return '#444'; // Темный цвет для стройки
+            if (b.progress < b.maxProgress) return '#2c3e50'; // Темно-синий для стройки // Темный цвет для стройки
             let def = BUILDINGS[b.type];
             if (def) return def.color;
         }

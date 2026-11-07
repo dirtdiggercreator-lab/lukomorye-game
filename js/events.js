@@ -94,6 +94,7 @@ function spinWheel() {
         
         setTimeout(() => {
             closeModal('wheel-modal');
+            rollWeather();
             let spawned = false;
             if (G.pendingStandardSpawn) {
                 let side = rnd(0,3), ex, ey;
@@ -142,8 +143,9 @@ function gameOver(reason) {
     }, 500);
 }
 
+
+
 function rollWeather() {
-    // Единый словарь эффектов
     let weatherEffects = {
         'Паводок': '🌧 грязь, движение замедлено',
         'Засуха': '☀️ поля и вода без еды',
@@ -154,15 +156,13 @@ function rollWeather() {
         'Теплый ветер': '🍃 +1 HP в ход'
     };
     
-    // Если погода уже есть, просто уменьшаем счетчик
     if (G.weatherDuration > 0) {
         G.weatherDuration--;
         let eff = weatherEffects[G.weather] || '';
-        addLog(`Погода: ${G.weather} (${G.weatherDuration} ходов) — ${eff}`);
+        addLog(`Погода: ${G.weather} (осталось ${G.weatherDuration} ходов) — ${eff}`);
         return;
     }
     
-    // Иначе кидаем кубик
     let roll = d6();
     let newWeather;
     if (roll <= 2) {
