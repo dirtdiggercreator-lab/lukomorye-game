@@ -1,4 +1,4 @@
-const GAME_VERSION = '57.2';
+const GAME_VERSION = '58.0';
 
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
@@ -61,7 +61,7 @@ const QUALITY_TIERS = {
 const LEGENDARY_PREFIXES = ['Перуна', 'Велеса', 'Стрибога', 'Сварога', 'Даждьбога', 'Мокоши', 'Ярило', 'Чернобога'];
 
 const BUILDINGS = {
-    'camp': { name: 'Лагерь', w: 1, h: 1, icon: '🏕️', color: '#8e44ad' },
+    'camp': { name: 'Лагерь', w: 2, h: 2, icon: '🏕️', color: '#8e44ad' },
     'lazaret': { name: 'Лазарет', w: 2, h: 3, icon: '🏥', color: '#c0392b' },
     'warehouse': { name: 'Склад', w: 2, h: 2, icon: '🏬', color: '#7f8c8d' },
     'houses': { name: 'Хоромы', w: 3, h: 3, icon: '🏘️', color: '#8e44ad' },

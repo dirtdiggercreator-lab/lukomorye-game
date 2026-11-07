@@ -9,10 +9,10 @@ function spawnEnemyWithArrow(x, y, type) {
     
     if (arrowDir) {
         let arrowEl = document.createElement('div');
-        arrowEl.style.cssText = 'position:fixed; ' + posStyle + ' font-size:60px; z-index:9999; pointer-events:none; text-shadow: 0 0 15px red;';
+        arrowEl.style.cssText = 'position:fixed; ' + posStyle + ' font-size:35px; z-index:9999; pointer-events:none; text-shadow: 0 0 10px red; animation: arrowPulse 0.5s ease-in-out 2;';
         arrowEl.innerText = arrowDir;
         document.body.appendChild(arrowEl);
-        setTimeout(function() { arrowEl.remove(); }, 3000);
+        setTimeout(function() { arrowEl.remove(); }, 2000);
     }
 }
 

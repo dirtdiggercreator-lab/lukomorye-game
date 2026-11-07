@@ -61,7 +61,6 @@ function nextTurn() {
     if (isNight()) G.pendingStandardSpawn = true; // Ночью спавн чаще
     G.pendingWheelSpawn = false;
     
-    rollWeather();
     trySpawnNPC();
     updateNPCs();
     
