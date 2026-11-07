@@ -143,11 +143,26 @@ function gameOver(reason) {
 }
 
 function rollWeather() {
+    // Единый словарь эффектов
+    let weatherEffects = {
+        'Паводок': '🌧 грязь, движение замедлено',
+        'Засуха': '☀️ поля и вода без еды',
+        'Ураган': '🌪 ломает постройки',
+        'Мороз': '❄️ снег, -1 HP без Очага',
+        'Ясно': '☀️ без эффектов',
+        'Обилие': '🌿 +1 к добыче',
+        'Теплый ветер': '🍃 +1 HP в ход'
+    };
+    
+    // Если погода уже есть, просто уменьшаем счетчик
     if (G.weatherDuration > 0) {
         G.weatherDuration--;
+        let eff = weatherEffects[G.weather] || '';
+        addLog(`Погода: ${G.weather} (${G.weatherDuration} ходов) — ${eff}`);
         return;
     }
     
+    // Иначе кидаем кубик
     let roll = d6();
     let newWeather;
     if (roll <= 2) {
@@ -163,18 +178,11 @@ function rollWeather() {
     G.weather = newWeather;
     G.weatherDuration = 5;
     
-    let effectsText = {
-        'Паводок': '🌧 Паводок: грязь, движение замедлено',
-        'Засуха': '☀️ Засуха: поля и вода без еды',
-        'Ураган': '🌪 Ураган: сломал постройку',
-        'Мороз': '❄️ Мороз: снег, -1 HP без Очага',
-        'Ясно': '☀️ Ясно',
-        'Обилие': '🌿 Обилие: +1 к добыче',
-        'Теплый ветер': '🍃 Теплый ветер: +1 HP'
-    };
     let isBad = ['Паводок', 'Засуха', 'Ураган', 'Мороз'].includes(newWeather);
-    showToast(effectsText[newWeather] || newWeather, isBad ? 'danger' : 'success');
-    addLog(`Погода: ${newWeather} (${G.weatherDuration} ходов)`, isBad);
+    let eff = weatherEffects[newWeather] || '';
+    
+    addLog(`Погода: ${newWeather} (5 ходов) — ${eff}`, isBad);
+    showToast(`Погода: ${newWeather}. ${eff}`, isBad ? 'danger' : 'success');
     
     if (newWeather === 'Теплый ветер') {
         G.pawns.forEach(p => { if (p.hp > 0 && p.x !== -1) p.hp = Math.min(p.maxHp, p.hp + 1); });
