@@ -58,22 +58,24 @@ function renderPawnBar() {
 }
 
 function updateUI() {
-    let se = document.getElementById('ui-season');
-    if (se) se.innerText = G.season;
-    let tod = document.getElementById('ui-timeofday');
-    if (tod) tod.innerText = isNight() ? '🌙' : '☀️';
-    document.getElementById('ui-round').innerText = G.round;
-    document.getElementById('ui-ap').innerText = G.ap;
-    document.getElementById('ui-steps').innerText = (G.enemies.length > 0 || G.inCombat) ? G.combatSteps : 0;
-    document.getElementById('ui-wood').innerText = G.res.wood;
-    document.getElementById('ui-stone').innerText = G.res.stone;
-    document.getElementById('ui-meat').innerText = G.res.meat;
-    document.getElementById('ui-hide').innerText = G.res.hide;
-    document.getElementById('ui-copper').innerText = G.res.copper;
-    document.getElementById('ui-coins').innerText = G.res.coins || 0;
-    document.getElementById('ui-iron').innerText = G.res.iron || 0;
-    document.getElementById('ui-herbs').innerText = G.res.herbs || 0;
-    document.getElementById('ui-arrows').innerText = G.pawns.reduce((sum, p) => sum + (p.arrows || 0), 0);
+    function setText(id, value) {
+        let el = document.getElementById(id);
+        if (el) el.innerText = value;
+    }
+    setText('ui-season', G.season);
+    setText('ui-timeofday', (typeof isNight === 'function' && isNight()) ? '🌙' : '☀️');
+    setText('ui-round', G.round);
+    setText('ui-ap', G.ap);
+    setText('ui-steps', (G.enemies.length > 0 || G.inCombat) ? G.combatSteps : 0);
+    setText('ui-wood', G.res.wood || 0);
+    setText('ui-stone', G.res.stone || 0);
+    setText('ui-meat', G.res.meat || 0);
+    setText('ui-hide', G.res.hide || 0);
+    setText('ui-copper', G.res.copper || 0);
+    setText('ui-coins', G.res.coins || 0);
+    setText('ui-iron', G.res.iron || 0);
+    setText('ui-herbs', G.res.herbs || 0);
+    setText('ui-arrows', G.pawns.reduce((sum, p) => sum + (p.arrows || 0), 0));
     updateSmartButton();
 }
 
