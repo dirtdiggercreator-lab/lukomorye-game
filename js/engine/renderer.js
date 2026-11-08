@@ -1,5 +1,5 @@
 // ============================================================
-// CANVAS RENDERER (Clean Rewrite)
+// CANVAS RENDERER (v60.2)
 // ============================================================
 
 let _canvas = null;
@@ -20,21 +20,14 @@ function getCtx() { return _ctx; }
 
 function initRenderer() {
     _canvas = document.getElementById('game-canvas');
-    if (!_canvas) {
-        alert("ОШИБКА: <canvas id='game-canvas'> не найден в HTML!");
-        return;
-    }
+    if (!_canvas) { alert("ОШИБКА: <canvas> не найден!"); return; }
     _ctx = _canvas.getContext('2d');
-    if (!_ctx) {
-        alert("ОШИБКА: не удалось получить 2D контекст!");
-        return;
-    }
+    if (!_ctx) { alert("ОШИБКА: нет 2D контекста!"); return; }
     _dpr = window.devicePixelRatio || 1;
     
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Клики и панорама
     _canvas.addEventListener('pointerdown', (e) => {
         _isPointerDown = true;
         _isDragging = false;
@@ -77,14 +70,10 @@ function initRenderer() {
         _isDragging = false;
     });
     
-    // Пинч-зум
     let _pinchStartDist = 0, _pinchStartZoom = 1;
     _canvas.addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
-            _pinchStartDist = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            );
+            _pinchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
             _pinchStartZoom = camera.zoom;
             _isPointerDown = false;
         }
@@ -93,17 +82,13 @@ function initRenderer() {
     _canvas.addEventListener('touchmove', (e) => {
         if (e.touches.length === 2) {
             e.preventDefault();
-            const dist = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            );
+            const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
             if (_pinchStartDist > 0) {
                 camera.zoom = Math.max(0.3, Math.min(2.5, _pinchStartZoom * (dist / _pinchStartDist)));
                 markDirty();
             }
         }
     }, { passive: false });
-    
     _canvas.addEventListener('touchend', () => { _pinchStartDist = 0; });
     
     requestAnimationFrame(renderLoop);
@@ -121,12 +106,7 @@ function resizeCanvas() {
 
 function renderLoop() {
     if (_isDirty) {
-        try {
-            render();
-        } catch (e) {
-            console.error("Ошибка рендера:", e);
-            alert("Ошибка рендера: " + e.message);
-        }
+        try { render(); } catch (e) { console.error(e); }
         _isDirty = false;
     }
     requestAnimationFrame(renderLoop);
@@ -134,7 +114,6 @@ function renderLoop() {
 
 function render() {
     if (!_ctx || !_canvas || !G.map || G.map.length === 0) return;
-    
     const cw = _canvas.getBoundingClientRect().width;
     const ch = _canvas.getBoundingClientRect().height;
     
@@ -154,7 +133,6 @@ function render() {
     const viewBottom = camera.y + ch / (2 * camera.zoom) + TILE_H;
     
     const drawList = [];
-    
     for (let gy = 0; gy < GRID_H; gy++) {
         for (let gx = 0; gx < GRID_W; gx++) {
             const w = gridToWorld(gx, gy);
@@ -165,23 +143,17 @@ function render() {
     }
     
     G.pawns.forEach(p => {
-        if (p.x >= 0 && p.hp > 0) {
-            drawList.push({ gx: p.x, gy: p.y, depth: p.x + p.y + 0.5, type: 'pawn', data: p });
-        }
+        if (p.x >= 0 && p.hp > 0) drawList.push({ gx: p.x, gy: p.y, depth: p.x + p.y + 0.5, type: 'pawn' });
     });
     
     G.enemies.forEach(en => {
         const cell = G.map[en.y] && G.map[en.y][en.x];
-        if (cell && cell.currentVision) {
-            drawList.push({ gx: en.x, gy: en.y, depth: en.x + en.y + 0.5, type: 'enemy', data: en });
-        }
+        if (cell && cell.currentVision) drawList.push({ gx: en.x, gy: en.y, depth: en.x + en.y + 0.5, type: 'enemy', data: en });
     });
     
     if (G.npcs) G.npcs.forEach(n => {
         const cell = G.map[n.y] && G.map[n.y][n.x];
-        if (cell && cell.currentVision) {
-            drawList.push({ gx: n.x, gy: n.y, depth: n.x + n.y + 0.5, type: 'npc', data: n });
-        }
+        if (cell && cell.currentVision) drawList.push({ gx: n.x, gy: n.y, depth: n.x + n.y + 0.5, type: 'npc', data: n });
     });
     
     drawList.sort((a, b) => a.depth - b.depth);
@@ -195,9 +167,7 @@ function render() {
     
     if (typeof isNight === 'function' && isNight()) {
         _ctx.fillStyle = 'rgba(10, 20, 60, 0.45)';
-        const vl = camera.x - cw / (2 * camera.zoom);
-        const vt = camera.y - ch / (2 * camera.zoom);
-        _ctx.fillRect(vl, vt, cw / camera.zoom, ch / camera.zoom);
+        _ctx.fillRect(camera.x - cw / (2 * camera.zoom), camera.y - ch / (2 * camera.zoom), cw / camera.zoom, ch / camera.zoom);
     }
     
     for (let i = effects.length - 1; i >= 0; i--) {
@@ -207,7 +177,6 @@ function render() {
         const w = gridToWorld(eff.gx, eff.gy);
         drawEffect(w.x, w.y, eff);
     }
-    
     _ctx.restore();
 }
 
@@ -216,7 +185,7 @@ function getTileColor(cell) {
     if (cell.buildingId !== undefined) {
         let b = G.buildings.find(bb => bb.id === cell.buildingId);
         if (b) {
-            if (b.progress < b.maxProgress) return '#2c3e50'; // Темно-синий для стройки // Темный цвет для стройки
+            if (b.progress < b.maxProgress) return '#2c3e50'; 
             let def = BUILDINGS[b.type];
             if (def) return def.color;
         }
@@ -241,25 +210,12 @@ function getTileColor(cell) {
 
 function getTileEmoji(cell) {
     if (!cell.explored) return '';
-    if (cell.isDoor) return '🚪';
-    if (cell.buildingId !== undefined) {
-        let b = G.buildings.find(bb => bb.id === cell.buildingId);
-        if (b) {
-            let cx = b.x + Math.floor(b.w / 2);
-            let cy = b.y + Math.floor(b.h / 2);
-            if (cell.gx === cx && cell.gy === cy) {
-                let def = BUILDINGS[b.type];
-                if (def) return def.icon;
-            }
-        }
-        return '';
-    }
+    if (cell.buildingId !== undefined) return '';
     if (cell.build === 'wall_wood') return '🪵';
     if (cell.build === 'wall_stone') return '🪨';
     if (cell.build === 'trap') return '🕳️';
     if (cell.build === 'hearth') return '🔥';
     if (cell.build === 'field') return '🌾';
-    if (cell.build === 'great_hearth') return '🏆';
     if (cell.build === 'road') return '🛤️';
     if (cell.build === 'watchtower') return '🗼';
     if (cell.build === 'campfire') return '🔥';
@@ -274,8 +230,6 @@ function getTileEmoji(cell) {
 function drawTile(gx, gy) {
     const cell = G.map[gy] && G.map[gy][gx];
     if (!cell) return;
-    cell.gx = gx;
-    cell.gy = gy;
     
     const w = gridToWorld(gx, gy);
     
@@ -300,22 +254,51 @@ function drawTile(gx, gy) {
         _ctx.fill();
     }
     
-    const emoji = getTileEmoji(cell);
-    if (emoji && cell.currentVision !== false) {
-        _ctx.font = '22px Arial';
-        _ctx.textAlign = 'center';
-        _ctx.textBaseline = 'middle';
-        _ctx.fillText(emoji, w.x, w.y);
-    }
-    
-    if (cell.build) {
-        const cost = getBuildCost(cell.build);
-        if (cost && cell.progress < cost.turns) {
-            _ctx.font = 'bold 10px Arial';
-            _ctx.fillStyle = '#fff';
+    // Рендер зданий
+    if (cell.buildingId !== undefined) {
+        let b = G.buildings.find(bb => bb.id === cell.buildingId);
+        if (b) {
             _ctx.textAlign = 'center';
             _ctx.textBaseline = 'middle';
-            _ctx.fillText(cell.progress + '/' + cost.turns, w.x, w.y + 8);
+            
+            if (b.progress < b.maxProgress) {
+                _ctx.strokeStyle = '#e84118';
+                _ctx.lineWidth = 2;
+                _ctx.stroke();
+                
+                let cx = b.x + Math.floor(b.w / 2);
+                let cy = b.y + Math.floor(b.h / 2);
+                if (gx === cx && gy === cy) {
+                    _ctx.font = 'bold 18px Arial';
+                    _ctx.fillStyle = '#fff';
+                    _ctx.fillText(b.progress + '/' + b.maxProgress, w.x, w.y - 10);
+                    _ctx.font = '24px Arial';
+                    _ctx.fillText('🚧', w.x, w.y + 12);
+                }
+            } else {
+                let cx = b.x + Math.floor(b.w / 2);
+                let cy = b.y + Math.floor(b.h / 2);
+                if (gx === cx && gy === cy) {
+                    let def = BUILDINGS[b.type] || { icon: '🏠' };
+                    _ctx.font = '28px Arial';
+                    _ctx.fillText(def.icon || '🏠', w.x, w.y);
+                }
+            }
+        }
+    } else {
+        if (cell.isDoor) {
+            _ctx.font = '22px Arial';
+            _ctx.textAlign = 'center';
+            _ctx.textBaseline = 'middle';
+            _ctx.fillText('🚪', w.x, w.y);
+        } else {
+            const emoji = getTileEmoji(cell);
+            if (emoji && cell.currentVision !== false) {
+                _ctx.font = '22px Arial';
+                _ctx.textAlign = 'center';
+                _ctx.textBaseline = 'middle';
+                _ctx.fillText(emoji, w.x, w.y);
+            }
         }
     }
 }
@@ -344,8 +327,7 @@ function drawEntity(gx, gy, emoji, outlineColor) {
 function drawEffect(wx, wy, eff) {
     if (eff.type === 'boom') {
         const progress = 1 - (eff.life / eff.maxLife);
-        const scale = 1 + progress * 2;
-        _ctx.font = Math.round(32 * scale) + 'px Arial';
+        _ctx.font = Math.round(32 * (1 + progress * 2)) + 'px Arial';
         _ctx.textAlign = 'center';
         _ctx.textBaseline = 'middle';
         _ctx.globalAlpha = eff.life / eff.maxLife;
@@ -353,7 +335,6 @@ function drawEffect(wx, wy, eff) {
         _ctx.globalAlpha = 1;
     } else if (eff.type === 'text') {
         const progress = 1 - (eff.life / eff.maxLife);
-        const y = wy - 20 - progress * 30;
         _ctx.font = 'bold 18px Arial';
         _ctx.textAlign = 'center';
         _ctx.textBaseline = 'middle';
@@ -361,8 +342,8 @@ function drawEffect(wx, wy, eff) {
         _ctx.fillStyle = eff.color || '#e84118';
         _ctx.strokeStyle = '#000';
         _ctx.lineWidth = 3;
-        _ctx.strokeText(eff.text, wx, y);
-        _ctx.fillText(eff.text, wx, y);
+        _ctx.strokeText(eff.text, wx, wy - 20 - progress * 30);
+        _ctx.fillText(eff.text, wx, wy - 20 - progress * 30);
         _ctx.globalAlpha = 1;
     }
 }

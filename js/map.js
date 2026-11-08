@@ -198,17 +198,18 @@ function tryPlaceBuilding(x, y) {
     
     // Создаем здание
     let bid = Date.now();
+    let centerX = x + Math.floor(w / 2);
     let building = {
         id: bid, type: type, x: x, y: y, w: w, h: h,
         progress: 1, maxProgress: BUILDINGS[type].maxProgress || 1,
-        door: { x: x, y: y + h - 1 } // Дверь всегда внизу
+        door: { x: centerX, y: y + h - 1 } // Дверь по центру нижней грани
     };
     
     // Записываем тайлы
     for(let dy=0; dy<h; dy++) {
         for(let dx=0; dx<w; dx++) {
             G.map[y+dy][x+dx].buildingId = bid;
-            G.map[y+dy][x+dx].isDoor = (dx === 0 && dy === h - 1); // Левая нижняя клетка = дверь
+            G.map[y+dy][x+dx].isDoor = (dx === Math.floor(w/2) && dy === h - 1); // Центр нижней грани
         }
     }
     
