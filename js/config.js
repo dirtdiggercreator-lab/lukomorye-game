@@ -1,4 +1,4 @@
-const GAME_VERSION = '61.0';
+const GAME_VERSION = '61.1';
 
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
@@ -61,19 +61,19 @@ const QUALITY_TIERS = {
 const LEGENDARY_PREFIXES = ['Перуна', 'Велеса', 'Стрибога', 'Сварога', 'Даждьбога', 'Мокоши', 'Ярило', 'Чернобога'];
 
 const BUILDINGS = {
-    'camp': { name: 'Лагерь', w: 2, h: 2, icon: '🏕️', color: '#8e44ad', maxProgress: 1 },
-    'lazaret': { name: 'Лазарет', w: 2, h: 3, icon: '🏥', color: '#c0392b', maxProgress: 2 },
-    'warehouse': { name: 'Склад', w: 2, h: 2, icon: '🏬', color: '#7f8c8d', maxProgress: 2 },
-    'houses': { name: 'Хоромы', w: 3, h: 3, icon: '🏘️', color: '#8e44ad', maxProgress: 3 },
-    'master': { name: 'Мастерская', w: 2, h: 2, icon: '🏭', color: '#34495e', maxProgress: 2 },
-    'great_hearth': { name: 'Великий Очаг', w: 3, h: 3, icon: '🏆', color: '#f1c40f', maxProgress: 3 },
-    'watchtower': { name: 'Вышка', w: 2, h: 2, icon: '🗼', color: '#8b6f47', maxProgress: 2 },
-    'campfire': { name: 'Костёр', w: 1, h: 1, icon: '🔥', color: '#e67e22', maxProgress: 1 },
-    'hearth': { name: 'Очаг', w: 1, h: 1, icon: '🔥', color: '#d35400', maxProgress: 1 },
-    'trap': { name: 'Ловушка', w: 1, h: 1, icon: '🕳️', color: '#2c3e50', maxProgress: 1 },
-    'road': { name: 'Дорога', w: 1, h: 1, icon: '🛤️', color: '#7f6f5f', maxProgress: 1 },
-    'wall_wood': { name: 'Ограда', w: 1, h: 1, icon: '🪵', color: '#a0522d', maxProgress: 1 },
-    'wall_stone': { name: 'Ограда', w: 1, h: 1, icon: '🪨', color: '#95a5a6', maxProgress: 1 }
+    'camp':         { name: 'Лагерь',        w: 2, h: 2, icon: '🏕️', color: '#8e44ad', maxProgress: 1, vision: 5 },
+    'lazaret':      { name: 'Лазарет',       w: 2, h: 3, icon: '🏥', color: '#c0392b', maxProgress: 2, vision: 3 },
+    'warehouse':    { name: 'Склад',         w: 2, h: 2, icon: '🏬', color: '#7f8c8d', maxProgress: 2, vision: 3 },
+    'houses':       { name: 'Хоромы',        w: 3, h: 3, icon: '🏘️', color: '#8e44ad', maxProgress: 3, vision: 4 },
+    'master':       { name: 'Мастерская',    w: 2, h: 2, icon: '🏭', color: '#34495e', maxProgress: 2, vision: 3 },
+    'great_hearth': { name: 'Великий Очаг',  w: 3, h: 3, icon: '🏆', color: '#f1c40f', maxProgress: 3, vision: 8 },
+    'watchtower':   { name: 'Вышка',         w: 2, h: 2, icon: '🗼', color: '#8b6f47', maxProgress: 2, vision: 4, visionNight: 8 },
+    'campfire':     { name: 'Костёр',        w: 1, h: 1, icon: '🔥', color: '#e67e22', maxProgress: 1, vision: 2, visionNight: 5 },
+    'hearth':       { name: 'Очаг',          w: 1, h: 1, icon: '🔥', color: '#d35400', maxProgress: 1, vision: 3 },
+    'trap':         { name: 'Ловушка',       w: 1, h: 1, icon: '🕳️', color: '#2c3e50', maxProgress: 1, vision: 0 },
+    'road':         { name: 'Дорога',        w: 1, h: 1, icon: '🛤️', color: '#7f6f5f', maxProgress: 1, vision: 0 },
+    'wall_wood':    { name: 'Ограда',        w: 1, h: 1, icon: '🪵', color: '#a0522d', maxProgress: 1, vision: 0 },
+    'wall_stone':   { name: 'Ограда',        w: 1, h: 1, icon: '🪨', color: '#95a5a6', maxProgress: 1, vision: 0 }
 };
 
 function getMaxLevel() { return G.diff === 'easy' ? 3 : G.diff === 'normal' ? 5 : 7; }

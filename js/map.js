@@ -89,6 +89,8 @@ function updateVision() {
     for(let y=0; y<60; y++) for(let x=0; x<60; x++) G.map[y][x].currentVision = false;
 
     let night = isNight();
+    
+    // 1. Обзор от пешек
     G.pawns.forEach(p => {
         if(p.x === -1 || p.hp <= 0) return;
         let rad = night ? 2 : 3;
@@ -103,28 +105,31 @@ function updateVision() {
         }
     });
 
-    for(let y=0; y<60; y++) {
-        for(let x=0; x<60; x++) {
-            let b = G.map[y][x].build;
-            if(!b || G.map[y][x].progress < getBuildCost(b).turns) continue;
-            let rad = 0;
-            if (b === 'camp') rad = 5;
-            else if (b === 'lazaret' || b === 'wall_stone') rad = 3;
-            else if (b === 'wall_wood' || b === 'hearth' || b === 'field') rad = 2;
-            else if (b === 'watchtower') rad = night ? 8 : 4;
-            else if (b === 'campfire') rad = night ? 5 : 2;
-            if(rad === 0) continue;
+    // 2. Обзор от достроенных зданий
+    if (G.buildings && G.buildings.length > 0) {
+        G.buildings.forEach(b => {
+            if (!b || b.progress < b.maxProgress) return;
+            let def = BUILDINGS[b.type];
+            if (!def) return;
+            let rad = night ? (def.visionNight !== undefined ? def.visionNight : (def.vision || 0)) : (def.vision || 0);
+            if (rad <= 0) return;
+            
+            // Центр здания
+            let cx = b.x + Math.floor(b.w / 2);
+            let cy = b.y + Math.floor(b.h / 2);
+            
             for(let dy=-rad; dy<=rad; dy++) {
                 for(let dx=-rad; dx<=rad; dx++) {
-                    let nx = x + dx, ny = y + dy;
+                    let nx = cx + dx, ny = cy + dy;
                     if(nx>=0 && nx<60 && ny>=0 && ny<60 && (Math.abs(dx) + Math.abs(dy) <= rad)) {
                         G.map[ny][nx].currentVision = true;
                         G.map[ny][nx].explored = true;
                     }
                 }
             }
-        }
+        });
     }
+    
     renderMap();
 }
 
