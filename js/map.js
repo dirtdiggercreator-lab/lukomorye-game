@@ -237,6 +237,7 @@ function handleCellClick(x, y) {
     if (!p || p.x === -1) return;
 
     if (G.currentBuild) { tryPlaceBuilding(x, y); return; }
+    if (typeof hasDisease === 'function' && hasDisease(p, 'Перелом') && !G.inCombat) return showToast("Перелом: нельзя двигаться!", "danger");
     if (x === p.x && y === p.y) return;
     
     let enemy = G.enemies.find(e => e.x === x && e.y === y);
@@ -255,7 +256,7 @@ function handleCellClick(x, y) {
         addLog("Ход врага...", true);
         setTimeout(() => {
             moveEnemies();
-            G.combatSteps = p.agi;
+            G.combatSteps = getEffectiveAgi(p);
             addLog("Твой ход!", false, true);
             isMoving = false;
             updateUI();

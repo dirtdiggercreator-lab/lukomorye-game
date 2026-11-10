@@ -145,13 +145,24 @@ function executeAction(type) {
         addLog(`${p.name} отдыхает (+2 HP, +1 Рассудок).`);
         updateUI();
     } else if (type === 'heal') {
-        if(G.res.meat >= 1) {
-             // Фикс
-            G.res.meat--; p.hp = Math.min(p.maxHp, p.hp + 4);
-            G.ap--; if (G.ap < 0) G.ap = 0;
-            addLog(`${p.name} лечится в Лазарете (+4 HP).`, false, true);
-            updateUI();
-        } else showToast("Нужна еда!", "danger");
+        let cell = G.map[p.y][p.x];
+        let inLazaret = false;
+        if (cell.buildingId !== undefined) {
+            let b = G.buildings.find(bb => bb.id === cell.buildingId);
+            if (b && b.type === 'lazaret' && b.progress >= b.maxProgress) inLazaret = true;
+        }
+        if (!inLazaret) return showToast("Нужно быть внутри Лазарета!", "danger");
+        if (G.res.meat < 1) return showToast("Нужна еда!", "danger");
+        if (G.ap < 1) return showToast("Нет ОД!", "danger");
+        
+        G.res.meat--;
+        G.ap--;
+        p.hp = Math.min(p.maxHp, p.hp + 2);
+        p.san = Math.min(10, p.san + 2);
+        let hadDiseases = p.diseases && p.diseases.length > 0;
+        p.diseases = [];
+        addLog(`${p.name} лечится в Лазарете (+2 HP, +2 Рассудок${hadDiseases ? ', болезни сняты' : ''}).`, false, true);
+        updateUI(); renderMap();
     } else if (type === 'hire') {
         if(G.ap < 1) return showToast("Нет ОД!", "danger");
         if(G.pawns.length >= 4) return alert("Максимум 4 пешки!");

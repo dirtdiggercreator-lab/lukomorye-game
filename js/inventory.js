@@ -47,6 +47,9 @@ function openInventoryModal() {
                 html += `<div style="color: ${color}; font-weight: ${fw};">${item.icon || '📦'} ${item.name}${isLegend}</div>`;
                 html += `<div style="display: flex; gap: 5px;">`;
                 
+                if (item.heal !== undefined) {
+                    html += `<button class="btn" style="padding: 4px 8px; font-size: 12px; background: #27ae60;" onclick="useItem(${i})">Использовать</button>`;
+                }
                 if (item instanceof Weapon || item instanceof Armor) {
                     html += `<button class="btn" style="padding: 4px 8px; font-size: 12px; background: #2980b9;" onclick="equipItem(${i})">Надеть</button>`;
                 }
@@ -135,4 +138,28 @@ function demolishBuilding(id) {
     addLog(`Снесено: ${def.name || b.type}`);
     document.getElementById('action-modal').style.display = 'none';
     updateUI(); markDirty(); updateVision();
+}
+
+function useItem(index) {
+    let p = G.pawns[G.activePawnIndex];
+    let item = p.inventory[index];
+    if (!item) return;
+    if (item.heal === undefined) return showToast("Это нельзя использовать!", "danger");
+    
+    if (G.ap <= 0) return showToast("Нет ОД!", "danger");
+    G.ap--;
+    
+    p.hp = Math.min(p.maxHp, p.hp + item.heal);
+    
+    // Травяное зелье лечит болезни
+    if (item.costHerbs !== undefined || item.name.includes('Травяное')) {
+        p.diseases = [];
+        showToast(`+${item.heal} HP, болезни вылечены!`, "success");
+    } else {
+        showToast(`+${item.heal} HP`, "success");
+    }
+    
+    p.inventory.splice(index, 1);
+    updateUI(); renderMap();
+    openInventoryModal();
 }

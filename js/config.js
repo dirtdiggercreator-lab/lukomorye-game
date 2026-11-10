@@ -1,4 +1,4 @@
-const GAME_VERSION = '60.2';
+const GAME_VERSION = '61.0';
 
 const SEASONS = ['Весна', 'Лето', 'Осень', 'Зима'];
 
@@ -145,4 +145,16 @@ function getQuality(craftStat) {
     }
     
     return quality;
+}
+
+const DISEASES = ['Кровотечение', 'Простуда', 'Отравление', 'Перелом'];
+
+function hasDisease(p, name) {
+    return p.diseases && p.diseases.includes(name);
+}
+
+function getEffectiveAgi(p) {
+    let agi = p.agi || 0;
+    if (hasDisease(p, 'Простуда')) agi -= 1;
+    return Math.max(0, agi);
 }

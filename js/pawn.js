@@ -52,6 +52,9 @@ function renderPawnBar() {
         if(p.xp >= getNeededXp(p.lvl) && p.lvl < getMaxLevel()) {
             d.innerHTML += `<span class="pawn-lvl-up">+</span>`;
         }
+        if(p.diseases && p.diseases.length > 0) {
+            d.innerHTML += `<span class="pawn-sick">🤒</span>`;
+        }
         d.onclick = () => { G.activePawnIndex = i; renderPawnBar(); openPawnCard(); };
         bar.appendChild(d);
     });
@@ -108,6 +111,8 @@ function openPawnCard() {
     document.getElementById('pc-armor').innerText = p.armorItem ? p.armorItem.defense : 0;
     document.getElementById('pc-stam').innerText = p.stam || 0;
     document.getElementById('pc-trait').innerText = p.trait;
+    let disEl = document.getElementById('pc-diseases');
+    if (disEl) disEl.innerText = (p.diseases && p.diseases.length) ? p.diseases.join(', ') : 'Нет';
     if(p.xp >= getNeededXp(p.lvl) && p.lvl < getMaxLevel()) document.getElementById('btn-levelup').style.display = 'block';
     else document.getElementById('btn-levelup').style.display = 'none';
     openModal('pawn-card-modal');

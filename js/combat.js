@@ -1,9 +1,21 @@
+// ============================================================
+// COMBAT v61.0
+// ============================================================
+
 function startCombat(enemy, pawn) {
     if (!enemy || !pawn || G.inCombat) return;
     G.inCombat = true;
     currentEnemy = enemy;
     currentPawn = pawn;
     G.fledThisCombat = false;
+    
+    if (pawn.diseases && pawn.diseases.includes('Перелом')) {
+        G.combatSteps = 0;
+        showToast("Перелом: не можешь двигаться в бою!", "danger");
+    } else {
+        G.combatSteps = getEffectiveAgi(pawn);
+    }
+    
     let info = document.getElementById('combat-info');
     info.innerHTML = `<p>${enemy.icon} ${enemy.name} | HP: <span id="c-ehp">${enemy.hp}</span></p><p>🧑‍🌾 ${pawn.name} | HP: <span id="c-php">${pawn.hp}</span></p>`;
     document.getElementById('c-log').innerHTML = "Бой начался!<br>";
@@ -14,7 +26,8 @@ function startCombat(enemy, pawn) {
 function combatAttack() {
     if (!currentEnemy || !currentPawn) return;
     let logBox = document.getElementById('c-log');
-    let pInit = d6() + currentPawn.agi;
+    let pAgi = getEffectiveAgi(currentPawn);
+    let pInit = d6() + pAgi;
     let eInit = d6() + currentEnemy.agi;
     let attacker = pInit >= eInit ? 'player' : 'enemy';
     logBox.innerHTML += `<br>Инициатива: Вы ${pInit} vs Враг ${eInit} (${attacker === 'player' ? 'Вы первый' : 'Враг первый'}).<br>`;
@@ -30,14 +43,15 @@ function combatAttack() {
 
 function doPlayerHit(logBox) {
     let w = currentPawn.weapon || ITEMS['fists'];
-    let pHit = d6() + currentPawn.agi + w.acc;
+    let pAgi = getEffectiveAgi(currentPawn);
+    let pHit = d6() + pAgi + (w.acc || 0);
     let eDodge = d6() + currentEnemy.agi;
     if(pHit >= eDodge) {
-        let pDmg = d6() + currentPawn.str + w.dmg - currentEnemy.armor;
+        let pDmg = d6() + (currentPawn.str || 0) + (w.dmg || 0) - currentEnemy.armor;
         if (pDmg < 1) pDmg = 1;
         currentEnemy.hp -= pDmg;
         logBox.innerHTML += `Вы попали (${pHit} vs ${eDodge})! Урон: ${pDmg}<br>`;
-        if(currentPawn.agi - currentEnemy.agi >= 2 && d6() >= 5) {
+        if(pAgi - currentEnemy.agi >= 2 && d6() >= 5) {
             currentEnemy.hp -= pDmg;
             logBox.innerHTML += `КРИТ! Двойной урон!<br>`;
         }
@@ -50,9 +64,10 @@ function doPlayerHit(logBox) {
 
 function doEnemyHit(logBox) {
     let eHit = d6() + currentEnemy.agi;
-    let pDodge = d6() + currentPawn.agi;
+    let pAgi = getEffectiveAgi(currentPawn);
+    let pDodge = d6() + pAgi;
     if(eHit >= pDodge) {
-        let def = currentPawn.armorItem ? currentPawn.armorItem.defense : 0; let eDmg = d6() + currentEnemy.dmg - def;
+        let eDmg = d6() + currentEnemy.dmg - (currentPawn.armorItem ? currentPawn.armorItem.defense : 0);
         if (eDmg < 1) eDmg = 1;
         currentPawn.hp -= eDmg;
         logBox.innerHTML += `Враг попал (${eHit} vs ${pDodge})! Урон: ${eDmg}<br>`;
@@ -71,21 +86,21 @@ function checkCombatEnd() {
         currentPawn.xp += xp;
         addLog(`${currentPawn.name} победил ${currentEnemy.name}! +${xp} XP`, false, true);
         G.enemies = G.enemies.filter(e => e !== currentEnemy);
-        setTimeout(() => { 
-            closeModal('combat-modal'); 
-            G.inCombat = false; 
+        setTimeout(() => {
+            closeModal('combat-modal');
+            G.inCombat = false;
             currentEnemy = null; currentPawn = null;
-            updateUI(); renderMap(); 
-            saveGame();
+            updateUI(); renderMap();
+            if (typeof saveGame === 'function') saveGame();
         }, 1000);
     } else if(currentPawn.hp <= 0) {
         document.getElementById('c-log').innerHTML += "Вы погибли...<br>";
         let deadPawn = currentPawn;
         addLog(`${deadPawn.name} погиб в бою!`, true);
         G.pawns = G.pawns.filter(p => p !== deadPawn);
-        setTimeout(() => { 
-            closeModal('combat-modal'); 
-            G.inCombat = false; 
+        setTimeout(() => {
+            closeModal('combat-modal');
+            G.inCombat = false;
             currentEnemy = null; currentPawn = null;
             if (G.pawns.length === 0) gameOver("Все пешки погибли.");
             else { G.activePawnIndex = 0; updateUI(); renderMap(); saveGame(); }
@@ -95,11 +110,11 @@ function checkCombatEnd() {
 
 function combatFlee() {
     if (!currentPawn || !currentEnemy) return;
-    if (G.fledThisCombat) return alert("Нельзя отступать дважды!");
+    if (G.fledThisCombat) return showToast("Нельзя отступать дважды!", "danger");
     let eAtk = d6() + currentEnemy.agi + 2;
-    let pDef = d6() + currentPawn.agi;
+    let pDef = d6() + getEffectiveAgi(currentPawn);
     if (eAtk >= pDef) {
-        let dmg = (d6() + currentEnemy.dmg - currentPawn.armor) * 2;
+        let dmg = (d6() + currentEnemy.dmg - (currentPawn.armorItem ? currentPawn.armorItem.defense : 0)) * 2;
         if (dmg < 1) dmg = 1;
         currentPawn.hp -= dmg;
         currentPawn.san = Math.max(0, currentPawn.san - 2);
@@ -112,5 +127,5 @@ function combatFlee() {
     G.inCombat = false;
     currentEnemy = null; currentPawn = null;
     updateUI(); renderMap();
-    saveGame();
+    if (typeof saveGame === 'function') saveGame();
 }
