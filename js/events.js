@@ -1,4 +1,4 @@
-function nextTurn() {
+function executeEndTurn() {
     if(G.inCombat) return;
     let hasHearth = false;
     for(let y=0; y<30; y++) for(let x=0; x<30; x++) if(G.map[y][x].build === 'hearth' && G.map[y][x].progress >= 1) hasHearth = true;
@@ -229,4 +229,27 @@ function rollWeather() {
             addLog(`🌪 Ураган сломал постройку!`, true);
         }
     }
+}
+
+function nextTurn() {
+    if (G.inCombat) return;
+    let passBtn = document.getElementById('btn-pass-enemy');
+    if (G.enemies.length > 0) {
+        passBtn.style.display = 'block';
+    } else {
+        passBtn.style.display = 'none';
+    }
+    openModal('turn-modal');
+}
+
+function passTurnToEnemy() {
+    closeModal('turn-modal');
+    if (G.enemies.length === 0) return;
+    
+    addLog("Ход врага...", true);
+    moveEnemies();
+    let p = G.pawns[G.activePawnIndex];
+    if (p) G.combatSteps = getEffectiveAgi(p);
+    addLog("Твой ход!", false, true);
+    updateUI(); updateVision();
 }
