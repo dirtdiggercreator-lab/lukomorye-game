@@ -20,8 +20,8 @@ function downloadLogs() {
     dl.click();
 }
 
-function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function openModal(id) { let el = document.getElementById(id); if (el) el.style.display = 'flex'; else console.error('Modal not found:', id); }
+function closeModal(id) { let el = document.getElementById(id); if (el) el.style.display = 'none'; }
 
 function saveGame() {
     if (isMoving || G.inCombat) {

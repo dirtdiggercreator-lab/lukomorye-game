@@ -1,94 +1,4 @@
-function executeEndTurn() {
-    if(G.inCombat) return;
-    let hasHearth = false;
-    for(let y=0; y<30; y++) for(let x=0; x<30; x++) if(G.map[y][x].build === 'hearth' && G.map[y][x].progress >= 1) hasHearth = true;
 
-    G.pawns.forEach(p => {
-        if(p.hp <= 0) return;
-        if(p.x === -1) {
-            p.caravanTimer--;
-            if(p.caravanTimer <= 0) {
-                p.x = 15; p.y = 15;
-                G.res.copper += 3;
-                addLog(`${p.name} вернулся из похода с 3 🔶!`, false, true);
-            }
-            return;
-        }
-        if(G.res.meat > 0) { G.res.meat--; } 
-        else { p.hp -= 2; p.san -= 2; addLog(`${p.name} голодает! -2 HP`, true); }
-
-        if (G.season === 'Зима') {
-            if (!hasHearth) {
-                p.hp -= 1;
-                addLog(`${p.name} мёрзнет без Очага (-1 HP)`, true);
-                if (Math.random() < 0.2 && (!p.diseases || !p.diseases.includes('Простуда'))) {
-                    if (!p.diseases) p.diseases = [];
-                    p.diseases.push('Простуда');
-                    addLog(`${p.name} простудился!`, true);
-                }
-            } else if (G.res.wood > 0) {
-                G.res.wood -= 1;
-                addLog(`Очаг сжёг 1 🌲`);
-            } else {
-                p.hp -= 1;
-                addLog(`Очаг погас (нет дров). ${p.name} мёрзнет (-1 HP)`, true);
-            }
-        }
-        // Обработка болезней
-        if (p.diseases && p.diseases.includes('Кровотечение')) {
-            p.hp -= 1;
-            addLog(`🩸 ${p.name} истекает кровью (-1 HP)`, true);
-        }
-        if (p.diseases && p.diseases.includes('Отравление')) {
-            G.ap = Math.max(0, G.ap - 1);
-            addLog(`🤢 ${p.name} отравлен (потеря 1 ОД)`, true);
-        }
-
-        if(p.san <= 0) {
-            p.san = 5;
-            addLog(`БЕЗУМИЕ! ${p.name} теряет контроль!`, true);
-            p.x = Math.max(0, Math.min(29, p.x + rnd(-1,1)));
-            p.y = Math.max(0, Math.min(29, p.y + rnd(-1,1)));
-        }
-    });
-
-    // Проверка смерти после всех эффектов
-    let alivePawns = [];
-    G.pawns.forEach(p => {
-        if (p.hp <= 0 && p.x !== -1) {
-            addLog(`☠️ ${p.name} погиб(ла)!`, true);
-        } else {
-            alivePawns.push(p);
-        }
-    });
-    if (alivePawns.length === 0) return gameOver("Все пешки погибли.");
-    G.pawns = alivePawns;
-    if (G.activePawnIndex >= G.pawns.length) G.activePawnIndex = 0;
-
-    G.round++;
-    if(G.round > 1 && (G.round - 1) % 12 === 0) {
-        let idx = SEASONS.indexOf(G.season);
-        G.season = SEASONS[(idx+1)%4];
-        addLog(`Наступил сезон: ${G.season}`);
-        G.weatherDuration = 0;
-    }
-
-    G.pendingStandardSpawn = (G.round % 2 === 0);
-    if (isNight()) G.pendingStandardSpawn = true; // Ночью спавн чаще
-    G.pendingWheelSpawn = false;
-    
-    trySpawnNPC();
-    updateNPCs();
-    
-    G.ap = G.diff === 'easy' ? 4 : 3;
-    if (G.pawns[G.activePawnIndex]) G.combatSteps = getEffectiveAgi(G.pawns[G.activePawnIndex]);
-    updateUI(); updateVision();
-    
-    openModal('wheel-modal');
-    document.getElementById('wheel').style.transform = 'scaleY(0.6) rotate(0deg)';
-    document.getElementById('spin-btn').style.display = 'block';
-    document.getElementById('wheel-text').innerText = '';
-}
 
 function spinWheel() {
     document.getElementById('spin-btn').style.display = 'none';
@@ -231,13 +141,22 @@ function rollWeather() {
     }
 }
 
+
+
+
+
+
+// ==========================================
+// ЛОГИКА ХОДА
+// ==========================================
+
 function nextTurn() {
     if (G.inCombat) return;
     let passBtn = document.getElementById('btn-pass-enemy');
     if (G.enemies.length > 0) {
-        passBtn.style.display = 'block';
+        if (passBtn) passBtn.style.display = 'block';
     } else {
-        passBtn.style.display = 'none';
+        if (passBtn) passBtn.style.display = 'none';
     }
     openModal('turn-modal');
 }
@@ -252,4 +171,85 @@ function passTurnToEnemy() {
     if (p) G.combatSteps = getEffectiveAgi(p);
     addLog("Твой ход!", false, true);
     updateUI(); updateVision();
+}
+
+function executeEndTurn() {
+    closeModal('turn-modal');
+    if (G.inCombat) return;
+
+    let hasHearth = false;
+    for(let y=0; y<60; y++) for(let x=0; x<60; x++) if(G.map[y][x].build === 'hearth' && G.map[y][x].progress >= 1) hasHearth = true;
+
+    G.pawns.forEach(p => {
+        if(p.hp <= 0) return;
+        if(p.x === -1) {
+            p.caravanTimer--;
+            if(p.caravanTimer <= 0) {
+                p.x = 30; p.y = 30;
+                G.res.copper += 1;
+                G.res.coins += 5;
+                addLog(`${p.name} вернулся из похода!`, false, true);
+            }
+            return;
+        }
+        if(G.res.meat > 0) { G.res.meat--; } 
+        else { p.hp -= 2; p.san -= 2; addLog(`${p.name} голодает! -2 HP`, true); }
+
+        if (G.season === 'Зима') {
+            if (!hasHearth) {
+                p.hp -= 1;
+                addLog(`${p.name} мёрзнет без Очага (-1 HP)`, true);
+                if (Math.random() < 0.2 && (!p.diseases || !p.diseases.includes('Простуда'))) {
+                    if (!p.diseases) p.diseases = [];
+                    p.diseases.push('Простуда');
+                    addLog(`${p.name} простудился!`, true);
+                }
+            } else if (G.res.wood > 0) {
+                G.res.wood -= 1;
+                addLog(`Очаг сжёг 1 🌲`);
+            } else {
+                p.hp -= 1;
+                addLog(`Очаг погас (нет дров). ${p.name} мёрзнет (-1 HP)`, true);
+            }
+        }
+        if(p.san <= 0) {
+            p.san = 5;
+            addLog(`БЕЗУМИЕ! ${p.name} теряет контроль!`, true);
+            p.x = Math.max(0, Math.min(59, p.x + rnd(-1,1)));
+            p.y = Math.max(0, Math.min(59, p.y + rnd(-1,1)));
+        }
+    });
+
+    let alivePawns = [];
+    G.pawns.forEach(p => {
+        if (p.hp <= 0 && p.x !== -1) {
+            addLog(`☠️ ${p.name} погиб(ла)!`, true);
+        } else {
+            alivePawns.push(p);
+        }
+    });
+    if (alivePawns.length === 0) return gameOver("Все пешки погибли.");
+    G.pawns = alivePawns;
+    if (G.activePawnIndex >= G.pawns.length) G.activePawnIndex = 0;
+
+    G.round++;
+    if(G.round > 1 && (G.round - 1) % 12 === 0) {
+        let idx = SEASONS.indexOf(G.season);
+        G.season = SEASONS[(idx+1)%4];
+        addLog(`Наступил сезон: ${G.season}`);
+        G.weatherDuration = 0;
+    }
+
+    G.pendingStandardSpawn = (G.round % 2 === 0);
+    if (isNight()) G.pendingStandardSpawn = true;
+    G.pendingWheelSpawn = false;
+    
+    G.ap = G.diff === 'easy' ? 4 : 3;
+    if (G.pawns[G.activePawnIndex]) G.combatSteps = getEffectiveAgi(G.pawns[G.activePawnIndex]);
+    updateUI(); updateVision();
+    
+    openModal('wheel-modal');
+    document.getElementById('wheel').style.transform = 'scaleY(0.6) rotate(0deg)';
+    document.getElementById('spin-btn').style.display = 'block';
+    document.getElementById('wheel-text').innerText = '';
 }
